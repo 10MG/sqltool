@@ -103,9 +103,8 @@ public class SqltoolContext implements Serializable {
 	 */
 	public int insert(Map<String, String> options, Object obj) {
 		DML dml = InsertDMLParser.getInstance().parse(obj.getClass());
-		String sql = dml.getSql();
 		List<Object> params = JdbcUtils.getParams(obj, dml.getFields());
-		return execute(options, sql, params, ExecuteUpdateSqlExecuter.getInstance());
+		return execute(options, dml.getSql(), params, ExecuteUpdateSqlExecuter.getInstance());
 	}
 
 	/**
@@ -565,7 +564,6 @@ public class SqltoolContext implements Serializable {
 		try {
 			con.rollback();
 		} catch (SQLException e) {
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(con);
@@ -581,7 +579,6 @@ public class SqltoolContext implements Serializable {
 		try {
 			con.commit();
 		} catch (SQLException e) {
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(con);
@@ -615,10 +612,11 @@ public class SqltoolContext implements Serializable {
 			if (e instanceof ClassNotFoundException) {
 				throw new IllegalConfigException(e);
 			} else if (e instanceof SQLException) {
-				JdbcUtils.close(con);
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			}
 			throw new TransactionException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -948,7 +946,6 @@ public class SqltoolContext implements Serializable {
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
-				JdbcUtils.close(ps);
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			} finally {
 				JdbcUtils.close(ps);
@@ -979,7 +976,6 @@ public class SqltoolContext implements Serializable {
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
-				JdbcUtils.close(ps);
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			} finally {
 				JdbcUtils.close(ps);
@@ -1042,7 +1038,6 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
@@ -1068,8 +1063,6 @@ public class SqltoolContext implements Serializable {
 			rs = sqlExecuter.execute(ps);
 			return sqlExecuter.execute(ps, rs);
 		} catch (SQLException e) {
-			JdbcUtils.close(rs);
-			JdbcUtils.close(ps);
 			throw e;
 		} finally {
 			JdbcUtils.close(rs);
@@ -1091,10 +1084,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 		return counts;
 	}
@@ -1112,8 +1106,9 @@ public class SqltoolContext implements Serializable {
 			}
 		} catch (SQLException e) {
 			ps.clearBatch();
-			JdbcUtils.close(ps);
 			throw e;
+		} finally {
+			JdbcUtils.close(ps);
 		}
 		return commitBatch(con, ps);
 	}
@@ -1152,10 +1147,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1176,10 +1172,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1218,7 +1215,6 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
@@ -1262,10 +1258,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1320,10 +1317,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1360,10 +1358,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1400,10 +1399,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1523,7 +1523,6 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(ps);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(ps);
@@ -1554,7 +1553,6 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(ps);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(ps);

@@ -29,10 +29,13 @@ public abstract class DsqlUtils {
 	private static final char PARAM_BEGIN = ':';
 
 	/**
+	 * 将指定的源动态结构化查询语言（DSQL）及查询参数转换为含有命名参数的SQL（命名参数以“:”开头）以及实际使用的参数集组成的对象
 	 * 
 	 * @param source
+	 *            源DSQL脚本
 	 * @param params
-	 * @return
+	 *            查询参数列表
+	 * @return 返回含有命名参数的SQL以及实际使用的参数集组成的对象
 	 */
 	public static Sql parse(String source, Map<String, Object> params) {
 		if (params == null) {
@@ -201,6 +204,15 @@ public abstract class DsqlUtils {
 		return new Sql(sql.toString(), usedParams);
 	}
 
+	/**
+	 * 将指定的源动态结构化查询语言（DSQL）及查询参数转换为含有命名参数的SQL（命名参数以“:”开头）以及实际使用的参数集组成的对象
+	 * 
+	 * @param source
+	 *            源DSQL脚本
+	 * @param params
+	 *            查询参数列表
+	 * @return 返回含有命名参数的SQL以及实际使用的参数集组成的对象
+	 */
 	@SuppressWarnings("unchecked")
 	public static Sql parse(String source, Object... params) {
 		Map<String, Object> paramsMap = new HashMap<String, Object>();
@@ -214,6 +226,108 @@ public abstract class DsqlUtils {
 			}
 		}
 		return parse(source, paramsMap);
+	}
+
+	/**
+	 * 将指定的（含有命名参数的）源SQL及查询参数转换为JDBC可执行的对象（内含SQL及对应的参数列表）
+	 * 
+	 * @param source
+	 *            源SQL脚本
+	 * @param params
+	 *            查询参数列表
+	 * @return 返回JDBC可执行的SQL对象（含脚本及对应参数）
+	 */
+	public static JdbcSql toJdbcSql(String source, Map<String, Object> params) {
+		if (params == null) {
+			params = new HashMap<String, Object>();
+		}
+		List<Object> paramList = new ArrayList<Object>();
+		if (StringUtils.isBlank(source)) {
+			return new JdbcSql(source, paramList);
+		}
+		int len = source.length(), i = 0;
+		char a = ' ', b = ' ';
+		boolean isString = false;// 是否在字符串区域
+		boolean isParam = false;// 是否在参数区域
+		StringBuilder sql = new StringBuilder(), paramName = new StringBuilder();
+		while (i < len) {
+			char c = source.charAt(i);
+			if (isString) {
+				if (isStringEnd(a, b, c)) {// 字符串区域结束
+					isString = false;
+				}
+				sql.append(c);
+			} else {
+				if (c == SINGLE_QUOTATION_MARK) {// 字符串区域开始
+					isString = true;
+					sql.append(c);
+				} else if (isParam) {// 处于参数区域
+					if (isParamChar(c)) {
+						paramName.append(c);
+					} else {
+						isParam = false;// 参数区域结束
+						paramEnd(params, sql, paramName, paramList);
+						sql.append(c);
+					}
+				} else {
+					if (isParamBegin(b, c)) {
+						isParam = true;// 参数区域开始
+						paramName.setLength(0);
+						paramName.append(c);
+						sql.setCharAt(sql.length() - 1, '?');// “:”替换为“?”
+					} else {
+						sql.append(c);
+					}
+				}
+			}
+			a = b;
+			b = c;
+			i++;
+		}
+		if (isParam) {
+			paramEnd(params, sql, paramName, paramList);
+		}
+		return new JdbcSql(sql.toString(), paramList);
+	}
+
+	/**
+	 * 根据指定的两个前后相邻字符b和c，判断其是否为SQL参数的开始位置
+	 * 
+	 * @param b
+	 *            前一个字符
+	 * @param c
+	 *            当前字符
+	 * @return 如果字符b为“:”且字符c为26个英文字母（大小写均可）则返回true，否则返回false
+	 */
+	public static boolean isParamBegin(char b, char c) {
+		return b == PARAM_BEGIN && is26LettersIgnoreCase(c);
+	}
+
+	/**
+	 * 根据指定的字符c，判断是否是参数字符（即大小写字母、数字、下划线、短横线）
+	 * 
+	 * @param c
+	 *            指定字符
+	 * @return 如果字符c为26个字母（大小写均可）、0-9数字、_或者-，返回true，否则返回false
+	 */
+	public static boolean isParamChar(char c) {
+		return is26LettersIgnoreCase(c) || (c >= '0' && c <= '9') || c == '_' || c == '-';
+	}
+
+	/**
+	 * 根据指定的三个前后相邻字符a、b和c，判断其是否为SQL字符串区的结束位置
+	 * 
+	 * @param a
+	 *            前第二个字符a
+	 * @param b
+	 *            前一个字符b
+	 * @param c
+	 *            当前字符c
+	 * @return 是SQL字符串区域结束位置返回true，否则返回false
+	 */
+	public static boolean isStringEnd(char a, char b, char c) {
+		return (a == SINGLE_QUOTATION_MARK || (a != SINGLE_QUOTATION_MARK && b != SINGLE_QUOTATION_MARK))
+				&& c == SINGLE_QUOTATION_MARK;
 	}
 
 	/**
@@ -304,68 +418,6 @@ public abstract class DsqlUtils {
 		}
 	}
 
-	/**
-	 * 将指定的（含有命名参数的）源SQL及查询参数转换为JDBC可执行的对象（内含SQL及对应的参数列表）
-	 * 
-	 * @param source
-	 *            源SQL脚本
-	 * @param params
-	 *            查询参数列表
-	 * @return 返回JDBC可执行的SQL对象（含脚本及对应参数）
-	 */
-	public static JdbcSql toJdbcSql(String source, Map<String, Object> params) {
-		if (params == null) {
-			params = new HashMap<String, Object>();
-		}
-		List<Object> paramList = new ArrayList<Object>();
-		if (StringUtils.isBlank(source)) {
-			return new JdbcSql(source, paramList);
-		}
-		int len = source.length(), i = 0;
-		char a = ' ', b = ' ';
-		boolean isString = false;// 是否在字符串区域
-		boolean isParam = false;// 是否在参数区域
-		StringBuilder sql = new StringBuilder(), paramName = new StringBuilder();
-		while (i < len) {
-			char c = source.charAt(i);
-			if (isString) {
-				if (isStringEnd(a, b, c)) {// 字符串区域结束
-					isString = false;
-				}
-				sql.append(c);
-			} else {
-				if (c == SINGLE_QUOTATION_MARK) {// 字符串区域开始
-					isString = true;
-					sql.append(c);
-				} else if (isParam) {// 处于参数区域
-					if (isParamChar(c)) {
-						paramName.append(c);
-					} else {
-						isParam = false;// 参数区域结束
-						paramEnd(params, sql, paramName, paramList);
-						sql.append(c);
-					}
-				} else {
-					if (isParamBegin(b, c)) {
-						isParam = true;// 参数区域开始
-						paramName.setLength(0);
-						paramName.append(c);
-						sql.setCharAt(sql.length() - 1, '?');// “:”替换为“?”
-					} else {
-						sql.append(c);
-					}
-				}
-			}
-			a = b;
-			b = c;
-			i++;
-		}
-		if (isParam) {
-			paramEnd(params, sql, paramName, paramList);
-		}
-		return new JdbcSql(sql.toString(), paramList);
-	}
-
 	private static void paramEnd(Map<String, Object> params, StringBuilder sql, StringBuilder paramName,
 			List<Object> paramList) {
 		String name = paramName.toString();
@@ -415,46 +467,6 @@ public abstract class DsqlUtils {
 	 */
 	private static boolean is26LettersIgnoreCase(char c) {
 		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-	}
-
-	/**
-	 * 根据指定的两个前后相邻字符b和c，判断其是否为SQL参数的开始位置
-	 * 
-	 * @param b
-	 *            前一个字符
-	 * @param c
-	 *            当前字符
-	 * @return 如果字符b为“:”且字符c为26个英文字母（大小写均可）则返回true，否则返回false
-	 */
-	public static boolean isParamBegin(char b, char c) {
-		return b == PARAM_BEGIN && is26LettersIgnoreCase(c);
-	}
-
-	/**
-	 * 根据指定的字符c，判断是否是参数字符（即大小写字母、数字、下划线、短横线）
-	 * 
-	 * @param c
-	 *            指定字符
-	 * @return 如果字符c为26个字母（大小写均可）、0-9数字、_或者-，返回true，否则返回false
-	 */
-	public static boolean isParamChar(char c) {
-		return is26LettersIgnoreCase(c) || (c >= '0' && c <= '9') || c == '_' || c == '-';
-	}
-
-	/**
-	 * 根据指定的三个前后相邻字符a、b和c，判断其是否为SQL字符串区的结束位置
-	 * 
-	 * @param a
-	 *            前第二个字符a
-	 * @param b
-	 *            前一个字符b
-	 * @param c
-	 *            当前字符c
-	 * @return 是SQL字符串区域结束位置返回true，否则返回false
-	 */
-	public static boolean isStringEnd(char a, char b, char c) {
-		return (a == SINGLE_QUOTATION_MARK || (a != SINGLE_QUOTATION_MARK && b != SINGLE_QUOTATION_MARK))
-				&& c == SINGLE_QUOTATION_MARK;
 	}
 
 }

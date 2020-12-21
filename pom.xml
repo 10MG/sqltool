@@ -2,9 +2,15 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<name>sqltool</name>
+	<description>
+	一个给分布式环境提供动态结构化查询语言（DSQL）解析的框架，如Spark、Spring Cloud、Dubbo等等
+	A framework provides Dynamic Structured Query Language(DSQL) Parsing for distributed environment, such as spark, spring cloud, Dubbo and so on
+	</description>
 	<groupId>cn.tenmg</groupId>
 	<artifactId>sqltool</artifactId>
 	<version>1.0.1</version>
+	<url>https://github.com/10MG/sqltool</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

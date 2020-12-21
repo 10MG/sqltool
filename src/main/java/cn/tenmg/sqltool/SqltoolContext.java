@@ -305,7 +305,7 @@ public class SqltoolContext implements Serializable {
 	 *            实体对象集
 	 */
 	public <T extends Serializable> void hardSaveBatch(Map<String, String> options, List<T> rows) {
-		executHardBatch(options, rows, defaultBatchSize);
+		executeHardBatch(options, rows, defaultBatchSize);
 	}
 
 	/**
@@ -320,7 +320,7 @@ public class SqltoolContext implements Serializable {
 	 *            批容量
 	 */
 	public <T extends Serializable> void hardSaveBatch(Map<String, String> options, List<T> rows, int batchSize) {
-		executHardBatch(options, rows, batchSize);
+		executeHardBatch(options, rows, batchSize);
 	}
 
 	/**
@@ -420,8 +420,6 @@ public class SqltoolContext implements Serializable {
 	 * 
 	 * @param options
 	 *            数据库配置
-	 * @param type
-	 *            对象类型
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
@@ -437,8 +435,6 @@ public class SqltoolContext implements Serializable {
 	 * 
 	 * @param options
 	 *            数据库配置
-	 * @param type
-	 *            对象类型
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
@@ -454,8 +450,6 @@ public class SqltoolContext implements Serializable {
 	 * 
 	 * @param options
 	 *            数据库配置
-	 * @param type
-	 *            对象类型
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
@@ -471,8 +465,6 @@ public class SqltoolContext implements Serializable {
 	 * 
 	 * @param options
 	 *            数据库配置
-	 * @param type
-	 *            对象类型
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
@@ -1366,7 +1358,7 @@ public class SqltoolContext implements Serializable {
 		}
 	}
 
-	private <T> void executHardBatch(Map<String, String> options, List<T> rows, int batchSize) {
+	private <T> void executeHardBatch(Map<String, String> options, List<T> rows, int batchSize) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}

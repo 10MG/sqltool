@@ -103,9 +103,8 @@ public class SqltoolContext implements Serializable {
 	 */
 	public int insert(Map<String, String> options, Object obj) {
 		DML dml = InsertDMLParser.getInstance().parse(obj.getClass());
-		String sql = dml.getSql();
 		List<Object> params = JdbcUtils.getParams(obj, dml.getFields());
-		return execute(options, sql, params, ExecuteUpdateSqlExecuter.getInstance());
+		return execute(options, dml.getSql(), params, ExecuteUpdateSqlExecuter.getInstance());
 	}
 
 	/**
@@ -306,7 +305,7 @@ public class SqltoolContext implements Serializable {
 	 *            实体对象集
 	 */
 	public <T extends Serializable> void hardSaveBatch(Map<String, String> options, List<T> rows) {
-		executHardBatch(options, rows, defaultBatchSize);
+		executeHardBatch(options, rows, defaultBatchSize);
 	}
 
 	/**
@@ -321,7 +320,7 @@ public class SqltoolContext implements Serializable {
 	 *            批容量
 	 */
 	public <T extends Serializable> void hardSaveBatch(Map<String, String> options, List<T> rows, int batchSize) {
-		executHardBatch(options, rows, batchSize);
+		executeHardBatch(options, rows, batchSize);
 	}
 
 	/**
@@ -421,8 +420,6 @@ public class SqltoolContext implements Serializable {
 	 * 
 	 * @param options
 	 *            数据库配置
-	 * @param type
-	 *            对象类型
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
@@ -438,8 +435,6 @@ public class SqltoolContext implements Serializable {
 	 * 
 	 * @param options
 	 *            数据库配置
-	 * @param type
-	 *            对象类型
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
@@ -455,8 +450,6 @@ public class SqltoolContext implements Serializable {
 	 * 
 	 * @param options
 	 *            数据库配置
-	 * @param type
-	 *            对象类型
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
@@ -472,8 +465,6 @@ public class SqltoolContext implements Serializable {
 	 * 
 	 * @param options
 	 *            数据库配置
-	 * @param type
-	 *            对象类型
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
@@ -565,7 +556,6 @@ public class SqltoolContext implements Serializable {
 		try {
 			con.rollback();
 		} catch (SQLException e) {
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(con);
@@ -581,7 +571,6 @@ public class SqltoolContext implements Serializable {
 		try {
 			con.commit();
 		} catch (SQLException e) {
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(con);
@@ -615,10 +604,11 @@ public class SqltoolContext implements Serializable {
 			if (e instanceof ClassNotFoundException) {
 				throw new IllegalConfigException(e);
 			} else if (e instanceof SQLException) {
-				JdbcUtils.close(con);
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			}
 			throw new TransactionException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -948,7 +938,6 @@ public class SqltoolContext implements Serializable {
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
-				JdbcUtils.close(ps);
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			} finally {
 				JdbcUtils.close(ps);
@@ -979,7 +968,6 @@ public class SqltoolContext implements Serializable {
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
-				JdbcUtils.close(ps);
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			} finally {
 				JdbcUtils.close(ps);
@@ -1042,7 +1030,6 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
@@ -1068,8 +1055,6 @@ public class SqltoolContext implements Serializable {
 			rs = sqlExecuter.execute(ps);
 			return sqlExecuter.execute(ps, rs);
 		} catch (SQLException e) {
-			JdbcUtils.close(rs);
-			JdbcUtils.close(ps);
 			throw e;
 		} finally {
 			JdbcUtils.close(rs);
@@ -1091,10 +1076,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 		return counts;
 	}
@@ -1112,8 +1098,9 @@ public class SqltoolContext implements Serializable {
 			}
 		} catch (SQLException e) {
 			ps.clearBatch();
-			JdbcUtils.close(ps);
 			throw e;
+		} finally {
+			JdbcUtils.close(ps);
 		}
 		return commitBatch(con, ps);
 	}
@@ -1152,10 +1139,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1176,10 +1164,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1218,7 +1207,6 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
@@ -1262,10 +1250,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1320,10 +1309,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1360,14 +1350,15 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
-	private <T> void executHardBatch(Map<String, String> options, List<T> rows, int batchSize) {
+	private <T> void executeHardBatch(Map<String, String> options, List<T> rows, int batchSize) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
@@ -1400,10 +1391,11 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(con);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
 		}
 	}
 
@@ -1523,7 +1515,6 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(ps);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(ps);
@@ -1554,7 +1545,6 @@ public class SqltoolContext implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			JdbcUtils.close(ps);
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(ps);

@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import cn.tenmg.sqltool.dsql.JdbcSql;
 import cn.tenmg.sqltool.dsql.Sql;
+import cn.tenmg.sqltool.sql.JdbcSql;
 import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 

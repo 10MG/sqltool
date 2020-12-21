@@ -19,6 +19,7 @@
 		<junit.version>4.12</junit.version>
 		<slf4j.version>1.7.26</slf4j.version>
 		<spark.version>2.4.4</spark.version>
+		<mysql-connector-java.version>5.1.47</mysql-connector-java.version>
 	</properties>
 
 	<dependencies>
@@ -26,6 +27,13 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql-connector-java.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

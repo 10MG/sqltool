@@ -18,6 +18,14 @@ import cn.tenmg.sqltool.sql.SqlExecuter;
 import cn.tenmg.sqltool.sql.utils.FieldUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
+/**
+ * 查询记录列表的SQL执行器
+ * 
+ * @author 赵伟均
+ *
+ * @param <T>
+ *            实体类
+ */
 public class SelectSqlExecuter<T> implements SqlExecuter<List<T>> {
 
 	/**

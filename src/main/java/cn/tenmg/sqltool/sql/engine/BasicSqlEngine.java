@@ -5,6 +5,12 @@ import java.util.Date;
 
 import cn.tenmg.sqltool.utils.DateUtils;
 
+/**
+ * 基本SQL引擎
+ * 
+ * @author 赵伟均
+ *
+ */
 public class BasicSqlEngine extends AbstractSqlEngine {
 
 	/**

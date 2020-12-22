@@ -4,6 +4,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * 执行SQL的执行器
+ * 
+ * @author 赵伟均
+ *
+ */
 public class ExecuteSqlExecuter extends AbstractExecuteSqlExecuter<Boolean> {
 
 	/**

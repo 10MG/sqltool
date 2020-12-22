@@ -3,6 +3,12 @@ package cn.tenmg.sqltool.sql;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * JDBC SQL
+ * 
+ * @author 赵伟均
+ *
+ */
 public class JdbcSql implements Serializable {
 	/**
 	 * 

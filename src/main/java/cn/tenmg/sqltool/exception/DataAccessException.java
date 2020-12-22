@@ -1,5 +1,11 @@
 package cn.tenmg.sqltool.exception;
 
+/**
+ * 数据访问异常。通过反射访问或设置属性引发异常时会抛出次异常
+ * 
+ * @author 赵伟均
+ *
+ */
 public class DataAccessException extends RuntimeException {
 	/**
 	 * 

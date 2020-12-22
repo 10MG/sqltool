@@ -2,6 +2,12 @@ package cn.tenmg.sqltool.sql;
 
 import java.io.Serializable;
 
+/**
+ * SQL方言
+ * 
+ * @author 赵伟均
+ *
+ */
 public interface SQLDialect extends Serializable {
 
 	/**
@@ -23,7 +29,7 @@ public interface SQLDialect extends Serializable {
 	 * @return 返回部分硬保存数据操作对象
 	 */
 	<T> MergeSql save(Class<T> type, String... hardFields);
-	
+
 	/**
 	 * 获取硬保存合并数据操作对象。硬保存是指无论属性值是不是null均会执行保存操作，合并数据是指当数据不存在时执行插入操作，已存在时执行更新操作。
 	 * 

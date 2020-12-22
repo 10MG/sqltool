@@ -1,5 +1,11 @@
 package cn.tenmg.sqltool.exception;
 
+/**
+ * 无合适的SQL方言异常。找不到合适的SQL方言会引发此异常
+ * 
+ * @author 赵伟均
+ *
+ */
 public class NosuitableSQLDialectExeption extends RuntimeException {
 
 	/**

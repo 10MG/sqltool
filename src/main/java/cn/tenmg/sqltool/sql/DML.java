@@ -4,6 +4,12 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
 
+/**
+ * 数据操纵语言
+ * 
+ * @author 赵伟均
+ *
+ */
 public class DML implements Serializable {
 
 	/**

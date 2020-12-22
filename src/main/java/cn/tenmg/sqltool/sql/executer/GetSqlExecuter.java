@@ -16,6 +16,14 @@ import cn.tenmg.sqltool.sql.SqlExecuter;
 import cn.tenmg.sqltool.sql.utils.FieldUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
+/**
+ * 查询单条记录的数据的SQL执行器
+ * 
+ * @author 赵伟均
+ *
+ * @param <T>
+ *            实体类
+ */
 public class GetSqlExecuter<T> implements SqlExecuter<T> {
 
 	/**

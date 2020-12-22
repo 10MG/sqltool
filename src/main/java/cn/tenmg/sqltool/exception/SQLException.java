@@ -1,5 +1,11 @@
 package cn.tenmg.sqltool.exception;
 
+/**
+ * SQL异常
+ * 
+ * @author 赵伟均
+ *
+ */
 public class SQLException extends RuntimeException {
 
 	/**

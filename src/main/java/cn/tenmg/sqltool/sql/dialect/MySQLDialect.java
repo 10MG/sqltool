@@ -20,6 +20,12 @@ import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.utils.EntityUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
+/**
+ * Mysql 方言
+ * 
+ * @author 赵伟均
+ *
+ */
 public class MySQLDialect implements SQLDialect {
 
 	/**

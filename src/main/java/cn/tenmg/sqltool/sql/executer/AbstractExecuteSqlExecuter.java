@@ -6,6 +6,13 @@ import java.sql.SQLException;
 
 import cn.tenmg.sqltool.sql.SqlExecuter;
 
+/**
+ * 虚执行类SQL执行器
+ * 
+ * @author 赵伟均
+ *
+ * @param <T>
+ */
 public abstract class AbstractExecuteSqlExecuter<T> implements SqlExecuter<T> {
 
 	/**

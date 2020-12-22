@@ -9,7 +9,7 @@ import cn.tenmg.sqltool.dsql.Sql;
 import cn.tenmg.sqltool.dsql.utils.DsqlUtils;
 
 /**
- * 封装了Sqltool工厂的基本功能
+ * 虚Sqltool工厂。封装了Sqltool工厂的基本功能
  * 
  * @author 赵伟均
  *

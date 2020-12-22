@@ -379,6 +379,7 @@ public class MySQLDialect implements SQLDialect {
 					fieldSet.add(fieldName);
 					Column column = field.getAnnotation(Column.class);
 					if (column != null) {
+						field.setAccessible(true);
 						String columnName = column.name();
 						if (StringUtils.isBlank(columnName)) {
 							columnName = StringUtils.camelToUnderline(fieldName, true);
@@ -475,6 +476,7 @@ public class MySQLDialect implements SQLDialect {
 					fieldMap.put(fieldName, Boolean.TRUE);
 					Column column = field.getAnnotation(Column.class);
 					if (column != null) {
+						field.setAccessible(true);
 						String columnName = column.name();
 						if (StringUtils.isBlank(columnName)) {
 							columnName = StringUtils.camelToUnderline(fieldName, true);

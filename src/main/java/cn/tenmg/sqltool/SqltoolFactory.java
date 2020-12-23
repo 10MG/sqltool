@@ -42,6 +42,6 @@ public interface SqltoolFactory extends Serializable {
 	 *            参数列表
 	 * @return SQL对象
 	 */
-	Sql parse(String dsql, Map<String, Object> params);
+	Sql parse(String dsql, Map<String, ?> params);
 
 }

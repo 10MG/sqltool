@@ -44,7 +44,7 @@ public abstract class AbstractSqltoolFactory implements SqltoolFactory {
 	}
 
 	@Override
-	public Sql parse(String dsql, Map<String, Object> params) {
+	public Sql parse(String dsql, Map<String, ?> params) {
 		Sql sql = null;
 		Dsql obj = dsqls.get(dsql);
 		if (obj == null) {
@@ -64,7 +64,7 @@ public abstract class AbstractSqltoolFactory implements SqltoolFactory {
 	 *            参数列表
 	 * @return SQL对象
 	 */
-	protected Sql parse(Dsql dsql, Map<String, Object> params) {
+	protected Sql parse(Dsql dsql, Map<String, ?> params) {
 		return DsqlUtils.parse(dsql.getScript(), params);
 	}
 

@@ -1,5 +1,6 @@
 package cn.tenmg.sqltool.utils;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,7 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.tenmg.sqltool.exception.DataAccessException;
+import cn.tenmg.sqltool.sql.DML;
+import cn.tenmg.sqltool.sql.MergeSql;
+import cn.tenmg.sqltool.sql.SQLDialect;
+import cn.tenmg.sqltool.sql.SqlExecuter;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
+import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 
 /**
  * JDBC工具类
@@ -24,6 +30,8 @@ import cn.tenmg.sqltool.sql.meta.FieldMeta;
 public abstract class JdbcUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(JdbcUtils.class);
+
+	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
 	private JdbcUtils() {
 	}
@@ -177,5 +185,149 @@ public abstract class JdbcUtils {
 				throw new DataAccessException(e);
 			}
 		}
+	}
+
+	public static <T> T execute(Connection con, String sql, List<Object> params, SqlExecuter<T> sqlExecuter,
+			boolean showSql) throws SQLException {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			ps = con.prepareStatement(sql);
+			setParams(ps, params);
+			if (showSql) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("Execute SQL: ").append(sql).append(LINE_SEPARATOR).append("Params: ")
+						.append(JSONUtils.toJSONString(params));
+				log.info(sb.toString());
+			}
+			rs = sqlExecuter.execute(ps);
+			return sqlExecuter.execute(ps, rs);
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			close(rs);
+			close(ps);
+		}
+	}
+
+	public static <T extends Serializable> int insert(Connection con, boolean showSql, List<T> rows)
+			throws SQLException {
+		PreparedStatement ps = null;
+		int counts[];
+		try {
+			DML dml = InsertDMLParser.getInstance().parse(rows.get(0).getClass());
+			String sql = dml.getSql();
+			List<Field> fields = dml.getFields();
+			ps = con.prepareStatement(sql);
+			if (showSql) {
+				log.info("Execute SQL: ".concat(sql));
+			}
+			for (int i = 0, size = rows.size(); i < size; i++) {
+				addBatch(ps, rows.get(i), fields);
+			}
+			counts = ps.executeBatch();
+			con.commit();
+			return getCount(counts);
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			if (ps != null) {
+				try {
+					ps.clearBatch();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			close(ps);
+		}
+	}
+
+	public static <T> int save(Connection con, boolean showSql, List<T> rows, MergeSql mergeSql) throws SQLException {
+		PreparedStatement ps = null;
+		int counts[];
+		try {
+			String sql = mergeSql.getScript();
+			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
+			if (showSql) {
+				log.info("Execute SQL: ".concat(sql));
+			}
+			ps = con.prepareStatement(sql);
+			for (int i = 0, size = rows.size(); i < size; i++) {
+				addBatch(ps, fieldMetas, rows.get(i));
+			}
+			counts = ps.executeBatch();
+			con.commit();
+			return getCount(counts);
+		} catch (SQLException e) {
+			try {
+				con.rollback();
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
+			throw e;
+		} catch (Exception e) {
+			throw new DataAccessException(e);
+		} finally {
+			if (ps != null) {
+				try {
+					ps.clearBatch();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			close(ps);
+		}
+	}
+
+	public static <T> int hardSave(Connection con, SQLDialect dialect, boolean showSql, List<T> rows)
+			throws SQLException {
+		PreparedStatement ps = null;
+		int counts[];
+		try {
+			MergeSql mergeSql = dialect.hardSave(rows.get(0).getClass());
+			String sql = mergeSql.getScript();
+			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
+			if (showSql) {
+				log.info("Execute SQL: ".concat(sql));
+			}
+			ps = con.prepareStatement(sql);
+			for (int i = 0, size = rows.size(); i < size; i++) {
+				addBatch(ps, fieldMetas, rows.get(i));
+			}
+			counts = ps.executeBatch();
+			con.commit();
+			return getCount(counts);
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			if (ps != null) {
+				try {
+					ps.clearBatch();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				close(ps);
+			}
+		}
+	}
+
+	public static final <T> void addBatch(PreparedStatement ps, List<FieldMeta> fieldMetas, T row) throws SQLException {
+		setParams(ps, fieldMetas, row);
+		ps.addBatch();
+	}
+
+	public static final <T> void addBatch(PreparedStatement ps, T row, List<Field> fields) throws SQLException {
+		setParams(ps, row, fields);
+		ps.addBatch();
+	}
+
+	private static int getCount(int[] counts) {
+		int count = 0;
+		if (counts != null) {
+			for (int i = 0; i < counts.length; i++) {
+				count += counts[i];
+			}
+		}
+		return count;
 	}
 }

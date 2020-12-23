@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -14,17 +13,13 @@ import org.apache.log4j.Logger;
 
 import cn.tenmg.sqltool.dsql.Sql;
 import cn.tenmg.sqltool.dsql.utils.DsqlUtils;
-import cn.tenmg.sqltool.exception.DataAccessException;
-import cn.tenmg.sqltool.exception.IllegalCallException;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
-import cn.tenmg.sqltool.exception.NosuitableSQLDialectExeption;
 import cn.tenmg.sqltool.exception.TransactionException;
 import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.JdbcSql;
 import cn.tenmg.sqltool.sql.MergeSql;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.SqlExecuter;
-import cn.tenmg.sqltool.sql.dialect.MySQLDialect;
 import cn.tenmg.sqltool.sql.executer.ExecuteSqlExecuter;
 import cn.tenmg.sqltool.sql.executer.ExecuteUpdateSqlExecuter;
 import cn.tenmg.sqltool.sql.executer.GetSqlExecuter;
@@ -35,6 +30,7 @@ import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.JSONUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
+import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
 /**
  * sqltool上下文
@@ -50,8 +46,6 @@ public class SqltoolContext implements Serializable {
 	private static final long serialVersionUID = -840162594918947327L;
 
 	private final static Logger log = Logger.getLogger(SqltoolContext.class);
-
-	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
 	private SqltoolFactory sqltoolFactory;
 
@@ -123,7 +117,7 @@ public class SqltoolContext implements Serializable {
 				Class.forName(options.get("driver"));
 				con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 				con.setAutoCommit(false);
-				return insert(con, showSql, rows);
+				return JdbcUtils.insert(con, showSql, rows);
 			} catch (SQLException e) {
 				try {
 					con.rollback();
@@ -179,7 +173,7 @@ public class SqltoolContext implements Serializable {
 	 * @return 返回受影响行数
 	 */
 	public <T extends Serializable> int save(Map<String, String> options, T obj) {
-		JdbcSql jdbcSql = getSQLDialect(options).save(obj);
+		JdbcSql jdbcSql = SQLDialectUtils.getSQLDialect(options).save(obj);
 		return execute(options, jdbcSql.getScript(), jdbcSql.getParams(), ExecuteUpdateSqlExecuter.getInstance());
 	}
 
@@ -195,7 +189,7 @@ public class SqltoolContext implements Serializable {
 	 * @return 返回受影响行数
 	 */
 	public <T extends Serializable> int save(Map<String, String> options, T obj, String... hardFields) {
-		JdbcSql jdbcSql = getSQLDialect(options).save(obj, hardFields);
+		JdbcSql jdbcSql = SQLDialectUtils.getSQLDialect(options).save(obj, hardFields);
 		return execute(options, jdbcSql.getScript(), jdbcSql.getParams(), ExecuteUpdateSqlExecuter.getInstance());
 	}
 
@@ -212,7 +206,7 @@ public class SqltoolContext implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		return save(options, showSql, rows, getSQLDialect(options).save(rows.get(0).getClass()));
+		return save(options, showSql, rows, SQLDialectUtils.getSQLDialect(options).save(rows.get(0).getClass()));
 	}
 
 	/**
@@ -230,7 +224,8 @@ public class SqltoolContext implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		return save(options, showSql, rows, getSQLDialect(options).save(rows.get(0).getClass(), hardFields));
+		return save(options, showSql, rows,
+				SQLDialectUtils.getSQLDialect(options).save(rows.get(0).getClass(), hardFields));
 	}
 
 	/**
@@ -274,7 +269,7 @@ public class SqltoolContext implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
-		saveBatch(options, rows, batchSize, getSQLDialect(options).save(rows.get(0).getClass()));
+		saveBatch(options, rows, batchSize, SQLDialectUtils.getSQLDialect(options).save(rows.get(0).getClass()));
 	}
 
 	/**
@@ -295,7 +290,8 @@ public class SqltoolContext implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
-		saveBatch(options, rows, batchSize, getSQLDialect(options).save(rows.get(0).getClass(), hardFields));
+		saveBatch(options, rows, batchSize,
+				SQLDialectUtils.getSQLDialect(options).save(rows.get(0).getClass(), hardFields));
 	}
 
 	/**
@@ -308,7 +304,7 @@ public class SqltoolContext implements Serializable {
 	 * @return 返回受影响行数
 	 */
 	public <T extends Serializable> int hardSave(Map<String, String> options, T obj) {
-		JdbcSql jdbcSql = getSQLDialect(options).hardSave(obj);
+		JdbcSql jdbcSql = SQLDialectUtils.getSQLDialect(options).hardSave(obj);
 		return execute(options, jdbcSql.getScript(), jdbcSql.getParams(), ExecuteUpdateSqlExecuter.getInstance());
 	}
 
@@ -325,13 +321,13 @@ public class SqltoolContext implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		SQLDialect dialect = getSQLDialect(options);
+		SQLDialect dialect = SQLDialectUtils.getSQLDialect(options);
 		Connection con = null;
 		try {
 			Class.forName(options.get("driver"));
 			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 			con.setAutoCommit(false);
-			return hardSave(con, dialect, showSql, rows);
+			return JdbcUtils.hardSave(con, dialect, showSql, rows);
 		} catch (SQLException e) {
 			try {
 				con.rollback();
@@ -373,7 +369,7 @@ public class SqltoolContext implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
-		SQLDialect dialect = getSQLDialect(options);
+		SQLDialect dialect = SQLDialectUtils.getSQLDialect(options);
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
@@ -391,7 +387,7 @@ public class SqltoolContext implements Serializable {
 			while (current < times) {
 				int end = (current + 1) * batchSize, last = end < size ? end : size;
 				for (int i = current * batchSize; i < last; i++) {
-					addBatch(ps, fieldMetas, rows.get(i));
+					JdbcUtils.addBatch(ps, fieldMetas, rows.get(i));
 				}
 				ps.executeBatch();
 				con.commit();
@@ -470,8 +466,25 @@ public class SqltoolContext implements Serializable {
 	 * @return 返回查询到的对象
 	 */
 	public <T extends Serializable> T get(Map<String, String> options, Class<T> type, String dsql,
-			Map<String, Object> params) {
+			Map<String, ?> params) {
 		return get(options, sqltoolFactory.parse(dsql, params), type);
+	}
+
+	/**
+	 * 从数据库查询并组装实体对象列表
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param obj
+	 *            实体对象
+	 * @return 返回查询到的实体对象列表
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends Serializable> List<T> select(Map<String, String> options, T obj) {
+		Class<T> type = (Class<T>) obj.getClass();
+		DML dml = GetDMLParser.getInstance().parse(type);
+		return this.execute(options, dml.getSql(), JdbcUtils.getParams(obj, dml.getFields()),
+				new SelectSqlExecuter<T>(type));
 	}
 
 	/**
@@ -508,7 +521,7 @@ public class SqltoolContext implements Serializable {
 	 * @return 返回查询到的对象列表
 	 */
 	public <T extends Serializable> List<T> select(Map<String, String> options, Class<T> type, String dsql,
-			Map<String, Object> params) {
+			Map<String, ?> params) {
 		return select(options, sqltoolFactory.parse(dsql, params), type);
 	}
 
@@ -538,7 +551,7 @@ public class SqltoolContext implements Serializable {
 	 *            查询参数键值集
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
 	 */
-	public boolean execute(Map<String, String> options, String dsql, Map<String, Object> params) {
+	public boolean execute(Map<String, String> options, String dsql, Map<String, ?> params) {
 		return this.execute(options, sqltoolFactory.parse(dsql, params));
 	}
 
@@ -568,111 +581,8 @@ public class SqltoolContext implements Serializable {
 	 *            查询参数键值集
 	 * @return 返回受影响行数
 	 */
-	public int executeUpdate(Map<String, String> options, String dsql, Map<String, Object> params) {
+	public int executeUpdate(Map<String, String> options, String dsql, Map<String, ?> params) {
 		return this.executeUpdate(options, sqltoolFactory.parse(dsql, params));
-	}
-
-	/**
-	 * 开始事务
-	 * 
-	 * @param options
-	 *            数据库配置
-	 */
-	public void beginTransaction(Map<String, String> options) {
-		Connection con = null;
-		try {
-			Class.forName(options.get("driver"));
-			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
-			con.setAutoCommit(false);
-			currentConnection.set(con);
-		} catch (SQLException e) {
-			JdbcUtils.close(con);
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} catch (ClassNotFoundException e) {
-			throw new IllegalConfigException(e);
-		}
-	}
-
-	/**
-	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
-	 * 
-	 * @param dsql
-	 *            动态结构化查询语言
-	 * @param params
-	 *            查询参数键值集
-	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
-	 */
-	public boolean execute(String dsql, Object... params) {
-		return this.execute(sqltoolFactory.parse(dsql, params));
-	}
-
-	/**
-	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
-	 * 
-	 * @param dsql
-	 *            动态结构化查询语言
-	 * @param params
-	 *            查询参数键值集
-	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
-	 */
-	public boolean execute(String dsql, Map<String, Object> params) {
-		return this.execute(sqltoolFactory.parse(dsql, params));
-	}
-
-	/**
-	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
-	 * 
-	 * @param dsql
-	 *            动态结构化查询语言
-	 * @param params
-	 *            查询参数键值集
-	 * @return 返回受影响行数
-	 */
-	public int executeUpdate(String dsql, Object... params) {
-		return executeUpdate(sqltoolFactory.parse(dsql, params));
-	}
-
-	/**
-	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
-	 * 
-	 * @param dsql
-	 *            动态结构化查询语言
-	 * @param params
-	 *            查询参数键值集
-	 * @return 返回受影响行数
-	 */
-	public int executeUpdate(String dsql, Map<String, Object> params) {
-		return executeUpdate(sqltoolFactory.parse(dsql, params));
-	}
-
-	/**
-	 * 事务回滚。在业务方法发生异常时调用。
-	 */
-	public void rollback() {
-		Connection con = getCurrentConnection();
-		try {
-			con.rollback();
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			JdbcUtils.close(con);
-			currentConnection.remove();
-		}
-	}
-
-	/**
-	 * 提交事务
-	 */
-	public void commit() {
-		Connection con = getCurrentConnection();
-		try {
-			con.commit();
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			JdbcUtils.close(con);
-			currentConnection.remove();
-		}
 	}
 
 	/**
@@ -690,7 +600,7 @@ public class SqltoolContext implements Serializable {
 			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 			con.setAutoCommit(false);
 			currentConnection.set(con);
-			transaction.execute(new SqltoolExecutor(showSql, sqltoolFactory, getSQLDialect(options)));
+			transaction.execute(new SqltoolExecutor(showSql, sqltoolFactory, SQLDialectUtils.getSQLDialect(options)));
 			con.commit();
 		} catch (Exception e) {
 			try {
@@ -742,13 +652,13 @@ public class SqltoolContext implements Serializable {
 			List<Object> params = JdbcUtils.getParams(obj, dml.getFields());
 			if (showSql) {
 				StringBuilder sb = new StringBuilder();
-				sb.append("Execute SQL: ").append(sql).append(LINE_SEPARATOR).append("Params: ")
+				sb.append("Execute SQL: ").append(sql).append(JdbcUtils.LINE_SEPARATOR).append("Params: ")
 						.append(JSONUtils.toJSONString(params));
 				log.info(sb.toString());
 			}
 			try {
-				return SqltoolContext.execute(currentConnection.get(), sql, params,
-						ExecuteUpdateSqlExecuter.getInstance(), showSql);
+				return JdbcUtils.execute(currentConnection.get(), sql, params, ExecuteUpdateSqlExecuter.getInstance(),
+						showSql);
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			}
@@ -771,7 +681,7 @@ public class SqltoolContext implements Serializable {
 					log.info("Execute SQL: ".concat(sql));
 				}
 				try {
-					return SqltoolContext.insert(currentConnection.get(), showSql, rows);
+					return JdbcUtils.insert(currentConnection.get(), showSql, rows);
 				} catch (SQLException e) {
 					throw new cn.tenmg.sqltool.exception.SQLException(e);
 				}
@@ -788,7 +698,7 @@ public class SqltoolContext implements Serializable {
 		public <T extends Serializable> int save(T obj) {
 			JdbcSql jdbcSql = dialect.save(obj);
 			try {
-				return SqltoolContext.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
+				return JdbcUtils.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
 						ExecuteUpdateSqlExecuter.getInstance(), showSql);
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
@@ -807,7 +717,7 @@ public class SqltoolContext implements Serializable {
 		public <T extends Serializable> int save(T obj, String... hardFields) {
 			JdbcSql jdbcSql = dialect.save(obj, hardFields);
 			try {
-				return SqltoolContext.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
+				return JdbcUtils.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
 						ExecuteUpdateSqlExecuter.getInstance(), showSql);
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
@@ -826,8 +736,7 @@ public class SqltoolContext implements Serializable {
 				return 0;
 			}
 			try {
-				return SqltoolContext.save(currentConnection.get(), showSql, rows,
-						dialect.save(rows.get(0).getClass()));
+				return JdbcUtils.save(currentConnection.get(), showSql, rows, dialect.save(rows.get(0).getClass()));
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			}
@@ -847,7 +756,7 @@ public class SqltoolContext implements Serializable {
 				return 0;
 			}
 			try {
-				return SqltoolContext.save(currentConnection.get(), showSql, rows,
+				return JdbcUtils.save(currentConnection.get(), showSql, rows,
 						dialect.save(rows.get(0).getClass(), hardFields));
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
@@ -864,7 +773,7 @@ public class SqltoolContext implements Serializable {
 		public <T extends Serializable> int hardSave(T obj) {
 			JdbcSql jdbcSql = dialect.hardSave(obj);
 			try {
-				return SqltoolContext.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
+				return JdbcUtils.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
 						ExecuteUpdateSqlExecuter.getInstance(), showSql);
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
@@ -882,7 +791,7 @@ public class SqltoolContext implements Serializable {
 				return 0;
 			}
 			try {
-				return SqltoolContext.hardSave(currentConnection.get(), dialect, showSql, rows);
+				return JdbcUtils.hardSave(currentConnection.get(), dialect, showSql, rows);
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
 			}
@@ -900,7 +809,7 @@ public class SqltoolContext implements Serializable {
 			Class<T> type = (Class<T>) obj.getClass();
 			DML dml = GetDMLParser.getInstance().parse(type);
 			try {
-				return SqltoolContext.execute(currentConnection.get(), dml.getSql(),
+				return JdbcUtils.execute(currentConnection.get(), dml.getSql(),
 						JdbcUtils.getParams(obj, dml.getFields()), new GetSqlExecuter<T>(type), showSql);
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
@@ -936,7 +845,7 @@ public class SqltoolContext implements Serializable {
 		 *            查询参数键值集
 		 * @return 返回查询到的对象
 		 */
-		public <T extends Serializable> T get(Class<T> type, String dsql, Map<String, Object> params) {
+		public <T extends Serializable> T get(Class<T> type, String dsql, Map<String, ?> params) {
 			return get(sqltoolFactory.parse(dsql, params), type);
 		}
 
@@ -968,7 +877,7 @@ public class SqltoolContext implements Serializable {
 		 *            查询参数键值集
 		 * @return 返回查询到的对象列表
 		 */
-		public <T extends Serializable> List<T> select(Class<T> type, String dsql, Map<String, Object> params) {
+		public <T extends Serializable> List<T> select(Class<T> type, String dsql, Map<String, ?> params) {
 			return select(sqltoolFactory.parse(dsql, params), type);
 		}
 
@@ -994,7 +903,7 @@ public class SqltoolContext implements Serializable {
 		 *            查询参数键值集
 		 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
 		 */
-		public boolean execute(String dsql, Map<String, Object> params) {
+		public boolean execute(String dsql, Map<String, ?> params) {
 			return this.execute(sqltoolFactory.parse(dsql, params));
 		}
 
@@ -1020,7 +929,7 @@ public class SqltoolContext implements Serializable {
 		 *            查询参数键值集
 		 * @return 返回受影响行数
 		 */
-		public int executeUpdate(String dsql, Map<String, Object> params) {
+		public int executeUpdate(String dsql, Map<String, ?> params) {
 			return executeUpdate(sqltoolFactory.parse(dsql, params));
 		}
 
@@ -1058,7 +967,7 @@ public class SqltoolContext implements Serializable {
 				JdbcUtils.setParams(ps, params);
 				if (showSql) {
 					StringBuilder sb = new StringBuilder();
-					sb.append("Execute SQL: ").append(script).append(LINE_SEPARATOR).append("Params: ")
+					sb.append("Execute SQL: ").append(script).append(JdbcUtils.LINE_SEPARATOR).append("Params: ")
 							.append(JSONUtils.toJSONString(params));
 					log.info(sb.toString());
 				}
@@ -1079,7 +988,7 @@ public class SqltoolContext implements Serializable {
 		private <T extends Serializable> T get(Sql sql, Class<T> type) {
 			JdbcSql jdbcSql = DsqlUtils.toJdbcSql(sql.getScript(), sql.getParams());
 			try {
-				return SqltoolContext.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
+				return JdbcUtils.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
 						new GetSqlExecuter<T>(type), showSql);
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
@@ -1089,7 +998,7 @@ public class SqltoolContext implements Serializable {
 		private <T extends Serializable> List<T> select(Sql sql, Class<T> type) {
 			JdbcSql jdbcSql = DsqlUtils.toJdbcSql(sql.getScript(), sql.getParams());
 			try {
-				return SqltoolContext.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
+				return JdbcUtils.execute(currentConnection.get(), jdbcSql.getScript(), jdbcSql.getParams(),
 						new SelectSqlExecuter<T>(type), showSql);
 			} catch (SQLException e) {
 				throw new cn.tenmg.sqltool.exception.SQLException(e);
@@ -1124,7 +1033,7 @@ public class SqltoolContext implements Serializable {
 		try {
 			Class.forName(options.get("driver"));
 			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
-			result = execute(con, sql, params, sqlExecuter, showSql);
+			result = JdbcUtils.execute(con, sql, params, sqlExecuter, showSql);
 		} catch (SQLException e) {
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} catch (ClassNotFoundException e) {
@@ -1133,61 +1042,6 @@ public class SqltoolContext implements Serializable {
 			JdbcUtils.close(con);
 		}
 		return result;
-	}
-
-	private static <T> T execute(Connection con, String sql, List<Object> params, SqlExecuter<T> sqlExecuter,
-			boolean showSql) throws SQLException {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		try {
-			ps = con.prepareStatement(sql);
-			JdbcUtils.setParams(ps, params);
-			if (showSql) {
-				StringBuilder sb = new StringBuilder();
-				sb.append("Execute SQL: ").append(sql).append(LINE_SEPARATOR).append("Params: ")
-						.append(JSONUtils.toJSONString(params));
-				log.info(sb.toString());
-			}
-			rs = sqlExecuter.execute(ps);
-			return sqlExecuter.execute(ps, rs);
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			JdbcUtils.close(rs);
-			JdbcUtils.close(ps);
-		}
-	}
-
-	private static <T extends Serializable> int insert(Connection con, boolean showSql, List<T> rows)
-			throws SQLException {
-		PreparedStatement ps = null;
-		int counts[];
-		try {
-			DML dml = InsertDMLParser.getInstance().parse(rows.get(0).getClass());
-			String sql = dml.getSql();
-			List<Field> fields = dml.getFields();
-			ps = con.prepareStatement(sql);
-			if (showSql) {
-				log.info("Execute SQL: ".concat(sql));
-			}
-			for (int i = 0, size = rows.size(); i < size; i++) {
-				addBatch(ps, rows.get(i), fields);
-			}
-			counts = ps.executeBatch();
-			con.commit();
-			return getCount(counts);
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if (ps != null) {
-				try {
-					ps.clearBatch();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			JdbcUtils.close(ps);
-		}
 	}
 
 	private <T extends Serializable> void executeBatch(Map<String, String> options, String sql, List<T> rows,
@@ -1206,7 +1060,7 @@ public class SqltoolContext implements Serializable {
 			while (current < times) {
 				int end = (current + 1) * batchSize, last = end < size ? end : size;
 				for (int i = current * batchSize; i < last; i++) {
-					addBatch(ps, rows.get(i), fields);
+					JdbcUtils.addBatch(ps, rows.get(i), fields);
 				}
 				ps.executeBatch();
 				con.commit();
@@ -1241,7 +1095,7 @@ public class SqltoolContext implements Serializable {
 			Class.forName(options.get("driver"));
 			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 			con.setAutoCommit(false);
-			return save(con, showSql, rows, mergeSql);
+			return JdbcUtils.save(con, showSql, rows, mergeSql);
 		} catch (SQLException e) {
 			try {
 				con.rollback();
@@ -1253,76 +1107,6 @@ public class SqltoolContext implements Serializable {
 			throw new IllegalConfigException(e);
 		} finally {
 			JdbcUtils.close(con);
-		}
-	}
-
-	private static <T> int save(Connection con, boolean showSql, List<T> rows, MergeSql mergeSql)
-			throws SQLException, DataAccessException {
-		PreparedStatement ps = null;
-		int counts[];
-		try {
-			String sql = mergeSql.getScript();
-			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
-			if (showSql) {
-				log.info("Execute SQL: ".concat(sql));
-			}
-			ps = con.prepareStatement(sql);
-			for (int i = 0, size = rows.size(); i < size; i++) {
-				addBatch(ps, fieldMetas, rows.get(i));
-			}
-			counts = ps.executeBatch();
-			con.commit();
-			return getCount(counts);
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw e;
-		} catch (Exception e) {
-			throw new DataAccessException(e);
-		} finally {
-			if (ps != null) {
-				try {
-					ps.clearBatch();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			JdbcUtils.close(ps);
-		}
-	}
-
-	private static <T> int hardSave(Connection con, SQLDialect dialect, boolean showSql, List<T> rows)
-			throws SQLException {
-		PreparedStatement ps = null;
-		int counts[];
-		try {
-			MergeSql mergeSql = dialect.hardSave(rows.get(0).getClass());
-			String sql = mergeSql.getScript();
-			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
-			if (showSql) {
-				log.info("Execute SQL: ".concat(sql));
-			}
-			ps = con.prepareStatement(sql);
-			for (int i = 0, size = rows.size(); i < size; i++) {
-				addBatch(ps, fieldMetas, rows.get(i));
-			}
-			counts = ps.executeBatch();
-			con.commit();
-			return getCount(counts);
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if (ps != null) {
-				try {
-					ps.clearBatch();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				JdbcUtils.close(ps);
-			}
 		}
 	}
 
@@ -1343,7 +1127,7 @@ public class SqltoolContext implements Serializable {
 			while (current < times) {
 				int end = (current + 1) * batchSize, last = end < size ? end : size;
 				for (int i = current * batchSize; i < last; i++) {
-					addBatch(ps, fieldMetas, rows.get(i));
+					JdbcUtils.addBatch(ps, fieldMetas, rows.get(i));
 				}
 				ps.executeBatch();
 				con.commit();
@@ -1372,101 +1156,4 @@ public class SqltoolContext implements Serializable {
 		}
 	}
 
-	private static final <T> void addBatch(PreparedStatement ps, List<FieldMeta> fieldMetas, T row)
-			throws SQLException {
-		JdbcUtils.setParams(ps, fieldMetas, row);
-		ps.addBatch();
-	}
-
-	private static final <T> void addBatch(PreparedStatement ps, T row, List<Field> fields) throws SQLException {
-		JdbcUtils.setParams(ps, row, fields);
-		ps.addBatch();
-	}
-
-	private static SQLDialect getSQLDialect(Map<String, String> options) {
-		String url = options.get("url");
-		if (url != null && url.contains("mysql")) {
-			return MySQLDialect.getInstance();
-		} else {
-			throw new NosuitableSQLDialectExeption("There is no suitable SQL dialect provide for url: ".concat(url));
-		}
-	}
-
-	private static Connection getCurrentConnection() {
-		Connection con = currentConnection.get();
-		if (con == null) {
-			throw new IllegalCallException("You must call beginTransaction first before you call this method");
-		}
-		return con;
-	}
-
-	private boolean execute(Sql sql) {
-		Connection con = getCurrentConnection();
-		JdbcSql jdbcSql = DsqlUtils.toJdbcSql(sql.getScript(), sql.getParams());
-		PreparedStatement ps = null;
-		boolean rs = false;
-		try {
-			String script = jdbcSql.getScript();
-			List<Object> params = jdbcSql.getParams();
-			ps = con.prepareStatement(script);
-			JdbcUtils.setParams(ps, params);
-			if (showSql) {
-				StringBuilder sb = new StringBuilder();
-				sb.append("Execute SQL: ").append(script).append(LINE_SEPARATOR).append("Params: ")
-						.append(JSONUtils.toJSONString(params));
-				log.info(sb.toString());
-			}
-			rs = ps.execute();
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			JdbcUtils.close(ps);
-		}
-		return rs;
-	}
-
-	private int executeUpdate(Sql sql) {
-		Connection con = getCurrentConnection();
-		JdbcSql jdbcSql = DsqlUtils.toJdbcSql(sql.getScript(), sql.getParams());
-		PreparedStatement ps = null;
-		int count = 0;
-		try {
-			String script = jdbcSql.getScript();
-			List<Object> params = jdbcSql.getParams();
-			ps = con.prepareStatement(script);
-			JdbcUtils.setParams(ps, params);
-			if (showSql) {
-				StringBuilder sb = new StringBuilder();
-				sb.append("Execute SQL: ").append(script).append(LINE_SEPARATOR).append("Params: ")
-						.append(JSONUtils.toJSONString(params));
-				log.info(sb.toString());
-			}
-			count = ps.executeUpdate();
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			JdbcUtils.close(ps);
-		}
-		return count;
-	}
-
-	private static int getCount(int[] counts) {
-		int count = 0;
-		if (counts != null) {
-			for (int i = 0; i < counts.length; i++) {
-				count += counts[i];
-			}
-		}
-		return count;
-	}
 }

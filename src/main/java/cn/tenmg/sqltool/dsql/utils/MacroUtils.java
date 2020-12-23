@@ -76,7 +76,7 @@ public abstract class MacroUtils {
 								if (c == MACRO_LOGIC_END) {// 宏逻辑结束
 									if (deep == 0) {
 										if (logic.length() > 0) {
-											return execute(dsql, context, usedParams, macro, logic.toString(), i);
+											return execute(dsql, context, usedParams, macro, logic.toString(), i);// 当前字符为括号，当前位置即为宏名称及逻辑结束的位置
 										} else {
 											return dsql;
 										}
@@ -127,7 +127,7 @@ public abstract class MacroUtils {
 						}
 						return dsql;
 					} else {
-						return execute(dsql, context, usedParams, macro, null, i);
+						return execute(dsql, context, usedParams, macro, null, i - 1);// 当前字符为空白字符，则宏名称结束应该在前一个位置
 					}
 				} else {
 					if (returnEmptyWhenNoMacro) {

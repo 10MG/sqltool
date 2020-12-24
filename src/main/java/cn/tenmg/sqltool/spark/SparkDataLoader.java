@@ -99,7 +99,7 @@ public class SparkDataLoader implements Serializable {
 
 	private Dataset<Row> load(SparkSession sparkSession, Map<String, String> options, Sql sql) {
 		return sparkSession.sqlContext().read().options(options)
-				.option("query", SqlEngineUtils.getSqlEngine(options.get("driver")).parse(sql)).format("jdbc").load();
+				.option("query", SqlEngineUtils.getSqlEngine(options.get("url")).parse(sql)).format("jdbc").load();
 	}
 
 	private Dataset<Row> sql(SparkSession sparkSession, Sql sql) {

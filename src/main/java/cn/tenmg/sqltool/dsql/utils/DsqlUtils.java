@@ -12,6 +12,7 @@ import java.util.Set;
 import cn.tenmg.sqltool.dsql.Sql;
 import cn.tenmg.sqltool.sql.JdbcSql;
 import cn.tenmg.sqltool.utils.CollectionUtils;
+import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
 /**
@@ -21,8 +22,6 @@ import cn.tenmg.sqltool.utils.StringUtils;
  *
  */
 public abstract class DsqlUtils {
-
-	private static final char SINGLE_QUOTATION_MARK = '\'';
 
 	private static final char BLANK_SPACE = '\u0020';
 
@@ -71,7 +70,7 @@ public abstract class DsqlUtils {
 					sql.append(c);
 				}
 			} else {
-				if (c == SINGLE_QUOTATION_MARK) {// 字符串区域开始
+				if (c == JdbcUtils.SINGLE_QUOTATION_MARK) {// 字符串区域开始
 					isString = true;
 					if (deep > 0) {
 						dsqlMap.get(deep).append(c);
@@ -258,7 +257,7 @@ public abstract class DsqlUtils {
 				}
 				sql.append(c);
 			} else {
-				if (c == SINGLE_QUOTATION_MARK) {// 字符串区域开始
+				if (c == JdbcUtils.SINGLE_QUOTATION_MARK) {// 字符串区域开始
 					isString = true;
 					sql.append(c);
 				} else if (isParam) {// 处于参数区域
@@ -326,8 +325,9 @@ public abstract class DsqlUtils {
 	 * @return 是SQL字符串区域结束位置返回true，否则返回false
 	 */
 	public static boolean isStringEnd(char a, char b, char c) {
-		return (a == SINGLE_QUOTATION_MARK || (a != SINGLE_QUOTATION_MARK && b != SINGLE_QUOTATION_MARK))
-				&& c == SINGLE_QUOTATION_MARK;
+		return (a == JdbcUtils.SINGLE_QUOTATION_MARK
+				|| (a != JdbcUtils.SINGLE_QUOTATION_MARK && b != JdbcUtils.SINGLE_QUOTATION_MARK))
+				&& c == JdbcUtils.SINGLE_QUOTATION_MARK;
 	}
 
 	/**

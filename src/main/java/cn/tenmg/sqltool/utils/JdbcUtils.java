@@ -34,7 +34,7 @@ public abstract class JdbcUtils {
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n"), COMMA_SPACE = ", ",
 			SPACE_AND_SPACE = " AND ", SPACE_EQ_SPACE = " = ";
 
-	public static final char PARAM_MARK = '?';
+	public static final char PARAM_MARK = '?', SINGLE_QUOTATION_MARK = '\'';
 
 	private JdbcUtils() {
 	}

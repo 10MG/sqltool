@@ -78,7 +78,6 @@ public class MySQLDialect extends AbstractSQLDialect {
 
 	@Override
 	void handleIdColumn(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
-		// TODO Auto-generated method stub
 
 	}
 

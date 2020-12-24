@@ -31,8 +31,6 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 
 	abstract String parse(Date date);
 
-	abstract String parse(Calendar calendar);
-
 	@Override
 	public String parse(Sql sql) {
 		String source = sql.getScript();
@@ -133,7 +131,12 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 		} else if (value instanceof Date) {
 			appendString(sb, parse((Date) value));
 		} else if (value instanceof Calendar) {
-			appendString(sb, parse((Calendar) value));
+			Date date = ((Calendar) value).getTime();
+			if (date == null) {
+				appendNull(sb);
+			} else {
+				appendString(sb, parse(date));
+			}
 		} else {
 			sb.append(value.toString());
 		}

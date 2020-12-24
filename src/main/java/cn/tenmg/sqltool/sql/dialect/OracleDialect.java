@@ -30,7 +30,7 @@ public class OracleDialect extends AbstractSQLDialect {
 
 	private static final String SET_TEMPLATE = "X.${columnName}=Y.${columnName}",
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName}=NVL(Y.${columnName}, X.${columnName})";
-	
+
 	private static class InstanceHolder {
 		private static final OracleDialect INSTANCE = new OracleDialect();
 	}

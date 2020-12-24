@@ -1,6 +1,5 @@
 package cn.tenmg.sqltool.sql.engine;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import cn.tenmg.sqltool.utils.DateUtils;
@@ -23,11 +22,6 @@ public class BasicSqlEngine extends AbstractSqlEngine {
 	@Override
 	String parse(Date date) {
 		return DateUtils.format(date, CALENDAR_FORMAT);
-	}
-
-	@Override
-	String parse(Calendar calendar) {
-		return DateUtils.format(calendar.getTime(), CALENDAR_FORMAT);
 	}
 
 }

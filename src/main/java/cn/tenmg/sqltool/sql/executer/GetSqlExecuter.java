@@ -53,8 +53,31 @@ public class GetSqlExecuter<T> implements SqlExecuter<T> {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
 		T row = null;
-		if (String.class.isAssignableFrom(type) || Number.class.isAssignableFrom(type)
-				|| Date.class.isAssignableFrom(type) || BigDecimal.class.isAssignableFrom(type)) {
+		if (Number.class.isAssignableFrom(type)) {
+			if (rs.next()) {
+				Object obj = rs.getObject(1);
+				if (obj == null) {
+					return null;
+				}
+				if (obj instanceof Number) {
+					if (Long.class.isAssignableFrom(type)) {
+						obj = ((Number) obj).longValue();
+					} else if (Integer.class.isAssignableFrom(type)) {
+						obj = ((Number) obj).intValue();
+					} else if (Short.class.isAssignableFrom(type)) {
+						obj = ((Number) obj).shortValue();
+					} else if (Float.class.isAssignableFrom(type)) {
+						obj = ((Number) obj).floatValue();
+					} else if (Double.class.isAssignableFrom(type)) {
+						obj = ((Number) obj).doubleValue();
+					} else if (Byte.class.isAssignableFrom(type)) {
+						obj = ((Number) obj).byteValue();
+					}
+				}
+				row = (T) obj;
+			}
+		} else if (String.class.isAssignableFrom(type) || Date.class.isAssignableFrom(type)
+				|| BigDecimal.class.isAssignableFrom(type)) {
 			if (rs.next()) {
 				row = (T) rs.getObject(1);
 			}

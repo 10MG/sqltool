@@ -31,7 +31,10 @@ public abstract class JdbcUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(JdbcUtils.class);
 
-	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
+	public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n"), COMMA_SPACE = ", ",
+			SPACE_AND_SPACE = " AND ", SPACE_EQ_SPACE = " = ";
+
+	public static final char PARAM_MARK = '?';
 
 	private JdbcUtils() {
 	}

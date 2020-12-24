@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import cn.tenmg.sqltool.sql.SqlExecuter;
 
 /**
- * 虚执行类SQL执行器
+ * 抽象执行类SQL执行器
  * 
  * @author 赵伟均
  *

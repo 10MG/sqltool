@@ -8,7 +8,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 /**
- * 虚宏，封装宏基本功能
+ * 抽象宏，封装宏基本功能
  * 
  * @author 赵伟均
  *

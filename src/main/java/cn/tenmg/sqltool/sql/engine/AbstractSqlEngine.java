@@ -11,10 +11,11 @@ import cn.tenmg.sqltool.dsql.Sql;
 import cn.tenmg.sqltool.dsql.utils.DsqlUtils;
 import cn.tenmg.sqltool.sql.SqlEngine;
 import cn.tenmg.sqltool.utils.CollectionUtils;
+import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
 /**
- * 虚SQL引擎
+ * 抽象SQL引擎
  * 
  * @author 赵伟均
  *
@@ -101,7 +102,7 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 					boolean flag = false;
 					for (Iterator<?> it = collection.iterator(); it.hasNext();) {
 						if (flag) {
-							sb.append(", ");
+							sb.append(JdbcUtils.COMMA_SPACE);
 						} else {
 							flag = true;
 						}
@@ -115,7 +116,7 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 				} else {
 					for (int j = 0; j < objects.length; j++) {
 						if (j > 0) {
-							sb.append(", ");
+							sb.append(JdbcUtils.COMMA_SPACE);
 						}
 						append(sb, objects[j]);
 					}

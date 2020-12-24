@@ -181,8 +181,6 @@ public class CustomTransactionExecutor implements Serializable {
 	/**
 	 * 部分硬保存。仅对属性值不为null或硬保存的字段执行插入/更新操作。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
 	 * 
-	 * @param options
-	 *            数据库配置
 	 * @param rows
 	 *            实体对象集
 	 * @param hardFields
@@ -233,8 +231,6 @@ public class CustomTransactionExecutor implements Serializable {
 	/**
 	 * 从数据库查询并组装实体对象。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
 	 * 
-	 * @param options
-	 *            数据库配置
 	 * @param obj
 	 *            实体对象
 	 * @return 返回查询到的实体对象
@@ -253,8 +249,6 @@ public class CustomTransactionExecutor implements Serializable {
 	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
 	 * Date、BigDecimal类型，这事将返回结果集中的第1行第1列的值。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
 	 * 
-	 * @param options
-	 *            数据库配置
 	 * @param type
 	 *            对象类型
 	 * @param dsql
@@ -273,8 +267,6 @@ public class CustomTransactionExecutor implements Serializable {
 	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
 	 * Date、BigDecimal类型，这时将返回结果集中的第1行第1列的值。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
 	 * 
-	 * @param options
-	 *            数据库配置
 	 * @param type
 	 *            对象类型
 	 * @param dsql
@@ -292,8 +284,6 @@ public class CustomTransactionExecutor implements Serializable {
 	/**
 	 * 从数据库查询并组装实体对象列表。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
 	 * 
-	 * @param options
-	 *            数据库配置
 	 * @param obj
 	 *            实体对象
 	 * @return 返回查询到的实体对象列表
@@ -312,8 +302,6 @@ public class CustomTransactionExecutor implements Serializable {
 	 * 使用动态结构化查询语言（DSQL）并组装对象列表，其中类型可以是实体对象，也可以是String、Number、
 	 * Date、BigDecimal类型，这时将返回结果集中的第1列的值。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
 	 * 
-	 * @param options
-	 *            数据库配置
 	 * @param type
 	 *            对象类型
 	 * @param dsql

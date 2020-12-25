@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sqltool xmlns="http://www.10mg.cn/schema/sqltool"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<dsql id="get_total_staff_count">
+		<script>
+			<![CDATA[
+				SELECT COUNT(*) FROM STAFF_INFO
+			]]>
+		</script>
+	</dsql>
+	<dsql id="get_staff_count_of_specific_position">
+		<script>
+			<![CDATA[
+				SELECT COUNT(*) FROM STAFF_INFO WHERE #[if(:position==null)POSITION IS NULL]#[else POSITION = :position]
+			]]>
+		</script>
+	</dsql>
+	<dsql id="get_staff_info_by_staff_id">
+		<script>
+			<![CDATA[
+				SELECT * FROM STAFF_INFO WHERE STAFF_ID = :staffId
+			]]>
+		</script>
+	</dsql>
+	<dsql id="find_staff_info_by_staff_ids">
+		<script>
+			<![CDATA[
+				SELECT * FROM STAFF_INFO WHERE STAFF_ID IN (:staffIds)
+			]]>
+		</script>
+	</dsql>
+</sqltool>

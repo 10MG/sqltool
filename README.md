@@ -77,7 +77,7 @@ Dynamic Structured Query Language (DSQL) is a kind of Structured Query Language 
 Through the above simple example, we can see the magic of Dynamic Structured Query Language (DSQL). The source of this magic is the clever use of a value: null, because the value is often rarely used in Structured Query Language (SQL), and even if used, it is often used as a special constant, such as: NVL(email, 'none'), WHERE EMAIL IS NOT NULL, etc.
 
 ## 如何使用（How to use)
-Sqltool提供了几个极其有用的类：DsqlUtils、SqltoolFactory、SqltoolContext、SparkDataLoader。DsqlUtils提供了DSQL语法解析的支持，SqltoolFactory提供了DSQL配置的管理，SqltoolContext、SparkDataLoader则集成了DsqlUtils和SqltoolFactory，实现对数据库实现基于DSQL的操作和访问。下面使用一些简单的例子来说明如何使用Sqltoolcontext，但Sqltool远不止如此，不一而足。
+Sqltool提供了几个极其有用的类：DsqlUtils、SqltoolFactory、SqltoolContext、SparkDataLoader。DsqlUtils提供了DSQL语法解析的支持，SqltoolFactory提供了DSQL配置的管理，SqltoolContext、SparkDataLoader则集成了DsqlUtils和SqltoolFactory，实现对数据库实现基于DSQL的操作和访问。下面使用一些简单的例子来说明如何使用Sqltoolcontext，但Sqltool远不止如此。
 
 Sqltool provides several extremely useful classes: DsqlUtils, SqltoolFactory, SqltoolContext, and SparkdataLoader. DsqlUtils supports the parsing of DSQL syntax, SqltoolFactory provides the management of DSQL configuration, and SqltoolContext and SparkDataLoader integrate DsqlUtils and SqltoolFactory to realize the operation and access of database based on DSQL. Here are some simple examples to illustrate how to use SqltoolContext, but sqltool is much more than that.
 
@@ -87,7 +87,7 @@ Sqltool provides several extremely useful classes: DsqlUtils, SqltoolFactory, Sq
 	 * 
 	 * Base packages for where the configuration file is located
 	 */
-	String basePackages = "cn.tenmg.sqltool.app",
+	String basePackages = "cn.tenmg.sqltool",
 			/**
 			 * DSQL配置文件的后缀名，默认“.dsql.xml”
 			 * 
@@ -128,7 +128,7 @@ Sqltool provides several extremely useful classes: DsqlUtils, SqltoolFactory, Sq
 	 */
 	Map<String, String> options = new HashMap<String, String>();
 	options.put("driver", "com.mysql.cj.jdbc.Driver");
-	options.put("url", "jdbc:mysql://127.0.0.1:3306/sqltool");
+	options.put("url", "jdbc:mysql://127.0.0.1:3306/sqltool?useSSL=false&serverTimezone=Asia/Shanghai");
 	options.put("user", "root");
 	options.put("password", "");		
 

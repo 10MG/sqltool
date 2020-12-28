@@ -12,13 +12,13 @@ import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
 import cn.tenmg.sqltool.exception.ColumnNotFoundException;
 import cn.tenmg.sqltool.exception.DataAccessException;
-import cn.tenmg.sqltool.sql.JdbcSql;
-import cn.tenmg.sqltool.sql.MergeSql;
+import cn.tenmg.sqltool.sql.MergeSQL;
+import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.utils.EntityUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
+import cn.tenmg.sqltool.utils.JDBCUtils;
 import cn.tenmg.sqltool.utils.PlaceHolderUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
@@ -113,7 +113,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
-	public <T> MergeSql save(Class<T> type) {
+	public <T> MergeSQL save(Class<T> type) {
 		EntityMeta entityMeta = getCachedEntityMeta(type);
 		boolean flag = false;
 		Map<String, StringBuilder> templateParams = getSQLTemplateParams();
@@ -142,7 +142,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumn(columnName, templateParams, setsFlag);
 					} else {// 记录已存在，组织更新子句
 						if (setsFlag) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -162,7 +162,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
-	public <T> MergeSql save(Class<T> type, String... hardFields) {
+	public <T> MergeSQL save(Class<T> type, String... hardFields) {
 		Set<String> hardFieldSet = new HashSet<String>();
 		for (int i = 0; i < hardFields.length; i++) {
 			hardFieldSet.add(hardFields[i]);
@@ -196,7 +196,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumn(columnName, templateParams, setsFlag);
 					} else {// 记录已存在，组织更新子句
 						if (setsFlag) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -220,7 +220,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
-	public <T> MergeSql hardSave(Class<T> type) {
+	public <T> MergeSQL hardSave(Class<T> type) {
 		EntityMeta entityMeta = getCachedEntityMeta(type);
 		boolean columnNotFound = false;
 		Map<String, StringBuilder> templateParams = getSQLTemplateParams();
@@ -249,7 +249,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumn(columnName, templateParams, setsFlag);
 					} else {// 记录已存在，组织更新子句
 						if (setsFlag) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -269,7 +269,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
-	public <T> JdbcSql save(T obj) {
+	public <T> SQL save(T obj) {
 		Class<?> type = obj.getClass();
 		EntityMeta entityMeta = getCachedEntityMeta(type);
 		boolean flag = false;
@@ -303,7 +303,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							handleIdColumn(columnName, templateParams, setsFlag);
 						} else {// 记录已存在，组织更新子句
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -316,7 +316,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			throw new DataAccessException(e);
 		}
 		if (flag) {
-			return jdbcSql(entityMeta.getTableName(), templateParams, params);
+			return sql(entityMeta.getTableName(), templateParams, params);
 		} else {
 			throw new ColumnNotFoundException(String.format(
 					"Not null column not found in class %s, please use @Column to config fields and make sure at lease one of them is not null",
@@ -325,7 +325,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
-	public <T> JdbcSql save(T obj, String... hardFields) {
+	public <T> SQL save(T obj, String... hardFields) {
 		Set<String> hardFieldSet = new HashSet<String>();
 		for (int i = 0; i < hardFields.length; i++) {
 			hardFieldSet.add(hardFields[i]);
@@ -364,7 +364,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							handleIdColumn(columnName, templateParams, setsFlag);
 						} else {// 记录已存在，组织更新子句
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -377,7 +377,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			throw new DataAccessException(e);
 		}
 		if (flag) {
-			return jdbcSql(entityMeta.getTableName(), templateParams, params);
+			return sql(entityMeta.getTableName(), templateParams, params);
 		} else {
 			throw new ColumnNotFoundException(String.format(
 					"Not null or hard save column not found in class %s, please use @Column to config fields and make sure at lease one of them is not null or hard save",
@@ -386,7 +386,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
-	public <T> JdbcSql hardSave(T obj) {
+	public <T> SQL hardSave(T obj) {
 		Class<?> type = obj.getClass();
 		EntityMeta entityMeta = getCachedEntityMeta(type);
 		boolean columnNotFound = false;
@@ -419,7 +419,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumn(columnName, templateParams, setsFlag);
 					} else {// 记录已存在，组织更新子句
 						if (setsFlag) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -431,7 +431,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			throw new DataAccessException(e);
 		}
 		if (columnNotFound) {
-			return jdbcSql(entityMeta.getTableName(), templateParams, params);
+			return sql(entityMeta.getTableName(), templateParams, params);
 		} else {
 			throw new ColumnNotFoundException(
 					String.format("Column not found in class %s, please use @Column to config fields", type.getName()));
@@ -468,7 +468,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -517,7 +517,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							fieldMeta.setId(false);
 							sets = templateParams.get(SETS);
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -569,7 +569,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -620,7 +620,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 								fieldMeta.setId(false);
 								if (setsFlag) {
-									sets.append(JdbcUtils.COMMA_SPACE);
+									sets.append(JDBCUtils.COMMA_SPACE);
 								} else {
 									setsFlag = true;
 								}
@@ -673,7 +673,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 								fieldMeta.setId(false);
 								if (setsFlag) {
-									sets.append(JdbcUtils.COMMA_SPACE);
+									sets.append(JDBCUtils.COMMA_SPACE);
 								} else {
 									setsFlag = true;
 								}
@@ -723,7 +723,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -778,27 +778,27 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	 */
 	private static final void appendComma(Map<String, StringBuilder> params, List<String> paramNames) {
 		for (int i = 0, size = paramNames.size(); i < size; i++) {
-			params.get(paramNames.get(i)).append(JdbcUtils.COMMA_SPACE);
+			params.get(paramNames.get(i)).append(JDBCUtils.COMMA_SPACE);
 		}
 	}
 
-	private MergeSql mergeSql(EntityMeta entityMeta, Map<String, StringBuilder> templateParams) {
+	private MergeSQL mergeSql(EntityMeta entityMeta, Map<String, StringBuilder> templateParams) {
 		templateParams.put(TABLE_NAME, new StringBuilder(entityMeta.getTableName()));
 		if (templateParams.get(SETS).length() > 0) {
-			return new MergeSql(PlaceHolderUtils.replace(getSaveSQLTemplate(), templateParams),
+			return new MergeSQL(PlaceHolderUtils.replace(getSaveSQLTemplate(), templateParams),
 					entityMeta.getFieldMetas());
 		} else {
-			return new MergeSql(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams),
+			return new MergeSQL(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams),
 					entityMeta.getFieldMetas());
 		}
 	}
 
-	private JdbcSql jdbcSql(String tableName, Map<String, StringBuilder> templateParams, List<Object> params) {
+	private SQL sql(String tableName, Map<String, StringBuilder> templateParams, List<Object> params) {
 		templateParams.put(TABLE_NAME, new StringBuilder(tableName));
 		if (templateParams.get(SETS).length() > 0) {
-			return new JdbcSql(PlaceHolderUtils.replace(getSaveSQLTemplate(), templateParams), params);
+			return new SQL(PlaceHolderUtils.replace(getSaveSQLTemplate(), templateParams), params);
 		} else {
-			return new JdbcSql(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams), params);
+			return new SQL(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams), params);
 		}
 	}
 

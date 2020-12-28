@@ -9,7 +9,7 @@ import java.util.List;
  * @author 赵伟均
  *
  */
-public class JdbcSql implements Serializable {
+public class SQL implements Serializable {
 	/**
 	 * 
 	 */
@@ -25,11 +25,11 @@ public class JdbcSql implements Serializable {
 	 */
 	private List<Object> params;
 
-	public JdbcSql() {
+	public SQL() {
 		super();
 	}
 
-	public JdbcSql(String script, List<Object> params) {
+	public SQL(String script, List<Object> params) {
 		super();
 		this.script = script;
 		this.params = params;

@@ -87,8 +87,9 @@ public abstract class TestUtils {
 
 	private static void insert(SqltoolContext sqltoolContext, Map<String, String> options) {
 		sqltoolContext.execute(options, "DELETE FROM STAFF_INFO"); // 清空表
+		String staffName = "June";
 		StaffInfo staffInfo = new StaffInfo("000001");
-		staffInfo.setStaffName("June");
+		staffInfo.setStaffName(staffName);
 
 		/**
 		 * 
@@ -97,6 +98,9 @@ public abstract class TestUtils {
 		 * Insert entity object/objects
 		 */
 		sqltoolContext.insert(options, staffInfo);
+		
+		staffInfo.setStaffName(null);
+		sqltoolContext.save(options, staffInfo);
 
 		/**
 		 * 使用DSQL编号查询。同时，你还可以使用Map对象来更自由地组织查询参数
@@ -107,8 +111,8 @@ public abstract class TestUtils {
 		Map<String, String> paramaters = new HashMap<String, String>();
 		paramaters.put("staffId", "000001");
 		StaffInfo june = sqltoolContext.get(options, StaffInfo.class, "get_staff_info_by_staff_id", paramaters);
-		Assert.assertEquals(staffInfo.getStaffName(), june.getStaffName());
-		Assert.assertEquals(staffInfo.getStaffName(), sqltoolContext.get(options, staffInfo).getStaffName());
+		Assert.assertEquals(staffName, june.getStaffName());
+		Assert.assertEquals(staffName, sqltoolContext.get(options, staffInfo).getStaffName());
 
 		/**
 		 * 插入多条记录

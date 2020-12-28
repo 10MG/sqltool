@@ -11,7 +11,7 @@ import cn.tenmg.sqltool.utils.DateUtils;
  * @author 赵伟均
  *
  */
-public class OracleSqlEngine extends AbstractSqlEngine {
+public class OracleEngine extends AbstractSQLEngine {
 
 	/**
 	 * 
@@ -23,10 +23,10 @@ public class OracleSqlEngine extends AbstractSqlEngine {
 	private static final String DATE_PATTERN = "YYYY-MM-DD HH24:MI:SS", TIMESTAMP_PATTERN = "YYYY-MM-DD HH24:MI:SS.FF6";
 
 	private static class InstanceHolder {
-		private static final OracleSqlEngine INSTANCE = new OracleSqlEngine();
+		private static final OracleEngine INSTANCE = new OracleEngine();
 	}
 
-	public static final OracleSqlEngine getInstance() {
+	public static final OracleEngine getInstance() {
 		return InstanceHolder.INSTANCE;
 	}
 

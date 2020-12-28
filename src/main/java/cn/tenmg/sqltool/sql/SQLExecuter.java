@@ -13,7 +13,7 @@ import java.sql.SQLException;
  * @param <T>
  *            实体类
  */
-public interface SqlExecuter<T> extends Serializable {
+public interface SQLExecuter<T> extends Serializable {
 
 	ResultSet execute(PreparedStatement ps) throws SQLException;
 

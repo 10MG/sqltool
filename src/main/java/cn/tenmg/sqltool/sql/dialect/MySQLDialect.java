@@ -1,12 +1,10 @@
 package cn.tenmg.sqltool.sql.dialect;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cn.tenmg.sqltool.sql.meta.EntityMeta;
-import cn.tenmg.sqltool.utils.JdbcUtils;
+import cn.tenmg.sqltool.utils.JDBCUtils;
 
 /**
  * Mysql 方言
@@ -38,16 +36,8 @@ public class MySQLDialect extends AbstractSQLDialect {
 		return InstanceHolder.INSTANCE;
 	}
 
-	private static final class EntityMetaCacheHolder {
-		private static volatile Map<Class<?>, EntityMeta> CACHE = new HashMap<Class<?>, EntityMeta>();
-	}
-
-	protected static EntityMeta getCachedEntityMeta(Class<?> type) {
-		return EntityMetaCacheHolder.CACHE.get(type);
-	}
-
-	protected static synchronized void cacheEntityMeta(Class<?> type, EntityMeta entityMeta) {
-		EntityMetaCacheHolder.CACHE.put(type, entityMeta);
+	private MySQLDialect() {
+		super();
 	}
 
 	@Override
@@ -73,7 +63,7 @@ public class MySQLDialect extends AbstractSQLDialect {
 	@Override
 	void handleColumn(String columnName, Map<String, StringBuilder> templateParams) {
 		templateParams.get(COLUMNS).append(columnName);
-		templateParams.get(VALUES).append(JdbcUtils.PARAM_MARK);
+		templateParams.get(VALUES).append(JDBCUtils.PARAM_MARK);
 	}
 
 	@Override

@@ -10,14 +10,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.sql.DML;
-import cn.tenmg.sqltool.sql.MergeSql;
+import cn.tenmg.sqltool.sql.MergeSQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
-import cn.tenmg.sqltool.sql.SqlExecuter;
+import cn.tenmg.sqltool.sql.SQLExecuter;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 
@@ -27,16 +26,16 @@ import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
  * @author 赵伟均
  *
  */
-public abstract class JdbcUtils {
+public abstract class JDBCUtils {
 
-	private static final Logger log = LoggerFactory.getLogger(JdbcUtils.class);
+	private static final Logger log = Logger.getLogger(JDBCUtils.class);
 
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n"), COMMA_SPACE = ", ",
 			SPACE_AND_SPACE = " AND ", SPACE_EQ_SPACE = " = ";
 
 	public static final char PARAM_MARK = '?', SINGLE_QUOTATION_MARK = '\'';
 
-	private JdbcUtils() {
+	private JDBCUtils() {
 	}
 
 	/**
@@ -49,14 +48,10 @@ public abstract class JdbcUtils {
 			try {
 				conn.close();
 			} catch (SQLException ex) {
-				if (log.isErrorEnabled()) {
-					log.error("Could not close JDBC Connection", ex);
-				}
+				log.error("Could not close JDBC Connection", ex);
 				ex.printStackTrace();
 			} catch (Throwable ex) {
-				if (log.isErrorEnabled()) {
-					log.error("Unexpected exception on closing JDBC Connection", ex);
-				}
+				log.error("Unexpected exception on closing JDBC Connection", ex);
 				ex.printStackTrace();
 			}
 		}
@@ -73,14 +68,10 @@ public abstract class JdbcUtils {
 			try {
 				stm.close();
 			} catch (SQLException ex) {
-				if (log.isErrorEnabled()) {
-					log.error("Could not close JDBC Statement", ex);
-				}
+				log.error("Could not close JDBC Statement", ex);
 				ex.printStackTrace();
 			} catch (Throwable ex) {
-				if (log.isErrorEnabled()) {
-					log.error("Unexpected exception on closing JDBC Statement", ex);
-				}
+				log.error("Unexpected exception on closing JDBC Statement", ex);
 				ex.printStackTrace();
 			}
 		}
@@ -97,13 +88,9 @@ public abstract class JdbcUtils {
 			try {
 				rs.close();
 			} catch (SQLException ex) {
-				if (log.isErrorEnabled()) {
-					log.error("Could not close JDBC ResultSet", ex);
-				}
+				log.error("Could not close JDBC ResultSet", ex);
 			} catch (Throwable ex) {
-				if (log.isErrorEnabled()) {
-					log.error("Unexpected exception on closing JDBC ResultSet", ex);
-				}
+				log.error("Unexpected exception on closing JDBC ResultSet", ex);
 			}
 		}
 	}
@@ -190,7 +177,7 @@ public abstract class JdbcUtils {
 		}
 	}
 
-	public static <T> T execute(Connection con, String sql, List<Object> params, SqlExecuter<T> sqlExecuter,
+	public static <T> T execute(Connection con, String sql, List<Object> params, SQLExecuter<T> sqlExecuter,
 			boolean showSql) throws SQLException {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -245,7 +232,7 @@ public abstract class JdbcUtils {
 		}
 	}
 
-	public static <T> int save(Connection con, boolean showSql, List<T> rows, MergeSql mergeSql) throws SQLException {
+	public static <T> int save(Connection con, boolean showSql, List<T> rows, MergeSQL mergeSql) throws SQLException {
 		PreparedStatement ps = null;
 		int counts[];
 		try {
@@ -287,7 +274,7 @@ public abstract class JdbcUtils {
 		PreparedStatement ps = null;
 		int counts[];
 		try {
-			MergeSql mergeSql = dialect.hardSave(rows.get(0).getClass());
+			MergeSQL mergeSql = dialect.hardSave(rows.get(0).getClass());
 			String sql = mergeSql.getScript();
 			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
 			if (showSql) {

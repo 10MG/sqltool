@@ -10,7 +10,7 @@ import java.sql.SQLException;
  * @author 赵伟均
  *
  */
-public class ExecuteSqlExecuter extends AbstractExecuteSqlExecuter<Boolean> {
+public class ExecuteSQLExecuter extends AbstractExecuteSQLExecuter<Boolean> {
 
 	/**
 	 * 
@@ -18,10 +18,10 @@ public class ExecuteSqlExecuter extends AbstractExecuteSqlExecuter<Boolean> {
 	private static final long serialVersionUID = -8858877740885024842L;
 
 	private static class InstanceHolder {
-		private static final ExecuteSqlExecuter INSTANCE = new ExecuteSqlExecuter();
+		private static final ExecuteSQLExecuter INSTANCE = new ExecuteSQLExecuter();
 	}
 
-	public static final ExecuteSqlExecuter getInstance() {
+	public static final ExecuteSQLExecuter getInstance() {
 		return InstanceHolder.INSTANCE;
 	}
 

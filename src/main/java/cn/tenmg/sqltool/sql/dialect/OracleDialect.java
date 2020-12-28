@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import cn.tenmg.sqltool.utils.JdbcUtils;
+import cn.tenmg.sqltool.utils.JDBCUtils;
 
 /**
  * Oracle方言
@@ -39,6 +39,10 @@ public class OracleDialect extends AbstractSQLDialect {
 		return InstanceHolder.INSTANCE;
 	}
 
+	private OracleDialect() {
+		super();
+	}
+
 	@Override
 	List<String> getExtSQLTemplateParamNames() {
 		return EXT_SQL_TEMPLATE_PARAM_NAMES;
@@ -61,7 +65,7 @@ public class OracleDialect extends AbstractSQLDialect {
 
 	@Override
 	void handleColumn(String columnName, Map<String, StringBuilder> templateParams) {
-		templateParams.get(FIELDS).append(JdbcUtils.PARAM_MARK).append(SPACE).append(columnName);
+		templateParams.get(FIELDS).append(JDBCUtils.PARAM_MARK).append(SPACE).append(columnName);
 		templateParams.get(COLUMNS).append(columnName);
 		templateParams.get(VALUES).append("Y.").append(columnName);
 	}
@@ -70,9 +74,9 @@ public class OracleDialect extends AbstractSQLDialect {
 	void handleIdColumn(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
 		StringBuilder condition = templateParams.get(CONDITION);
 		if (notFirst) {
-			condition.append(JdbcUtils.SPACE_AND_SPACE);
+			condition.append(JDBCUtils.SPACE_AND_SPACE);
 		}
-		condition.append("X.").append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append("Y.").append(columnName);
+		condition.append("X.").append(columnName).append(JDBCUtils.SPACE_EQ_SPACE).append("Y.").append(columnName);
 	}
 
 	@Override

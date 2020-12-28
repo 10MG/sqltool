@@ -6,7 +6,7 @@ package cn.tenmg.sqltool.sql.engine;
  * @author 赵伟均
  *
  */
-public class SparkSQLSqlEngine extends BasicSqlEngine {
+public class SparkSQLEngine extends BasicSQLEngine {
 
 	/**
 	 * 
@@ -14,10 +14,10 @@ public class SparkSQLSqlEngine extends BasicSqlEngine {
 	private static final long serialVersionUID = 4709716690186443192L;
 
 	private static class InstanceHolder {
-		private static final SparkSQLSqlEngine INSTANCE = new SparkSQLSqlEngine();
+		private static final SparkSQLEngine INSTANCE = new SparkSQLEngine();
 	}
 
-	public static final SparkSQLSqlEngine getInstance() {
+	public static final SparkSQLEngine getInstance() {
 		return InstanceHolder.INSTANCE;
 	}
 

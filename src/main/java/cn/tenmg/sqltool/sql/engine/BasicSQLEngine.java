@@ -10,7 +10,7 @@ import cn.tenmg.sqltool.utils.DateUtils;
  * @author 赵伟均
  *
  */
-public class BasicSqlEngine extends AbstractSqlEngine {
+public class BasicSQLEngine extends AbstractSQLEngine {
 
 	/**
 	 * 

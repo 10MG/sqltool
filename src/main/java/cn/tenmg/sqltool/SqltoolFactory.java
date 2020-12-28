@@ -3,7 +3,7 @@ package cn.tenmg.sqltool;
 import java.io.Serializable;
 import java.util.Map;
 
-import cn.tenmg.sqltool.dsql.Sql;
+import cn.tenmg.sqltool.dsql.NamedSQL;
 
 /**
  * Sqltool工厂
@@ -31,7 +31,7 @@ public interface SqltoolFactory extends Serializable {
 	 *            参数列表(分别列出参数名和参数值，或使用一个Map对象)
 	 * @return SQL对象
 	 */
-	Sql parse(String dsql, Object... params);
+	NamedSQL parse(String dsql, Object... params);
 
 	/**
 	 * 根据指定的参数params分析转换动态SQL（dsql）为SQL。dsql可以是工厂中动态SQL的编号(id)，也可以是动态SQL脚本
@@ -42,6 +42,6 @@ public interface SqltoolFactory extends Serializable {
 	 *            参数列表
 	 * @return SQL对象
 	 */
-	Sql parse(String dsql, Map<String, ?> params);
+	NamedSQL parse(String dsql, Map<String, ?> params);
 
 }

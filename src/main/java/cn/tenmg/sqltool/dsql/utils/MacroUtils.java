@@ -68,7 +68,7 @@ public abstract class MacroUtils {
 							b = c;
 							c = dsql.charAt(i);
 							if (isString) {
-								if (DsqlUtils.isStringEnd(a, b, c)) {// 字符串区域结束
+								if (DSQLUtils.isStringEnd(a, b, c)) {// 字符串区域结束
 									isString = false;
 								}
 								logic.append(c);
@@ -89,7 +89,7 @@ public abstract class MacroUtils {
 									deep++;
 								} else {
 									if (isParam) {
-										if (DsqlUtils.isParamChar(c)) {
+										if (DSQLUtils.isParamChar(c)) {
 											paramName.append(c);
 										} else {
 											isParam = false;
@@ -98,7 +98,7 @@ public abstract class MacroUtils {
 										}
 										logic.append(c);
 									} else {
-										if (DsqlUtils.isParamBegin(b, c)) {
+										if (DSQLUtils.isParamBegin(b, c)) {
 											isParam = true;
 											paramName = new StringBuilder();
 											paramName.append(c);

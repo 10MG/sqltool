@@ -8,9 +8,9 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
 import cn.tenmg.sqltool.SqltoolFactory;
-import cn.tenmg.sqltool.dsql.Sql;
-import cn.tenmg.sqltool.sql.engine.SparkSQLSqlEngine;
-import cn.tenmg.sqltool.utils.SqlEngineUtils;
+import cn.tenmg.sqltool.dsql.NamedSQL;
+import cn.tenmg.sqltool.sql.engine.SparkSQLEngine;
+import cn.tenmg.sqltool.utils.SQLEngineUtils;
 
 /**
  * Spark数据加载器
@@ -97,12 +97,12 @@ public class SparkDataLoader implements Serializable {
 		return sql(sparkSession, sqltoolFactory.parse(dsql, params));
 	}
 
-	private Dataset<Row> load(SparkSession sparkSession, Map<String, String> options, Sql sql) {
+	private Dataset<Row> load(SparkSession sparkSession, Map<String, String> options, NamedSQL namedSQL) {
 		return sparkSession.sqlContext().read().options(options)
-				.option("query", SqlEngineUtils.getSqlEngine(options.get("url")).parse(sql)).format("jdbc").load();
+				.option("query", SQLEngineUtils.getSqlEngine(options.get("url")).parse(namedSQL)).format("jdbc").load();
 	}
 
-	private Dataset<Row> sql(SparkSession sparkSession, Sql sql) {
-		return sparkSession.sqlContext().sql(SparkSQLSqlEngine.getInstance().parse(sql));
+	private Dataset<Row> sql(SparkSession sparkSession, NamedSQL namedSQL) {
+		return sparkSession.sqlContext().sql(SparkSQLEngine.getInstance().parse(namedSQL));
 	}
 }

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.tenmg.sqltool.exception.DataAccessException;
-import cn.tenmg.sqltool.sql.SqlExecuter;
+import cn.tenmg.sqltool.sql.SQLExecuter;
 import cn.tenmg.sqltool.sql.utils.FieldUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
@@ -26,7 +26,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
  * @param <T>
  *            实体类
  */
-public class SelectSqlExecuter<T> implements SqlExecuter<List<T>> {
+public class SelectSQLExecuter<T> implements SQLExecuter<List<T>> {
 
 	/**
 	 * 
@@ -36,11 +36,11 @@ public class SelectSqlExecuter<T> implements SqlExecuter<List<T>> {
 	protected Class<T> type;
 
 	@SuppressWarnings("unchecked")
-	public SelectSqlExecuter() {
+	public SelectSQLExecuter() {
 		type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 	}
 
-	public SelectSqlExecuter(Class<T> type) {
+	public SelectSQLExecuter(Class<T> type) {
 		this.type = type;
 	}
 

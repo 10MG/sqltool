@@ -10,7 +10,7 @@ import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
 import cn.tenmg.sqltool.exception.PkNotFoundException;
 import cn.tenmg.sqltool.sql.DML;
-import cn.tenmg.sqltool.utils.JdbcUtils;
+import cn.tenmg.sqltool.utils.JDBCUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
 public class GetDMLParser extends AbstractDMLParser {
@@ -55,14 +55,14 @@ public class GetDMLParser extends AbstractDMLParser {
 						if (field.getAnnotation(Id.class) != null) {
 							idFields.add(field);
 							if (criteriaFlag) {
-								criteria.append(JdbcUtils.SPACE_AND_SPACE);
+								criteria.append(JDBCUtils.SPACE_AND_SPACE);
 							} else {
 								criteriaFlag = true;
 							}
-							criteria.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+							criteria.append(columnName).append(JDBCUtils.SPACE_EQ_SPACE).append(JDBCUtils.PARAM_MARK);
 						}
 						if (columnsFlag) {
-							columns.append(JdbcUtils.COMMA_SPACE);
+							columns.append(JDBCUtils.COMMA_SPACE);
 						} else {
 							columnsFlag = true;
 						}

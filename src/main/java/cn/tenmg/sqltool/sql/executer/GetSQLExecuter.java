@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.tenmg.sqltool.exception.DataAccessException;
-import cn.tenmg.sqltool.sql.SqlExecuter;
+import cn.tenmg.sqltool.sql.SQLExecuter;
 import cn.tenmg.sqltool.sql.utils.FieldUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
@@ -24,7 +24,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
  * @param <T>
  *            实体类
  */
-public class GetSqlExecuter<T> implements SqlExecuter<T> {
+public class GetSQLExecuter<T> implements SQLExecuter<T> {
 
 	/**
 	 * 
@@ -34,11 +34,11 @@ public class GetSqlExecuter<T> implements SqlExecuter<T> {
 	protected Class<T> type;
 
 	@SuppressWarnings("unchecked")
-	public GetSqlExecuter() {
+	public GetSQLExecuter() {
 		type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 	}
 
-	public GetSqlExecuter(Class<T> type) {
+	public GetSQLExecuter(Class<T> type) {
 		this.type = type;
 	}
 

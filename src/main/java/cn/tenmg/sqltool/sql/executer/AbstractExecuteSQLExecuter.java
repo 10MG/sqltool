@@ -4,7 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import cn.tenmg.sqltool.sql.SqlExecuter;
+import cn.tenmg.sqltool.sql.SQLExecuter;
 
 /**
  * 抽象执行类SQL执行器
@@ -13,7 +13,7 @@ import cn.tenmg.sqltool.sql.SqlExecuter;
  *
  * @param <T>
  */
-public abstract class AbstractExecuteSqlExecuter<T> implements SqlExecuter<T> {
+public abstract class AbstractExecuteSQLExecuter<T> implements SQLExecuter<T> {
 
 	/**
 	 * 

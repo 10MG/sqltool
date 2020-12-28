@@ -5,8 +5,8 @@ import java.util.Map;
 
 import cn.tenmg.sqltool.SqltoolFactory;
 import cn.tenmg.sqltool.config.model.Dsql;
-import cn.tenmg.sqltool.dsql.Sql;
-import cn.tenmg.sqltool.dsql.utils.DsqlUtils;
+import cn.tenmg.sqltool.dsql.NamedSQL;
+import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 
 /**
  * 抽象Sqltool工厂。封装了Sqltool工厂的基本功能
@@ -33,7 +33,7 @@ public abstract class AbstractSqltoolFactory implements SqltoolFactory {
 	}
 
 	@Override
-	public Sql parse(String dsql, Object... params) {
+	public NamedSQL parse(String dsql, Object... params) {
 		HashMap<String, Object> paramsMap = new HashMap<String, Object>();
 		if (params != null) {
 			for (int i = 0; i < params.length - 1; i++) {
@@ -44,15 +44,15 @@ public abstract class AbstractSqltoolFactory implements SqltoolFactory {
 	}
 
 	@Override
-	public Sql parse(String dsql, Map<String, ?> params) {
-		Sql sql = null;
+	public NamedSQL parse(String dsql, Map<String, ?> params) {
+		NamedSQL namedSQL = null;
 		Dsql obj = dsqls.get(dsql);
 		if (obj == null) {
-			sql = DsqlUtils.parse(dsql, params);
+			namedSQL = DSQLUtils.parse(dsql, params);
 		} else {
-			sql = parse(obj, params);
+			namedSQL = parse(obj, params);
 		}
-		return sql;
+		return namedSQL;
 	}
 
 	/**
@@ -64,8 +64,8 @@ public abstract class AbstractSqltoolFactory implements SqltoolFactory {
 	 *            参数列表
 	 * @return SQL对象
 	 */
-	protected Sql parse(Dsql dsql, Map<String, ?> params) {
-		return DsqlUtils.parse(dsql.getScript(), params);
+	protected NamedSQL parse(Dsql dsql, Map<String, ?> params) {
+		return DSQLUtils.parse(dsql.getScript(), params);
 	}
 
 }

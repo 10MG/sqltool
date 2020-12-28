@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class OracleTest {
+public class MySQLTest {
 
 	@Test
 	public void doTest() {
@@ -18,15 +18,15 @@ public class OracleTest {
 
 	public static Map<String, String> initDatabaseOptions() {
 		/**
-		 * Oracle数据库配置项
+		 * Mysql数据库配置项
 		 * 
 		 * Database options
 		 */
 		Map<String, String> options = new HashMap<String, String>();
-		options.put("driver", "oracle.jdbc.OracleDriver");
-		options.put("url", "jdbc:oracle:thin:@127.0.0.1:1521:orcl");
-		options.put("user", "c##orcl");
-		options.put("password", "orcl");
+		options.put("driver", "com.mysql.cj.jdbc.Driver");
+		options.put("url", "jdbc:mysql://127.0.0.1:3306/sqltool?useSSL=false&serverTimezone=Asia/Shanghai");
+		options.put("user", "root");
+		options.put("password", "");
 		return options;
 	}
 }

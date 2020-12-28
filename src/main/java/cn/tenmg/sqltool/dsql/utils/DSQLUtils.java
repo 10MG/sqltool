@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import cn.tenmg.sqltool.dsql.Sql;
-import cn.tenmg.sqltool.sql.JdbcSql;
+import cn.tenmg.sqltool.dsql.NamedSQL;
+import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.utils.CollectionUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
+import cn.tenmg.sqltool.utils.JDBCUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
 /**
@@ -21,7 +21,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
  * @author 赵伟均
  *
  */
-public abstract class DsqlUtils {
+public abstract class DSQLUtils {
 
 	private static final char BLANK_SPACE = '\u0020';
 
@@ -36,16 +36,16 @@ public abstract class DsqlUtils {
 	 *            查询参数列表
 	 * @return 返回含有命名参数的SQL以及实际使用的参数集组成的对象
 	 */
-	public static Sql parse(String source, Map<String, Object> params) {
+	public static NamedSQL parse(String source, Map<String, Object> params) {
 		if (params == null) {
 			params = new HashMap<String, Object>();
 		}
 		if (StringUtils.isBlank(source)) {
-			return new Sql(source, params);
+			return new NamedSQL(source, params);
 		}
 		int len = source.length();
 		if (len < 3) {// 长度小于最小动态SQL单元 #[]的长度直接返回
-			return new Sql(source, params);
+			return new NamedSQL(source, params);
 		}
 		int i = 0, deep = 0;
 		char a = ' ', b = ' ';
@@ -70,7 +70,7 @@ public abstract class DsqlUtils {
 					sql.append(c);
 				}
 			} else {
-				if (c == JdbcUtils.SINGLE_QUOTATION_MARK) {// 字符串区域开始
+				if (c == JDBCUtils.SINGLE_QUOTATION_MARK) {// 字符串区域开始
 					isString = true;
 					if (deep > 0) {
 						dsqlMap.get(deep).append(c);
@@ -105,7 +105,7 @@ public abstract class DsqlUtils {
 						}
 					} else {
 						if (isParam) {// 处于动态参数区域
-							if (DsqlUtils.isParamChar(c)) {
+							if (DSQLUtils.isParamChar(c)) {
 								paramName.append(c);
 
 								StringBuilder dsql = dsqlMap.get(deep);
@@ -148,7 +148,7 @@ public abstract class DsqlUtils {
 								dsqlMap.put(deep, new StringBuilder());
 								validMap.put(deep, new HashSet<String>());
 							} else {
-								if (DsqlUtils.isParamBegin(b, c)) {
+								if (DSQLUtils.isParamBegin(b, c)) {
 									isParam = true;
 									paramName.setLength(0);
 									paramName.append(c);
@@ -171,7 +171,7 @@ public abstract class DsqlUtils {
 						validMap.put(deep, new HashSet<String>());
 					} else {
 						if (isParam) {// 处于参数区域
-							if (DsqlUtils.isParamChar(c)) {
+							if (DSQLUtils.isParamChar(c)) {
 								paramName.append(c);
 								if (i == len - 1) {
 									String name = paramName.toString();
@@ -186,7 +186,7 @@ public abstract class DsqlUtils {
 								}
 							}
 						} else {// 未处于参数区域
-							if (DsqlUtils.isParamBegin(b, c)) {
+							if (DSQLUtils.isParamBegin(b, c)) {
 								isParam = true;
 								paramName.setLength(0);
 								paramName.append(c);
@@ -200,7 +200,7 @@ public abstract class DsqlUtils {
 			b = c;
 			i++;
 		}
-		return new Sql(sql.toString(), usedParams);
+		return new NamedSQL(sql.toString(), usedParams);
 	}
 
 	/**
@@ -213,7 +213,7 @@ public abstract class DsqlUtils {
 	 * @return 返回含有命名参数的SQL以及实际使用的参数集组成的对象
 	 */
 	@SuppressWarnings("unchecked")
-	public static Sql parse(String source, Object... params) {
+	public static NamedSQL parse(String source, Object... params) {
 		Map<String, Object> paramsMap = new HashMap<String, Object>();
 		if (params != null) {
 			if (params.length == 1 && params[0] instanceof Map) {
@@ -236,13 +236,13 @@ public abstract class DsqlUtils {
 	 *            查询参数列表
 	 * @return 返回JDBC可执行的SQL对象（含脚本及对应参数）
 	 */
-	public static JdbcSql toJdbcSql(String source, Map<String, Object> params) {
+	public static SQL toSQL(String source, Map<String, Object> params) {
 		if (params == null) {
 			params = new HashMap<String, Object>();
 		}
 		List<Object> paramList = new ArrayList<Object>();
 		if (StringUtils.isBlank(source)) {
-			return new JdbcSql(source, paramList);
+			return new SQL(source, paramList);
 		}
 		int len = source.length(), i = 0;
 		char a = ' ', b = ' ';
@@ -257,7 +257,7 @@ public abstract class DsqlUtils {
 				}
 				sql.append(c);
 			} else {
-				if (c == JdbcUtils.SINGLE_QUOTATION_MARK) {// 字符串区域开始
+				if (c == JDBCUtils.SINGLE_QUOTATION_MARK) {// 字符串区域开始
 					isString = true;
 					sql.append(c);
 				} else if (isParam) {// 处于参数区域
@@ -286,7 +286,7 @@ public abstract class DsqlUtils {
 		if (isParam) {
 			paramEnd(params, sql, paramName, paramList);
 		}
-		return new JdbcSql(sql.toString(), paramList);
+		return new SQL(sql.toString(), paramList);
 	}
 
 	/**
@@ -325,9 +325,9 @@ public abstract class DsqlUtils {
 	 * @return 是SQL字符串区域结束位置返回true，否则返回false
 	 */
 	public static boolean isStringEnd(char a, char b, char c) {
-		return (a == JdbcUtils.SINGLE_QUOTATION_MARK
-				|| (a != JdbcUtils.SINGLE_QUOTATION_MARK && b != JdbcUtils.SINGLE_QUOTATION_MARK))
-				&& c == JdbcUtils.SINGLE_QUOTATION_MARK;
+		return (a == JDBCUtils.SINGLE_QUOTATION_MARK
+				|| (a != JDBCUtils.SINGLE_QUOTATION_MARK && b != JDBCUtils.SINGLE_QUOTATION_MARK))
+				&& c == JDBCUtils.SINGLE_QUOTATION_MARK;
 	}
 
 	/**

@@ -11,7 +11,7 @@ import cn.tenmg.sqltool.sql.meta.FieldMeta;
  * @author 赵伟均
  *
  */
-public class MergeSql implements Serializable {
+public class MergeSQL implements Serializable {
 	/**
 	 * 
 	 */
@@ -27,11 +27,11 @@ public class MergeSql implements Serializable {
 	 */
 	private List<FieldMeta> fieldMetas;
 
-	public MergeSql() {
+	public MergeSQL() {
 		super();
 	}
 
-	public MergeSql(String script, List<FieldMeta> fieldMetas) {
+	public MergeSQL(String script, List<FieldMeta> fieldMetas) {
 		super();
 		this.script = script;
 		this.fieldMetas = fieldMetas;

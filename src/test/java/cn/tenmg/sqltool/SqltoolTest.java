@@ -10,7 +10,7 @@ public class SqltoolTest {
 		/**
 		 * 测试Mysql
 		 */
-		MysqlTest.doTest(sqltoolContext);
+		MySQLTest.doTest(sqltoolContext);
 
 		/**
 		 * 测试Oracle

@@ -6,7 +6,7 @@ package cn.tenmg.sqltool.sql.engine;
  * @author 赵伟均
  *
  */
-public class MySQLSqlEngine extends BasicSqlEngine {
+public class MySQLEngine extends BasicSQLEngine {
 
 	/**
 	 * 
@@ -14,10 +14,10 @@ public class MySQLSqlEngine extends BasicSqlEngine {
 	private static final long serialVersionUID = -3906596407170164697L;
 
 	private static class InstanceHolder {
-		private static final MySQLSqlEngine INSTANCE = new MySQLSqlEngine();
+		private static final MySQLEngine INSTANCE = new MySQLEngine();
 	}
 
-	public static final MySQLSqlEngine getInstance() {
+	public static final MySQLEngine getInstance() {
 		return InstanceHolder.INSTANCE;
 	}
 

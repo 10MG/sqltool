@@ -1,11 +1,13 @@
 package cn.tenmg.sqltool.utils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import cn.tenmg.sqltool.exception.NosuitableSQLDialectExeption;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.dialect.MySQLDialect;
 import cn.tenmg.sqltool.sql.dialect.OracleDialect;
+import cn.tenmg.sqltool.sql.dialect.PostgreSQLDialect;
 
 /**
  * 方言工具类
@@ -15,16 +17,31 @@ import cn.tenmg.sqltool.sql.dialect.OracleDialect;
  */
 public class SQLDialectUtils {
 
+	private static volatile Map<String, SQLDialect> DIALECTS = new HashMap<String, SQLDialect>();
+
+	protected static synchronized void cacheSQLDialect(String url, SQLDialect dialect) {
+		DIALECTS.put(url, dialect);
+	}
+
 	public static SQLDialect getSQLDialect(Map<String, String> options) {
 		String url = options.get("url");
-		if (url != null) {
+		SQLDialect dialect = null;
+		if (DIALECTS.containsKey(url)) {
+			dialect = DIALECTS.get(url);
+		} else if (url != null) {
 			if (url.contains("mysql")) {
-				return MySQLDialect.getInstance();
+				dialect = MySQLDialect.getInstance();
 			} else if (url.contains("oracle")) {
-				return OracleDialect.getInstance();
+				dialect = OracleDialect.getInstance();
+			} else if (url.contains("postgresql")) {
+				dialect = PostgreSQLDialect.getInstance();
 			}
+			cacheSQLDialect(url, dialect);
 		}
-		throw new NosuitableSQLDialectExeption("There is no suitable SQL dialect provide for url: " + url);
+		if (dialect == null) {
+			throw new NosuitableSQLDialectExeption("There is no suitable SQL dialect provide for url: " + url);
+		}
+		return dialect;
 	}
 
 }

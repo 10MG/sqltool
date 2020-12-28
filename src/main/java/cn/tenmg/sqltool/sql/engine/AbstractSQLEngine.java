@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import cn.tenmg.sqltool.dsql.Sql;
-import cn.tenmg.sqltool.dsql.utils.DsqlUtils;
-import cn.tenmg.sqltool.sql.SqlEngine;
+import cn.tenmg.sqltool.dsql.NamedSQL;
+import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
+import cn.tenmg.sqltool.sql.SQLEngine;
 import cn.tenmg.sqltool.utils.CollectionUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
+import cn.tenmg.sqltool.utils.JDBCUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
 /**
@@ -20,7 +20,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
  * @author 赵伟均
  *
  */
-public abstract class AbstractSqlEngine implements SqlEngine {
+public abstract class AbstractSQLEngine implements SQLEngine {
 
 	/**
 	 * 
@@ -32,9 +32,9 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 	abstract String parse(Date date);
 
 	@Override
-	public String parse(Sql sql) {
-		String source = sql.getScript();
-		Map<String, Object> params = sql.getParams();
+	public String parse(NamedSQL namedSQL) {
+		String source = namedSQL.getScript();
+		Map<String, Object> params = namedSQL.getParams();
 		if (params == null) {
 			params = new HashMap<String, Object>();
 		}
@@ -49,7 +49,7 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 		while (i < len) {
 			char c = source.charAt(i);
 			if (isString) {
-				if (DsqlUtils.isStringEnd(a, b, c)) {// 字符串区域结束
+				if (DSQLUtils.isStringEnd(a, b, c)) {// 字符串区域结束
 					isString = false;
 				}
 				sb.append(c);
@@ -58,7 +58,7 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 					isString = true;
 					sb.append(c);
 				} else if (isParam) {// 处于参数区域
-					if (DsqlUtils.isParamChar(c)) {
+					if (DSQLUtils.isParamChar(c)) {
 						paramName.append(c);
 					} else {
 						isParam = false;// 参数区域结束
@@ -67,7 +67,7 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 						sb.append(c);
 					}
 				} else {
-					if (DsqlUtils.isParamBegin(b, c)) {
+					if (DSQLUtils.isParamBegin(b, c)) {
 						isParam = true;// 参数区域开始
 						paramName.setLength(0);
 						paramName.append(c);
@@ -100,7 +100,7 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 					boolean flag = false;
 					for (Iterator<?> it = collection.iterator(); it.hasNext();) {
 						if (flag) {
-							sb.append(JdbcUtils.COMMA_SPACE);
+							sb.append(JDBCUtils.COMMA_SPACE);
 						} else {
 							flag = true;
 						}
@@ -114,7 +114,7 @@ public abstract class AbstractSqlEngine implements SqlEngine {
 				} else {
 					for (int j = 0; j < objects.length; j++) {
 						if (j > 0) {
-							sb.append(JdbcUtils.COMMA_SPACE);
+							sb.append(JDBCUtils.COMMA_SPACE);
 						}
 						append(sb, objects[j]);
 					}

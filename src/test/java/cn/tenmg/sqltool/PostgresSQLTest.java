@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class OracleTest {
+public class PostgresSQLTest {
 
 	@Test
 	public void doTest() {
@@ -18,15 +18,15 @@ public class OracleTest {
 
 	public static Map<String, String> initDatabaseOptions() {
 		/**
-		 * Oracle数据库配置项
+		 * PostgresSQL数据库配置项
 		 * 
 		 * Database options
 		 */
 		Map<String, String> options = new HashMap<String, String>();
-		options.put("driver", "oracle.jdbc.OracleDriver");
-		options.put("url", "jdbc:oracle:thin:@127.0.0.1:1521:orcl");
-		options.put("user", "c##orcl");
-		options.put("password", "orcl");
+		options.put("driver", "org.postgresql.Driver");
+		options.put("url", "jdbc:postgresql://localhost:5432/sqltool");
+		options.put("user", "postgres");
+		options.put("password", "postgres");
 		return options;
 	}
 }

@@ -4,12 +4,12 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * SQL对象模型
+ * 使用命名参数的SQL对象模型
  * 
  * @author 赵伟均
  *
  */
-public class Sql implements Serializable {
+public class NamedSQL implements Serializable {
 
 	/**
 	 * 
@@ -26,16 +26,16 @@ public class Sql implements Serializable {
 	 */
 	private Map<String, Object> params;
 
-	public Sql() {
+	public NamedSQL() {
 		super();
 	}
 
-	public Sql(String script) {
+	public NamedSQL(String script) {
 		super();
 		this.script = script;
 	}
 
-	public Sql(String script, Map<String, Object> params) {
+	public NamedSQL(String script, Map<String, Object> params) {
 		super();
 		this.script = script;
 		this.params = params;

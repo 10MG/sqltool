@@ -2,6 +2,7 @@ package cn.tenmg.sqltool.utils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -175,6 +176,39 @@ public abstract class JdbcUtils {
 				throw new DataAccessException(e);
 			}
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T getValue(ResultSet rs, int columnIndex, Class<T> type) throws SQLException {
+		if (BigDecimal.class.isAssignableFrom(type)) {
+			return (T) rs.getBigDecimal(1);
+		} else if (Number.class.isAssignableFrom(type)) {
+			Object obj = rs.getObject(columnIndex);
+			if (obj == null) {
+				return null;
+			}
+			if (obj instanceof Number) {
+				if (Double.class.isAssignableFrom(type)) {
+					obj = ((Number) obj).doubleValue();
+				} else if (Float.class.isAssignableFrom(type)) {
+					obj = ((Number) obj).floatValue();
+				} else if (Integer.class.isAssignableFrom(type)) {
+					obj = ((Number) obj).intValue();
+				} else if (Long.class.isAssignableFrom(type)) {
+					obj = ((Number) obj).longValue();
+				} else if (Short.class.isAssignableFrom(type)) {
+					obj = ((Number) obj).shortValue();
+				} else if (Byte.class.isAssignableFrom(type)) {
+					obj = ((Number) obj).byteValue();
+				}
+			}
+			return (T) obj;
+		} else if (String.class.isAssignableFrom(type)) {
+			return (T) rs.getString(columnIndex);
+		} else if (BigDecimal.class.isAssignableFrom(type)) {
+			return (T) rs.getBigDecimal(columnIndex);
+		}
+		return (T) rs.getObject(columnIndex);
 	}
 
 	public static <T> T execute(Connection con, String sql, List<Object> params, SQLExecuter<T> sqlExecuter,

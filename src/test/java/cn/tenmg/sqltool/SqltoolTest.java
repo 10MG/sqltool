@@ -16,6 +16,11 @@ public class SqltoolTest {
 		 * 测试Oracle
 		 */
 		OracleTest.doTest(sqltoolContext);
+
+		/**
+		 * 测试PostgresSQL
+		 */
+		PostgresSQLTest.doTest(sqltoolContext);
 	}
 
 }

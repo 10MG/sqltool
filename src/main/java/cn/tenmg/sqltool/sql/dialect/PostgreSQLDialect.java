@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import cn.tenmg.sqltool.utils.JDBCUtils;
+import cn.tenmg.sqltool.utils.JdbcUtils;
 
 /**
  * PostgreSQL方言
@@ -66,14 +66,14 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	@Override
 	void handleColumn(String columnName, Map<String, StringBuilder> templateParams) {
 		templateParams.get(COLUMNS).append(columnName);
-		templateParams.get(VALUES).append(JDBCUtils.PARAM_MARK);
+		templateParams.get(VALUES).append(JdbcUtils.PARAM_MARK);
 	}
 
 	@Override
 	void handleIdColumn(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
 		StringBuilder ids = templateParams.get(IDS);
 		if (notFirst) {
-			ids.append(JDBCUtils.COMMA_SPACE);
+			ids.append(JdbcUtils.COMMA_SPACE);
 		}
 		ids.append(columnName);
 	}

@@ -11,7 +11,7 @@ import cn.tenmg.sqltool.dsql.NamedSQL;
 import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 import cn.tenmg.sqltool.sql.SQLEngine;
 import cn.tenmg.sqltool.utils.CollectionUtils;
-import cn.tenmg.sqltool.utils.JDBCUtils;
+import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
 /**
@@ -100,7 +100,7 @@ public abstract class AbstractSQLEngine implements SQLEngine {
 					boolean flag = false;
 					for (Iterator<?> it = collection.iterator(); it.hasNext();) {
 						if (flag) {
-							sb.append(JDBCUtils.COMMA_SPACE);
+							sb.append(JdbcUtils.COMMA_SPACE);
 						} else {
 							flag = true;
 						}
@@ -114,7 +114,7 @@ public abstract class AbstractSQLEngine implements SQLEngine {
 				} else {
 					for (int j = 0; j < objects.length; j++) {
 						if (j > 0) {
-							sb.append(JDBCUtils.COMMA_SPACE);
+							sb.append(JdbcUtils.COMMA_SPACE);
 						}
 						append(sb, objects[j]);
 					}

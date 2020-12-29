@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import cn.tenmg.sqltool.utils.JDBCUtils;
+import cn.tenmg.sqltool.utils.JdbcUtils;
 
 /**
  * Mysql 方言
@@ -63,7 +63,7 @@ public class MySQLDialect extends AbstractSQLDialect {
 	@Override
 	void handleColumn(String columnName, Map<String, StringBuilder> templateParams) {
 		templateParams.get(COLUMNS).append(columnName);
-		templateParams.get(VALUES).append(JDBCUtils.PARAM_MARK);
+		templateParams.get(VALUES).append(JdbcUtils.PARAM_MARK);
 	}
 
 	@Override

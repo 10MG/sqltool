@@ -26,16 +26,16 @@ import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
  * @author 赵伟均
  *
  */
-public abstract class JDBCUtils {
+public abstract class JdbcUtils {
 
-	private static final Logger log = Logger.getLogger(JDBCUtils.class);
+	private static final Logger log = Logger.getLogger(JdbcUtils.class);
 
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n"), COMMA_SPACE = ", ",
 			SPACE_AND_SPACE = " AND ", SPACE_EQ_SPACE = " = ";
 
 	public static final char PARAM_MARK = '?', SINGLE_QUOTATION_MARK = '\'';
 
-	private JDBCUtils() {
+	private JdbcUtils() {
 	}
 
 	/**

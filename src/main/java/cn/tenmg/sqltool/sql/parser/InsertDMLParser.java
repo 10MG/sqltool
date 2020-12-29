@@ -9,7 +9,7 @@ import java.util.Map;
 import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.exception.ColumnNotFoundException;
 import cn.tenmg.sqltool.sql.DML;
-import cn.tenmg.sqltool.utils.JDBCUtils;
+import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
 public class InsertDMLParser extends AbstractDMLParser {
@@ -52,13 +52,13 @@ public class InsertDMLParser extends AbstractDMLParser {
 							columnName = StringUtils.camelToUnderline(fieldName, true);
 						}
 						if (flag) {
-							columns.append(JDBCUtils.COMMA_SPACE);
-							values.append(JDBCUtils.COMMA_SPACE);
+							columns.append(JdbcUtils.COMMA_SPACE);
+							values.append(JdbcUtils.COMMA_SPACE);
 						} else {
 							flag = true;
 						}
 						columns.append(columnName);
-						values.append(JDBCUtils.PARAM_MARK);
+						values.append(JdbcUtils.PARAM_MARK);
 					}
 				}
 			}

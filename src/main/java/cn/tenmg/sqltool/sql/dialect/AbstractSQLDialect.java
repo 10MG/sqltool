@@ -18,7 +18,7 @@ import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.utils.EntityUtils;
-import cn.tenmg.sqltool.utils.JDBCUtils;
+import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.PlaceHolderUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
@@ -142,7 +142,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumn(columnName, templateParams, setsFlag);
 					} else {// 记录已存在，组织更新子句
 						if (setsFlag) {
-							sets.append(JDBCUtils.COMMA_SPACE);
+							sets.append(JdbcUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -196,7 +196,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumn(columnName, templateParams, setsFlag);
 					} else {// 记录已存在，组织更新子句
 						if (setsFlag) {
-							sets.append(JDBCUtils.COMMA_SPACE);
+							sets.append(JdbcUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -249,7 +249,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumn(columnName, templateParams, setsFlag);
 					} else {// 记录已存在，组织更新子句
 						if (setsFlag) {
-							sets.append(JDBCUtils.COMMA_SPACE);
+							sets.append(JdbcUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -303,7 +303,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							handleIdColumn(columnName, templateParams, setsFlag);
 						} else {// 记录已存在，组织更新子句
 							if (setsFlag) {
-								sets.append(JDBCUtils.COMMA_SPACE);
+								sets.append(JdbcUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -364,7 +364,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							handleIdColumn(columnName, templateParams, setsFlag);
 						} else {// 记录已存在，组织更新子句
 							if (setsFlag) {
-								sets.append(JDBCUtils.COMMA_SPACE);
+								sets.append(JdbcUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -419,7 +419,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumn(columnName, templateParams, setsFlag);
 					} else {// 记录已存在，组织更新子句
 						if (setsFlag) {
-							sets.append(JDBCUtils.COMMA_SPACE);
+							sets.append(JdbcUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -468,7 +468,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JDBCUtils.COMMA_SPACE);
+								sets.append(JdbcUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -517,7 +517,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							fieldMeta.setId(false);
 							sets = templateParams.get(SETS);
 							if (setsFlag) {
-								sets.append(JDBCUtils.COMMA_SPACE);
+								sets.append(JdbcUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -569,7 +569,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JDBCUtils.COMMA_SPACE);
+								sets.append(JdbcUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -620,7 +620,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 								fieldMeta.setId(false);
 								if (setsFlag) {
-									sets.append(JDBCUtils.COMMA_SPACE);
+									sets.append(JdbcUtils.COMMA_SPACE);
 								} else {
 									setsFlag = true;
 								}
@@ -673,7 +673,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 								fieldMeta.setId(false);
 								if (setsFlag) {
-									sets.append(JDBCUtils.COMMA_SPACE);
+									sets.append(JdbcUtils.COMMA_SPACE);
 								} else {
 									setsFlag = true;
 								}
@@ -723,7 +723,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JDBCUtils.COMMA_SPACE);
+								sets.append(JdbcUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -778,7 +778,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	 */
 	private static final void appendComma(Map<String, StringBuilder> params, List<String> paramNames) {
 		for (int i = 0, size = paramNames.size(); i < size; i++) {
-			params.get(paramNames.get(i)).append(JDBCUtils.COMMA_SPACE);
+			params.get(paramNames.get(i)).append(JdbcUtils.COMMA_SPACE);
 		}
 	}
 

@@ -181,7 +181,7 @@ public abstract class JdbcUtils {
 	@SuppressWarnings("unchecked")
 	public static <T> T getValue(ResultSet rs, int columnIndex, Class<T> type) throws SQLException {
 		if (BigDecimal.class.isAssignableFrom(type)) {
-			return (T) rs.getBigDecimal(1);
+			return (T) rs.getBigDecimal(columnIndex);
 		} else if (Number.class.isAssignableFrom(type)) {
 			Object obj = rs.getObject(columnIndex);
 			if (obj == null) {

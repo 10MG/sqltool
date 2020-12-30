@@ -80,8 +80,6 @@ public class GetSQLExecuter<T> implements SQLExecuter<T> {
 				row = (T) obj;
 			} else if (String.class.isAssignableFrom(type)) {
 				row = (T) rs.getString(1);
-			} else if (BigDecimal.class.isAssignableFrom(type)) {
-				row = (T) rs.getBigDecimal(1);
 			} else if (Date.class.isAssignableFrom(type)) {
 				row = (T) rs.getObject(1);
 			} else {

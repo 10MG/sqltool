@@ -205,8 +205,6 @@ public abstract class JdbcUtils {
 			return (T) obj;
 		} else if (String.class.isAssignableFrom(type)) {
 			return (T) rs.getString(columnIndex);
-		} else if (BigDecimal.class.isAssignableFrom(type)) {
-			return (T) rs.getBigDecimal(columnIndex);
 		}
 		return (T) rs.getObject(columnIndex);
 	}

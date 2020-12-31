@@ -10,7 +10,7 @@ import cn.tenmg.sqltool.config.model.Sqltool;
 /**
  * 配置加载器
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public interface ConfigLoader extends Serializable {

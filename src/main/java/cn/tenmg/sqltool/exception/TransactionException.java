@@ -3,7 +3,7 @@ package cn.tenmg.sqltool.exception;
 /**
  * 事务异常
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class TransactionException extends RuntimeException {

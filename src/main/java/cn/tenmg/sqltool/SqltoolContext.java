@@ -16,10 +16,11 @@ import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.exception.TransactionException;
 import cn.tenmg.sqltool.sql.DML;
-import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.MergeSQL;
+import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.SQLExecuter;
+import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.executer.ExecuteSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.ExecuteUpdateSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.GetSQLExecuter;
@@ -27,6 +28,7 @@ import cn.tenmg.sqltool.sql.executer.SelectSQLExecuter;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.sql.parser.GetDMLParser;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
+import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
 import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.JSONUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
@@ -35,7 +37,7 @@ import cn.tenmg.sqltool.utils.SQLDialectUtils;
 /**
  * sqltool上下文
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class SqltoolContext implements Serializable {
@@ -159,6 +161,145 @@ public class SqltoolContext implements Serializable {
 	public <T extends Serializable> void insertBatch(Map<String, String> options, List<T> rows, int batchSize) {
 		if (!CollectionUtils.isEmpty(rows)) {
 			DML dml = InsertDMLParser.getInstance().parse(rows.get(0).getClass());
+			executeBatch(options, dml.getSql(), rows, dml.getFields(), batchSize);
+		}
+	}
+
+	/**
+	 * 软更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 */
+	public <T extends Serializable> int update(Map<String, String> options, T obj) {
+		SQL sql = SQLDialectUtils.getSQLDialect(options).update(obj);
+		return execute(options, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+	}
+
+	/**
+	 * 软更新操作（实体对象集为空则直接返回null）
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 */
+	public <T extends Serializable> int update(Map<String, String> options, List<T> rows) {
+		if (CollectionUtils.isEmpty(rows)) {
+			return 0;
+		}
+		return update(options, showSql, rows, SQLDialectUtils.getSQLDialect(options).update(rows.get(0).getClass()));
+	}
+
+	/**
+	 * 使用默认批容量执行批量软更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 */
+	public <T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows) {
+		updateBatch(options, rows, defaultBatchSize);
+	}
+
+	/**
+	 * 
+	 * 批量软更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 */
+	public <T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows, int batchSize) {
+		if (CollectionUtils.isEmpty(rows)) {
+			return;
+		}
+		updateBatch(options, rows, batchSize, SQLDialectUtils.getSQLDialect(options).update(rows.get(0).getClass()));
+	}
+
+	/**
+	 * 硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 */
+	public <T extends Serializable> int hardUpdate(Map<String, String> options, T obj) {
+		DML dml = UpdateDMLParser.getInstance().parse(obj.getClass());
+		List<Object> params = JdbcUtils.getParams(obj, dml.getFields());
+		return execute(options, dml.getSql(), params, ExecuteUpdateSQLExecuter.getInstance());
+	}
+
+	/**
+	 * 硬更新操作（实体对象集为空则直接返回null）
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 */
+	public <T extends Serializable> int hardUpdate(Map<String, String> options, List<T> rows) {
+		if (CollectionUtils.isEmpty(rows)) {
+			return 0;
+		} else {
+			Connection con = null;
+			try {
+				Class.forName(options.get("driver"));
+				con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
+				con.setAutoCommit(false);
+				return JdbcUtils.hardUpdate(con, showSql, rows);
+			} catch (SQLException e) {
+				try {
+					con.rollback();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+				throw new cn.tenmg.sqltool.exception.SQLException(e);
+			} catch (ClassNotFoundException e) {
+				throw new IllegalConfigException(e);
+			} finally {
+				JdbcUtils.close(con);
+			}
+		}
+	}
+
+	/**
+	 * 使用默认批容量执行批量硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 */
+	public <T extends Serializable> void hardUpdateBatch(Map<String, String> options, List<T> rows) {
+		hardUpdateBatch(options, rows, defaultBatchSize);
+	}
+
+	/**
+	 * 
+	 * 批量硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 */
+	public <T extends Serializable> void hardUpdateBatch(Map<String, String> options, List<T> rows, int batchSize) {
+		if (!CollectionUtils.isEmpty(rows)) {
+			DML dml = UpdateDMLParser.getInstance().parse(rows.get(0).getClass());
 			executeBatch(options, dml.getSql(), rows, dml.getFields(), batchSize);
 		}
 	}
@@ -1089,6 +1230,27 @@ public class SqltoolContext implements Serializable {
 		}
 	}
 
+	private static <T> int update(Map<String, String> options, boolean showSql, List<T> rows, UpdateSQL updateSQL) {
+		Connection con = null;
+		try {
+			Class.forName(options.get("driver"));
+			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
+			con.setAutoCommit(false);
+			return JdbcUtils.update(con, showSql, rows, updateSQL);
+		} catch (SQLException e) {
+			try {
+				con.rollback();
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
+			throw new cn.tenmg.sqltool.exception.SQLException(e);
+		} catch (ClassNotFoundException e) {
+			throw new IllegalConfigException(e);
+		} finally {
+			JdbcUtils.close(con);
+		}
+	}
+
 	private static <T> int save(Map<String, String> options, boolean showSql, List<T> rows, MergeSQL mergeSql) {
 		Connection con = null;
 		try {
@@ -1110,6 +1272,52 @@ public class SqltoolContext implements Serializable {
 		}
 	}
 
+	private <T> void updateBatch(Map<String, String> options, List<T> rows, int batchSize, UpdateSQL updateSql) {
+		Connection con = null;
+		PreparedStatement ps = null;
+		try {
+			int size = rows.size(), current = 0, times = (int) Math.ceil(size / (double) batchSize);
+			Class.forName(options.get("driver"));
+			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
+			con.setAutoCommit(false);
+			String sql = updateSql.getScript();
+			List<Field> fields = updateSql.getFields();
+			if (showSql) {
+				log.info("Execute SQL: ".concat(sql));
+			}
+			ps = con.prepareStatement(sql);
+			while (current < times) {
+				int end = (current + 1) * batchSize, last = end < size ? end : size;
+				for (int i = current * batchSize; i < last; i++) {
+					JdbcUtils.addBatch(ps, rows.get(i), fields);
+				}
+				ps.executeBatch();
+				con.commit();
+				ps.clearBatch();
+				current++;
+			}
+		} catch (SQLException e) {
+			try {
+				con.rollback();
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
+			throw new cn.tenmg.sqltool.exception.SQLException(e);
+		} catch (ClassNotFoundException e) {
+			throw new IllegalConfigException(e);
+		} finally {
+			if (ps != null) {
+				try {
+					ps.clearBatch();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				JdbcUtils.close(ps);
+			}
+			JdbcUtils.close(con);
+		}
+	}
+
 	private <T> void saveBatch(Map<String, String> options, List<T> rows, int batchSize, MergeSQL mergeSql) {
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -1123,7 +1331,7 @@ public class SqltoolContext implements Serializable {
 			if (showSql) {
 				log.info("Execute SQL: ".concat(sql));
 			}
-			ps = con.prepareStatement(mergeSql.getScript());
+			ps = con.prepareStatement(sql);
 			while (current < times) {
 				int end = (current + 1) * batchSize, last = end < size ? end : size;
 				for (int i = current * batchSize; i < last; i++) {

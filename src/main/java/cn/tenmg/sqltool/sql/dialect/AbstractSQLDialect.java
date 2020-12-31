@@ -12,9 +12,12 @@ import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
 import cn.tenmg.sqltool.exception.ColumnNotFoundException;
 import cn.tenmg.sqltool.exception.DataAccessException;
+import cn.tenmg.sqltool.exception.NoColumnForUpdateException;
+import cn.tenmg.sqltool.exception.PkNotFoundException;
 import cn.tenmg.sqltool.sql.MergeSQL;
 import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
+import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.utils.EntityUtils;
@@ -25,7 +28,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
 /**
  * 抽象SQL方言。封装方言基本方法
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public abstract class AbstractSQLDialect implements SQLDialect {
@@ -35,8 +38,22 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	 */
 	private static final long serialVersionUID = -5454570237300496297L;
 
+	private static final String UPDATE = "UPDATE ${tableName} SET ${sets} WHERE ${condition}";
+
 	protected static final String TABLE_NAME = "tableName", COLUMNS = "columns", VALUES = "values", SETS = "sets",
 			LEFT_COLUMN_NAME = "columnName", RIGHT_COLUMN_NAME = "columnName";
+
+	/**
+	 * 获取更新语句的SET字句模板。例如Mysql数据库为<code>${columnName}=?</code>
+	 */
+	abstract String getUpdateSetTemplate();
+
+	/**
+	 * 获取更新语句非空时SET字句模板。例如Mysql数据库为<code>${columnName}=IFNULL(${columnName}, ?)</code>
+	 * 
+	 * @return 返回非空时SET字句模板
+	 */
+	abstract String getUpdateSetIfNotNullTemplate();
 
 	/**
 	 * 获取额外的SQL模板参数名集，用于初始化SQL模板参数。已初始化的模板参数有columns、values、sets。columns用于表示插入的列，values表示插入的参数，sets表示记录已存在时的更新表达式。这些参数将在后续运行过程中逐步追加字符生成
@@ -65,17 +82,17 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	abstract List<String> getNeedsCommaParamNames();
 
 	/**
-	 * 处理列。根据需要向个各模板参数追加字符串
+	 * 保存时每个列的处理方法。根据需要向个各模板参数追加字符串
 	 * 
 	 * @param columnName
 	 *            列名
 	 * @param templateParams
 	 *            SQL模板参数集
 	 */
-	abstract void handleColumn(String columnName, Map<String, StringBuilder> templateParams);
+	abstract void handleColumnWhenSave(String columnName, Map<String, StringBuilder> templateParams);
 
 	/**
-	 * 处理主键列。根据需要向个特定模板参数追加字符串
+	 * 保存时每个主键列的处理方法。根据需要向个特定模板参数追加字符串
 	 * 
 	 * @param columnName
 	 *            主键列名
@@ -84,10 +101,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	 * @param notFirst
 	 *            是否非第一个主键列
 	 */
-	abstract void handleIdColumn(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst);
+	abstract void handleIdColumnWhenSave(String columnName, Map<String, StringBuilder> templateParams,
+			boolean notFirst);
 
 	/**
-	 * 获取SET字句模板。例如Mysql数据库为{@code ${columnName}=VALUES(${columnName})}
+	 * 获取SET字句模板。例如Mysql数据库为<code>${columnName}=VALUES(${columnName})</code>
 	 * 
 	 * @return 返回SET字句模板
 	 */
@@ -100,31 +118,206 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	 */
 	abstract String getSetIfNotNullTemplate();
 
-	private static final class EntityMetaCacheHolder {
-		private static volatile Map<Class<?>, EntityMeta> CACHE = new HashMap<Class<?>, EntityMeta>();
+	@Override
+	public <T> UpdateSQL update(Class<T> type) {
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean hasId = false, hasGeneralColumn = false;
+		StringBuilder sets = new StringBuilder(), condition = new StringBuilder();
+		List<Field> generalFields = new ArrayList<Field>(), idFields = new ArrayList<Field>();
+		try {
+			if (entityMeta == null) {
+				Class<?> current = type;
+				Set<String> fieldSet = new HashSet<String>();
+				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
+				while (!Object.class.equals(current)) {
+					Field[] declaredFields = current.getDeclaredFields();
+					for (int i = 0; i < declaredFields.length; i++) {
+						Field field = declaredFields[i];
+						String fieldName = field.getName();
+						if (!fieldSet.contains(fieldName)) {
+							fieldSet.add(fieldName);
+							Column column = field.getAnnotation(Column.class);
+							if (column != null) {
+								field.setAccessible(true);
+								String columnName = column.name();
+								if (StringUtils.isBlank(columnName)) {
+									columnName = StringUtils.camelToUnderline(fieldName, true);
+								}
+								FieldMeta fieldMeta = new FieldMeta(field, columnName);
+								if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
+									fieldMeta.setId(false);
+									generalFields.add(field);
+									if (hasGeneralColumn) {
+										sets.append(JdbcUtils.COMMA_SPACE);
+									} else {
+										hasGeneralColumn = true;
+									}
+									sets.append(PlaceHolderUtils.replace(getUpdateSetIfNotNullTemplate(), "columnName",
+											columnName));
+								} else {
+									fieldMeta.setId(true);
+									idFields.add(field);
+									if (hasId) {
+										condition.append(JdbcUtils.SPACE_AND_SPACE);
+									} else {
+										hasId = true;
+									}
+									condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
+											.append(JdbcUtils.PARAM_MARK);
+								}
+								fieldMetas.add(fieldMeta);
+							}
+						}
+					}
+					current = current.getSuperclass();
+				}
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
+			} else {
+				List<FieldMeta> fieldMetas = entityMeta.getFieldMetas();
+				for (int i = 0, size = fieldMetas.size(); i < size; i++) {
+					FieldMeta fieldMeta = fieldMetas.get(i);
+					Field field = fieldMeta.getField();
+					String columnName = fieldMeta.getColumnName();
+					if (fieldMeta.isId()) {
+						idFields.add(field);
+						if (hasId) {
+							condition.append(JdbcUtils.SPACE_AND_SPACE);
+						} else {
+							hasId = true;
+						}
+						condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+					} else {// 组织已存在时的更新子句
+						generalFields.add(field);
+						if (hasGeneralColumn) {
+							sets.append(JdbcUtils.COMMA_SPACE);
+						} else {
+							hasGeneralColumn = true;
+						}
+						sets.append(
+								PlaceHolderUtils.replace(getUpdateSetIfNotNullTemplate(), "columnName", columnName));
+					}
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			throw new DataAccessException(e);
+		}
+		return updateSQL(type, hasId, hasGeneralColumn, entityMeta.getTableName(), sets, condition, generalFields,
+				idFields);
 	}
 
-	protected static EntityMeta getCachedEntityMeta(Class<?> type) {
-		return EntityMetaCacheHolder.CACHE.get(type);
-	}
-
-	protected static synchronized void cacheEntityMeta(Class<?> type, EntityMeta entityMeta) {
-		EntityMetaCacheHolder.CACHE.put(type, entityMeta);
+	@Override
+	public <T> UpdateSQL update(Class<T> type, String... hardFields) {
+		Set<String> hardFieldSet = new HashSet<String>();
+		for (int i = 0; i < hardFields.length; i++) {
+			hardFieldSet.add(hardFields[i]);
+		}
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean hasId = false, hasGeneralColumn = false;
+		StringBuilder sets = new StringBuilder(), condition = new StringBuilder();
+		List<Field> generalFields = new ArrayList<Field>(), idFields = new ArrayList<Field>();
+		String updateSetTemplate;
+		try {
+			if (entityMeta == null) {
+				Class<?> current = type;
+				Set<String> fieldSet = new HashSet<String>();
+				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
+				while (!Object.class.equals(current)) {
+					Field[] declaredFields = current.getDeclaredFields();
+					for (int i = 0; i < declaredFields.length; i++) {
+						Field field = declaredFields[i];
+						String fieldName = field.getName();
+						if (!fieldSet.contains(fieldName)) {
+							fieldSet.add(fieldName);
+							Column column = field.getAnnotation(Column.class);
+							if (column != null) {
+								field.setAccessible(true);
+								String columnName = column.name();
+								if (StringUtils.isBlank(columnName)) {
+									columnName = StringUtils.camelToUnderline(fieldName, true);
+								}
+								FieldMeta fieldMeta = new FieldMeta(field, columnName);
+								if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
+									fieldMeta.setId(false);
+									generalFields.add(field);
+									if (hasGeneralColumn) {
+										sets.append(JdbcUtils.COMMA_SPACE);
+									} else {
+										hasGeneralColumn = true;
+									}
+									if (hardFieldSet.contains(field.getName())) {
+										updateSetTemplate = getUpdateSetTemplate();
+									} else {
+										updateSetTemplate = getUpdateSetIfNotNullTemplate();
+									}
+									sets.append(PlaceHolderUtils.replace(updateSetTemplate, "columnName", columnName));
+								} else {
+									fieldMeta.setId(true);
+									idFields.add(field);
+									if (hasId) {
+										condition.append(JdbcUtils.SPACE_AND_SPACE);
+									} else {
+										hasId = true;
+									}
+									condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
+											.append(JdbcUtils.PARAM_MARK);
+								}
+								fieldMetas.add(fieldMeta);
+							}
+						}
+					}
+					current = current.getSuperclass();
+				}
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
+			} else {
+				List<FieldMeta> fieldMetas = entityMeta.getFieldMetas();
+				for (int i = 0, size = fieldMetas.size(); i < size; i++) {
+					FieldMeta fieldMeta = fieldMetas.get(i);
+					Field field = fieldMeta.getField();
+					String columnName = fieldMeta.getColumnName();
+					if (fieldMeta.isId()) {
+						idFields.add(field);
+						if (hasId) {
+							condition.append(JdbcUtils.SPACE_AND_SPACE);
+						} else {
+							hasId = true;
+						}
+						condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+					} else {// 组织已存在时的更新子句
+						generalFields.add(field);
+						if (hasGeneralColumn) {
+							sets.append(JdbcUtils.COMMA_SPACE);
+						} else {
+							hasGeneralColumn = true;
+						}
+						if (hardFieldSet.contains(field.getName())) {
+							updateSetTemplate = getUpdateSetTemplate();
+						} else {
+							updateSetTemplate = getUpdateSetIfNotNullTemplate();
+						}
+						sets.append(PlaceHolderUtils.replace(updateSetTemplate, "columnName", columnName));
+					}
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			throw new DataAccessException(e);
+		}
+		return updateSQL(type, hasId, hasGeneralColumn, entityMeta.getTableName(), sets, condition, generalFields,
+				idFields);
 	}
 
 	@Override
 	public <T> MergeSQL save(Class<T> type) {
-		EntityMeta entityMeta = getCachedEntityMeta(type);
-		boolean flag = false;
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean columnFound = false;
 		Map<String, StringBuilder> templateParams = getSQLTemplateParams();
 		try {
 			if (entityMeta == null) {
-				entityMeta = new EntityMeta();
-				entityMeta.setTableName(EntityUtils.getTableName(type));
 				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
-				flag = parse(type, templateParams, fieldMetas);
-				entityMeta.setFieldMetas(fieldMetas);
-				cacheEntityMeta(type, entityMeta);
+				columnFound = parse(type, templateParams, fieldMetas);
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
 			} else {
 				boolean setsFlag = false;
 				StringBuilder sets = templateParams.get(SETS);
@@ -132,15 +325,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 				for (int i = 0, size = fieldMetas.size(); i < size; i++) {
 					FieldMeta fieldMeta = fieldMetas.get(i);
 					String columnName = fieldMeta.getColumnName();
-					if (flag) {
+					if (columnFound) {
 						appendComma(templateParams, getNeedsCommaParamNames());
 					} else {
-						flag = true;
+						columnFound = true;
 					}
-					handleColumn(columnName, templateParams);
+					handleColumnWhenSave(columnName, templateParams);
 					if (fieldMeta.isId()) {
-						handleIdColumn(columnName, templateParams, setsFlag);
-					} else {// 记录已存在，组织更新子句
+						handleIdColumnWhenSave(columnName, templateParams, setsFlag);
+					} else {// 组织已存在时的更新子句
 						if (setsFlag) {
 							sets.append(JdbcUtils.COMMA_SPACE);
 						} else {
@@ -153,7 +346,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new DataAccessException(e);
 		}
-		if (flag) {
+		if (columnFound) {
 			return mergeSql(entityMeta, templateParams);
 		} else {
 			throw new ColumnNotFoundException(
@@ -167,17 +360,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		for (int i = 0; i < hardFields.length; i++) {
 			hardFieldSet.add(hardFields[i]);
 		}
-		boolean flag = false;
-		EntityMeta entityMeta = getCachedEntityMeta(type);
+		boolean columnFound = false;
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
 		Map<String, StringBuilder> templateParams = getSQLTemplateParams();
 		try {
 			if (entityMeta == null) {
-				entityMeta = new EntityMeta();
-				entityMeta.setTableName(EntityUtils.getTableName(type));
 				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
-				flag = parse(type, templateParams, fieldMetas, hardFieldSet);
-				entityMeta.setFieldMetas(fieldMetas);
-				cacheEntityMeta(type, entityMeta);
+				columnFound = parse(type, templateParams, fieldMetas, hardFieldSet);
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
 			} else {
 				boolean setsFlag = false;
 				StringBuilder sets = templateParams.get(SETS);
@@ -186,15 +377,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 					FieldMeta fieldMeta = fieldMetas.get(i);
 					String columnName = fieldMeta.getColumnName();
 					Field field = fieldMeta.getField();
-					if (flag) {
+					if (columnFound) {
 						appendComma(templateParams, getNeedsCommaParamNames());
 					} else {
-						flag = true;
+						columnFound = true;
 					}
-					handleColumn(columnName, templateParams);
+					handleColumnWhenSave(columnName, templateParams);
 					if (fieldMeta.isId()) {
-						handleIdColumn(columnName, templateParams, setsFlag);
-					} else {// 记录已存在，组织更新子句
+						handleIdColumnWhenSave(columnName, templateParams, setsFlag);
+					} else {// 组织已存在时的更新子句
 						if (setsFlag) {
 							sets.append(JdbcUtils.COMMA_SPACE);
 						} else {
@@ -211,7 +402,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new DataAccessException(e);
 		}
-		if (flag) {
+		if (columnFound) {
 			return mergeSql(entityMeta, templateParams);
 		} else {
 			throw new ColumnNotFoundException(
@@ -221,17 +412,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
 	@Override
 	public <T> MergeSQL hardSave(Class<T> type) {
-		EntityMeta entityMeta = getCachedEntityMeta(type);
-		boolean columnNotFound = false;
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean columnFound = false;
 		Map<String, StringBuilder> templateParams = getSQLTemplateParams();
 		try {
 			if (entityMeta == null) {
-				entityMeta = new EntityMeta();
-				entityMeta.setTableName(EntityUtils.getTableName(type));
 				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
-				columnNotFound = hardParse(type, templateParams, fieldMetas);
-				entityMeta.setFieldMetas(fieldMetas);
-				cacheEntityMeta(type, entityMeta);
+				columnFound = hardParse(type, templateParams, fieldMetas);
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
 			} else {
 				boolean setsFlag = false;
 				StringBuilder sets = templateParams.get(SETS);
@@ -239,15 +428,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 				for (int i = 0, size = fieldMetas.size(); i < size; i++) {
 					FieldMeta fieldMeta = fieldMetas.get(i);
 					String columnName = fieldMeta.getColumnName();
-					if (columnNotFound) {
+					if (columnFound) {
 						appendComma(templateParams, getNeedsCommaParamNames());
 					} else {
-						columnNotFound = true;
+						columnFound = true;
 					}
-					handleColumn(columnName, templateParams);
+					handleColumnWhenSave(columnName, templateParams);
 					if (fieldMeta.isId()) {
-						handleIdColumn(columnName, templateParams, setsFlag);
-					} else {// 记录已存在，组织更新子句
+						handleIdColumnWhenSave(columnName, templateParams, setsFlag);
+					} else {// 组织已存在时的更新子句
 						if (setsFlag) {
 							sets.append(JdbcUtils.COMMA_SPACE);
 						} else {
@@ -260,7 +449,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new DataAccessException(e);
 		}
-		if (columnNotFound) {
+		if (columnFound) {
 			return mergeSql(entityMeta, templateParams);
 		} else {
 			throw new ColumnNotFoundException(
@@ -269,20 +458,208 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
+	public <T> SQL update(T obj) {
+		Class<?> type = obj.getClass();
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean hasId = false, hasGeneralColumn = false;
+		StringBuilder sets = new StringBuilder(), condition = new StringBuilder();
+		List<Object> values = new ArrayList<Object>(), conditionValues = new ArrayList<Object>();
+		try {
+			if (entityMeta == null) {
+				Class<?> current = type;
+				Set<String> fieldSet = new HashSet<String>();
+				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
+				while (!Object.class.equals(current)) {
+					Field[] declaredFields = current.getDeclaredFields();
+					for (int i = 0; i < declaredFields.length; i++) {
+						Field field = declaredFields[i];
+						String fieldName = field.getName();
+						if (!fieldSet.contains(fieldName)) {
+							fieldSet.add(fieldName);
+							Column column = field.getAnnotation(Column.class);
+							if (column != null) {
+								field.setAccessible(true);
+								String columnName = column.name();
+								if (StringUtils.isBlank(columnName)) {
+									columnName = StringUtils.camelToUnderline(fieldName, true);
+								}
+								FieldMeta fieldMeta = new FieldMeta(field, columnName);
+								Object param = field.get(obj);
+								if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
+									fieldMeta.setId(false);
+									if (param != null) {
+										values.add(param);
+										if (hasGeneralColumn) {
+											sets.append(JdbcUtils.COMMA_SPACE);
+										} else {
+											hasGeneralColumn = true;
+										}
+										sets.append(PlaceHolderUtils.replace(getUpdateSetTemplate(), "columnName",
+												columnName));
+									}
+								} else {
+									fieldMeta.setId(true);
+									conditionValues.add(param);
+									if (hasId) {
+										condition.append(JdbcUtils.SPACE_AND_SPACE);
+									} else {
+										hasId = true;
+									}
+									condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
+											.append(JdbcUtils.PARAM_MARK);
+								}
+								fieldMetas.add(fieldMeta);
+							}
+						}
+					}
+					current = current.getSuperclass();
+				}
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
+			} else {
+				List<FieldMeta> fieldMetas = entityMeta.getFieldMetas();
+				for (int i = 0, size = fieldMetas.size(); i < size; i++) {
+					FieldMeta fieldMeta = fieldMetas.get(i);
+					Field field = fieldMeta.getField();
+					String columnName = fieldMeta.getColumnName();
+					Object param = field.get(obj);
+					if (fieldMeta.isId()) {
+						conditionValues.add(param);
+						if (hasId) {
+							condition.append(JdbcUtils.SPACE_AND_SPACE);
+						} else {
+							hasId = true;
+						}
+						condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+					} else {// 组织已存在时的更新子句
+						if (param != null) {
+							values.add(param);
+							if (hasGeneralColumn) {
+								sets.append(JdbcUtils.COMMA_SPACE);
+							} else {
+								hasGeneralColumn = true;
+							}
+							sets.append(PlaceHolderUtils.replace(getUpdateSetTemplate(), "columnName", columnName));
+						}
+					}
+				}
+			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new DataAccessException(e);
+		}
+		return sql(type, hasId, hasGeneralColumn, entityMeta.getTableName(), sets, condition, values, conditionValues);
+	}
+
+	@Override
+	public <T> SQL update(T obj, String... hardFields) {
+		Set<String> hardFieldSet = new HashSet<String>();
+		for (int i = 0; i < hardFields.length; i++) {
+			hardFieldSet.add(hardFields[i]);
+		}
+		Class<?> type = obj.getClass();
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean hasId = false, hasGeneralColumn = false;
+		StringBuilder sets = new StringBuilder(), condition = new StringBuilder();
+		List<Object> values = new ArrayList<Object>(), conditionValues = new ArrayList<Object>();
+		try {
+			if (entityMeta == null) {
+				Class<?> current = type;
+				Set<String> fieldSet = new HashSet<String>();
+				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
+				while (!Object.class.equals(current)) {
+					Field[] declaredFields = current.getDeclaredFields();
+					for (int i = 0; i < declaredFields.length; i++) {
+						Field field = declaredFields[i];
+						String fieldName = field.getName();
+						if (!fieldSet.contains(fieldName)) {
+							fieldSet.add(fieldName);
+							Column column = field.getAnnotation(Column.class);
+							if (column != null) {
+								field.setAccessible(true);
+								String columnName = column.name();
+								if (StringUtils.isBlank(columnName)) {
+									columnName = StringUtils.camelToUnderline(fieldName, true);
+								}
+								FieldMeta fieldMeta = new FieldMeta(field, columnName);
+								Object param = field.get(obj);
+								if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
+									fieldMeta.setId(false);
+									if (param != null || hardFieldSet.contains(field.getName())) {
+										values.add(param);
+										if (hasGeneralColumn) {
+											sets.append(JdbcUtils.COMMA_SPACE);
+										} else {
+											hasGeneralColumn = true;
+										}
+										sets.append(PlaceHolderUtils.replace(getUpdateSetTemplate(), "columnName",
+												columnName));
+									}
+								} else {
+									fieldMeta.setId(true);
+									conditionValues.add(param);
+									if (hasId) {
+										condition.append(JdbcUtils.SPACE_AND_SPACE);
+									} else {
+										hasId = true;
+									}
+									condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
+											.append(JdbcUtils.PARAM_MARK);
+								}
+								fieldMetas.add(fieldMeta);
+							}
+						}
+					}
+					current = current.getSuperclass();
+				}
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
+			} else {
+				List<FieldMeta> fieldMetas = entityMeta.getFieldMetas();
+				for (int i = 0, size = fieldMetas.size(); i < size; i++) {
+					FieldMeta fieldMeta = fieldMetas.get(i);
+					Field field = fieldMeta.getField();
+					String columnName = fieldMeta.getColumnName();
+					Object param = field.get(obj);
+					if (fieldMeta.isId()) {
+						conditionValues.add(param);
+						if (hasId) {
+							condition.append(JdbcUtils.SPACE_AND_SPACE);
+						} else {
+							hasId = true;
+						}
+						condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+					} else {// 组织已存在时的更新子句
+						if (param != null || hardFieldSet.contains(field.getName())) {
+							values.add(param);
+							if (hasGeneralColumn) {
+								sets.append(JdbcUtils.COMMA_SPACE);
+							} else {
+								hasGeneralColumn = true;
+							}
+							sets.append(PlaceHolderUtils.replace(getUpdateSetTemplate(), "columnName", columnName));
+						}
+					}
+				}
+			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new DataAccessException(e);
+		}
+		return sql(type, hasId, hasGeneralColumn, entityMeta.getTableName(), sets, condition, values, conditionValues);
+	}
+
+	@Override
 	public <T> SQL save(T obj) {
 		Class<?> type = obj.getClass();
-		EntityMeta entityMeta = getCachedEntityMeta(type);
-		boolean flag = false;
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean columnFound = false;
 		List<Object> params = new ArrayList<Object>();
 		Map<String, StringBuilder> templateParams = getSQLTemplateParams();
 		try {
 			if (entityMeta == null) {
-				entityMeta = new EntityMeta();
-				entityMeta.setTableName(EntityUtils.getTableName(type));
 				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
-				flag = parse(obj, templateParams, params, fieldMetas);
-				entityMeta.setFieldMetas(fieldMetas);
-				cacheEntityMeta(type, entityMeta);
+				columnFound = parse(obj, templateParams, params, fieldMetas);
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
 			} else {
 				boolean setsFlag = false;
 				List<FieldMeta> fieldMetas = entityMeta.getFieldMetas();
@@ -293,15 +670,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 					Object param = fieldMeta.getField().get(obj);
 					if (param != null) {// 仅插入非NULL部分的字段值
 						params.add(param);
-						if (flag) {
+						if (columnFound) {
 							appendComma(templateParams, getNeedsCommaParamNames());
 						} else {
-							flag = true;
+							columnFound = true;
 						}
-						handleColumn(columnName, templateParams);
+						handleColumnWhenSave(columnName, templateParams);
 						if (fieldMeta.isId()) {
-							handleIdColumn(columnName, templateParams, setsFlag);
-						} else {// 记录已存在，组织更新子句
+							handleIdColumnWhenSave(columnName, templateParams, setsFlag);
+						} else {// 组织已存在时的更新子句
 							if (setsFlag) {
 								sets.append(JdbcUtils.COMMA_SPACE);
 							} else {
@@ -315,7 +692,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new DataAccessException(e);
 		}
-		if (flag) {
+		if (columnFound) {
 			return sql(entityMeta.getTableName(), templateParams, params);
 		} else {
 			throw new ColumnNotFoundException(String.format(
@@ -331,18 +708,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			hardFieldSet.add(hardFields[i]);
 		}
 		Class<?> type = obj.getClass();
-		EntityMeta entityMeta = getCachedEntityMeta(type);
-		boolean flag = false;
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean columnFound = false;
 		List<Object> params = new ArrayList<Object>();
 		Map<String, StringBuilder> templateParams = getSQLTemplateParams();
 		try {
 			if (entityMeta == null) {
-				entityMeta = new EntityMeta();
-				entityMeta.setTableName(EntityUtils.getTableName(type));
 				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
-				flag = parse(obj, templateParams, params, fieldMetas, hardFieldSet);
-				entityMeta.setFieldMetas(fieldMetas);
-				cacheEntityMeta(type, entityMeta);
+				columnFound = parse(obj, templateParams, params, fieldMetas, hardFieldSet);
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
 			} else {
 				boolean setsFlag = false;
 				List<FieldMeta> fieldMetas = entityMeta.getFieldMetas();
@@ -354,15 +729,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 					Object param = field.get(obj);
 					if (param != null || hardFieldSet.contains(field.getName())) {// 仅插入非NULL或硬保存部分的字段值
 						params.add(param);
-						if (flag) {
+						if (columnFound) {
 							appendComma(templateParams, getNeedsCommaParamNames());
 						} else {
-							flag = true;
+							columnFound = true;
 						}
-						handleColumn(columnName, templateParams);
+						handleColumnWhenSave(columnName, templateParams);
 						if (fieldMeta.isId()) {
-							handleIdColumn(columnName, templateParams, setsFlag);
-						} else {// 记录已存在，组织更新子句
+							handleIdColumnWhenSave(columnName, templateParams, setsFlag);
+						} else {// 组织已存在时的更新子句
 							if (setsFlag) {
 								sets.append(JdbcUtils.COMMA_SPACE);
 							} else {
@@ -376,7 +751,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new DataAccessException(e);
 		}
-		if (flag) {
+		if (columnFound) {
 			return sql(entityMeta.getTableName(), templateParams, params);
 		} else {
 			throw new ColumnNotFoundException(String.format(
@@ -388,18 +763,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	@Override
 	public <T> SQL hardSave(T obj) {
 		Class<?> type = obj.getClass();
-		EntityMeta entityMeta = getCachedEntityMeta(type);
-		boolean columnNotFound = false;
+		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
+		boolean columnFound = false;
 		List<Object> params = new ArrayList<Object>();
 		Map<String, StringBuilder> templateParams = getSQLTemplateParams();
 		try {
 			if (entityMeta == null) {
-				entityMeta = new EntityMeta();
-				entityMeta.setTableName(EntityUtils.getTableName(type));
 				List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
-				columnNotFound = hardParse(obj, templateParams, params, fieldMetas);
-				entityMeta.setFieldMetas(fieldMetas);
-				cacheEntityMeta(type, entityMeta);
+				columnFound = hardParse(obj, templateParams, params, fieldMetas);
+				entityMeta = new EntityMeta(EntityUtils.getTableName(type), fieldMetas);
+				EntityUtils.cacheEntityMeta(type, entityMeta);
 			} else {
 				boolean setsFlag = false;
 				List<FieldMeta> fieldMetas = entityMeta.getFieldMetas();
@@ -409,15 +782,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 					String columnName = fieldMeta.getColumnName();
 					Field field = fieldMeta.getField();
 					params.add(field.get(obj));
-					if (columnNotFound) {
+					if (columnFound) {
 						appendComma(templateParams, getNeedsCommaParamNames());
 					} else {
-						columnNotFound = true;
+						columnFound = true;
 					}
-					handleColumn(columnName, templateParams);
+					handleColumnWhenSave(columnName, templateParams);
 					if (fieldMeta.isId()) {
-						handleIdColumn(columnName, templateParams, setsFlag);
-					} else {// 记录已存在，组织更新子句
+						handleIdColumnWhenSave(columnName, templateParams, setsFlag);
+					} else {// 组织已存在时的更新子句
 						if (setsFlag) {
 							sets.append(JdbcUtils.COMMA_SPACE);
 						} else {
@@ -430,11 +803,30 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new DataAccessException(e);
 		}
-		if (columnNotFound) {
+		if (columnFound) {
 			return sql(entityMeta.getTableName(), templateParams, params);
 		} else {
 			throw new ColumnNotFoundException(
 					String.format("Column not found in class %s, please use @Column to config fields", type.getName()));
+		}
+	}
+
+	private <T> UpdateSQL updateSQL(Class<T> type, boolean hasId, boolean hasGeneralColumn, String tableName,
+			StringBuilder sets, StringBuilder condition, List<Field> generalFields, List<Field> idFields) {
+		if (hasId) {
+			if (hasGeneralColumn) {
+				generalFields.addAll(idFields);
+				return new UpdateSQL(
+						PlaceHolderUtils.replace(UPDATE, "tableName", tableName, "sets", sets, "condition", condition),
+						generalFields);
+			} else {
+				throw new NoColumnForUpdateException(String.format(
+						"There is only id column(s), but no general column found in class %s, please check your config",
+						type.getName()));
+			}
+		} else {
+			throw new PkNotFoundException(
+					"Primary key not found in class ".concat(type.getName()).concat(", please use @Id to config"));
 		}
 	}
 
@@ -464,8 +856,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						} else {
 							flag = true;
 						}
-						handleColumn(columnName, templateParams);
-						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
+						handleColumnWhenSave(columnName, templateParams);
+						if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
 								sets.append(JdbcUtils.COMMA_SPACE);
@@ -475,7 +867,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							appendSetIfNotNull(sets, columnName);
 						} else {
 							fieldMeta.setId(true);
-							handleIdColumn(columnName, templateParams, setsFlag);
+							handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 						}
 						fieldMetas.add(fieldMeta);
 					}
@@ -512,8 +904,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						} else {
 							flag = true;
 						}
-						handleColumn(columnName, templateParams);
-						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
+						handleColumnWhenSave(columnName, templateParams);
+						if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 							fieldMeta.setId(false);
 							sets = templateParams.get(SETS);
 							if (setsFlag) {
@@ -528,7 +920,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							}
 						} else {
 							fieldMeta.setId(true);
-							handleIdColumn(columnName, templateParams, setsFlag);
+							handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 						}
 						fieldMetas.add(fieldMeta);
 					}
@@ -565,8 +957,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						} else {
 							flag = true;
 						}
-						handleColumn(columnName, templateParams);
-						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
+						handleColumnWhenSave(columnName, templateParams);
+						if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
 								sets.append(JdbcUtils.COMMA_SPACE);
@@ -576,7 +968,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							appendSet(sets, columnName);
 						} else {
 							fieldMeta.setId(true);
-							handleIdColumn(columnName, templateParams, setsFlag);
+							handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 						}
 						fieldMetas.add(fieldMeta);
 					}
@@ -616,8 +1008,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							} else {
 								flag = true;
 							}
-							handleColumn(columnName, templateParams);
-							if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
+							handleColumnWhenSave(columnName, templateParams);
+							if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 								fieldMeta.setId(false);
 								if (setsFlag) {
 									sets.append(JdbcUtils.COMMA_SPACE);
@@ -627,7 +1019,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 								appendSet(sets, columnName);
 							} else {
 								fieldMeta.setId(true);
-								handleIdColumn(columnName, templateParams, setsFlag);
+								handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 							}
 						}
 						fieldMetas.add(fieldMeta);
@@ -669,8 +1061,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							} else {
 								flag = true;
 							}
-							handleColumn(columnName, templateParams);
-							if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
+							handleColumnWhenSave(columnName, templateParams);
+							if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 								fieldMeta.setId(false);
 								if (setsFlag) {
 									sets.append(JdbcUtils.COMMA_SPACE);
@@ -680,7 +1072,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 								appendSet(sets, columnName);
 							} else {
 								fieldMeta.setId(true);
-								handleIdColumn(columnName, templateParams, setsFlag);
+								handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 							}
 						}
 						fieldMetas.add(fieldMeta);
@@ -719,8 +1111,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						} else {
 							flag = true;
 						}
-						handleColumn(columnName, templateParams);
-						if (field.getAnnotation(Id.class) == null) {// 记录已存在，组织更新子句
+						handleColumnWhenSave(columnName, templateParams);
+						if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
 								sets.append(JdbcUtils.COMMA_SPACE);
@@ -730,7 +1122,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							appendSet(sets, columnName);
 						} else {
 							fieldMeta.setId(true);
-							handleIdColumn(columnName, templateParams, setsFlag);
+							handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 						}
 						fieldMetas.add(fieldMeta);
 					}
@@ -790,6 +1182,25 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} else {
 			return new MergeSQL(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams),
 					entityMeta.getFieldMetas());
+		}
+	}
+
+	private <T> SQL sql(T obj, boolean hasId, boolean hasGeneralColumn, String tableName, StringBuilder sets,
+			StringBuilder condition, List<Object> values, List<Object> conditionValues) {
+		if (hasId) {
+			if (hasGeneralColumn) {
+				values.addAll(conditionValues);
+				return new SQL(
+						PlaceHolderUtils.replace(UPDATE, "tableName", tableName, "sets", sets, "condition", condition),
+						values);
+			} else {
+				throw new NoColumnForUpdateException(String.format(
+						"There is only id column(s), but no general column witch is not null found in object %s, please check your config and field value",
+						obj.toString()));
+			}
+		} else {
+			throw new PkNotFoundException("Primary key not found in class ".concat(obj.getClass().getName())
+					.concat(", please use @Id to config"));
 		}
 	}
 

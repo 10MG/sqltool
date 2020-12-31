@@ -9,9 +9,9 @@ import cn.tenmg.sqltool.sql.SQLExecuter;
 /**
  * 抽象执行类SQL执行器
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
- * @param <T>
+ * @param <T> 返回结果类型
  */
 public abstract class AbstractExecuteSQLExecuter<T> implements SQLExecuter<T> {
 

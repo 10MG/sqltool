@@ -3,7 +3,7 @@ package cn.tenmg.sqltool.exception;
 /**
  * 未找到主键异常。实体对象没有使用{@code @Id}配置主键列属性会引发此异常
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class PkNotFoundException extends RuntimeException {

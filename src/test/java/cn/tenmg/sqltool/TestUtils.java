@@ -67,6 +67,10 @@ public abstract class TestUtils {
 		insert(sqltoolContext, options);
 		// 测试批量插入数据
 		insertBatch(sqltoolContext, options);
+		// 测试更新数据
+		update(sqltoolContext, options);
+		// 测试批量更新数据
+		updateBatch(sqltoolContext, options);
 		// 测试软保存数据
 		save(sqltoolContext, options);
 		// 测试批量软保存数据
@@ -98,7 +102,7 @@ public abstract class TestUtils {
 		 * Insert entity object/objects
 		 */
 		sqltoolContext.insert(options, staffInfo);
-		
+
 		staffInfo.setStaffName(null);
 		sqltoolContext.save(options, staffInfo);
 
@@ -191,6 +195,94 @@ public abstract class TestUtils {
 		staffInfos.add(staffInfo);
 		sqltoolContext.insertBatch(options, staffInfos);
 		Assert.assertEquals(defaultBatchSize + 1,
+				sqltoolContext.get(options, Long.class, "get_total_staff_count").intValue());
+	}
+
+	private static void update(SqltoolContext sqltoolContext, Map<String, String> options) {
+		sqltoolContext.execute(options, "DELETE FROM STAFF_INFO"); // 清空表
+		// 初始化数据
+		List<StaffInfo> staffInfos = new ArrayList<StaffInfo>();
+		StaffInfo staffInfo;
+		for (int i = 0; i < defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(i));
+			staffInfo.setStaffName("" + i);
+			staffInfo.setPosition(position);
+			staffInfos.add(staffInfo);
+		}
+		sqltoolContext.insertBatch(options, staffInfos);
+		Assert.assertEquals(defaultBatchSize,
+				sqltoolContext.get(options, Long.class, "get_total_staff_count").intValue());
+
+		// 更新单条数据
+		String staffId = df.format(0), staffName = "June";
+		StaffInfo june = new StaffInfo(staffId), original = sqltoolContext.get(options, StaffInfo.class,
+				"get_staff_info_by_staff_id", "staffId", staffId);
+		june.setStaffName(staffName);
+		Assert.assertEquals(1, sqltoolContext.update(options, june));
+		StaffInfo newStaffInfo = sqltoolContext.get(options, StaffInfo.class, "get_staff_info_by_staff_id", "staffId",
+				staffId);
+		Assert.assertEquals(staffName, newStaffInfo.getStaffName());
+		Assert.assertEquals(original.getPosition(), newStaffInfo.getPosition());
+
+		// 更新多条数据
+		for (int i = 0, size = staffInfos.size(); i < size; i++) {
+			staffInfo = staffInfos.get(i);
+			staffInfo.setStaffName(staffName);
+		}
+		System.out.println(sqltoolContext.update(options, staffInfos));
+		Assert.assertEquals(defaultBatchSize, sqltoolContext
+				.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
+
+		// 尝试更新不存在的数据
+		staffInfo = new StaffInfo();
+		staffInfo.setStaffId(df.format(defaultBatchSize + 1));
+		staffInfo.setStaffName("" + (defaultBatchSize + 1));
+		staffInfo.setPosition(position);
+		Assert.assertEquals(0, sqltoolContext.update(options, staffInfo));
+		Assert.assertEquals(defaultBatchSize,
+				sqltoolContext.get(options, Long.class, "get_total_staff_count").intValue());
+
+		staffInfos.add(staffInfo);
+		sqltoolContext.update(options, staffInfos);
+		Assert.assertEquals(defaultBatchSize,
+				sqltoolContext.get(options, Long.class, "get_total_staff_count").intValue());
+	}
+
+	private static void updateBatch(SqltoolContext sqltoolContext, Map<String, String> options) {
+		sqltoolContext.execute(options, "DELETE FROM STAFF_INFO"); // 清空表
+		// 初始化数据
+		List<StaffInfo> staffInfos = new ArrayList<StaffInfo>();
+		StaffInfo staffInfo;
+		for (int i = 0; i < defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(i));
+			staffInfo.setStaffName("" + i);
+			staffInfo.setPosition(position);
+			staffInfos.add(staffInfo);
+		}
+		sqltoolContext.insertBatch(options, staffInfos);
+		Assert.assertEquals(defaultBatchSize,
+				sqltoolContext.get(options, Long.class, "get_total_staff_count").intValue());
+
+		// 批量更新多条数据
+		String staffName = "June";
+		for (int i = 0, size = staffInfos.size(); i < size; i++) {
+			staffInfo = staffInfos.get(i);
+			staffInfo.setStaffName(staffName);
+		}
+		sqltoolContext.updateBatch(options, staffInfos);
+		Assert.assertEquals(defaultBatchSize, sqltoolContext
+				.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
+
+		// 尝试更新不存在的数据
+		staffInfo = new StaffInfo();
+		staffInfo.setStaffId(df.format(defaultBatchSize + 1));
+		staffInfo.setStaffName("" + (defaultBatchSize + 1));
+		staffInfo.setPosition(position);
+		staffInfos.add(staffInfo);
+		sqltoolContext.updateBatch(options, staffInfos);
+		Assert.assertEquals(defaultBatchSize,
 				sqltoolContext.get(options, Long.class, "get_total_staff_count").intValue());
 	}
 

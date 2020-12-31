@@ -7,7 +7,7 @@ import java.sql.SQLException;
 /**
  * 执行SQL的执行器
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class ExecuteSQLExecuter extends AbstractExecuteSQLExecuter<Boolean> {

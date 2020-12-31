@@ -8,6 +8,13 @@
 			]]>
 		</script>
 	</dsql>
+	<dsql id="get_staff_count_the_same_name">
+		<script>
+			<![CDATA[
+				SELECT COUNT(*) FROM STAFF_INFO WHERE STAFF_NAME = :staffName
+			]]>
+		</script>
+	</dsql>
 	<dsql id="get_staff_count_of_specific_position">
 		<script>
 			<![CDATA[

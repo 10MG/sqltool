@@ -28,7 +28,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
 /**
  * 基于XML文件配置的Sqltool工厂
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class XMLFileSqltoolFactory extends AbstractSqltoolFactory implements SqltoolFactory {

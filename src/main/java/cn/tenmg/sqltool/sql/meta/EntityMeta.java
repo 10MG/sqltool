@@ -2,6 +2,12 @@ package cn.tenmg.sqltool.sql.meta;
 
 import java.util.List;
 
+/**
+ * 实体类元数据
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
 public class EntityMeta {
 
 	private String tableName;
@@ -21,6 +27,16 @@ public class EntityMeta {
 	}
 
 	public void setFieldMetas(List<FieldMeta> fieldMetas) {
+		this.fieldMetas = fieldMetas;
+	}
+
+	public EntityMeta() {
+		super();
+	}
+
+	public EntityMeta(String tableName, List<FieldMeta> fieldMetas) {
+		super();
+		this.tableName = tableName;
 		this.fieldMetas = fieldMetas;
 	}
 

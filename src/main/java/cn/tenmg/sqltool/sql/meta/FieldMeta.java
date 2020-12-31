@@ -2,6 +2,12 @@ package cn.tenmg.sqltool.sql.meta;
 
 import java.lang.reflect.Field;
 
+/**
+ * 属性元数据
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
 public class FieldMeta {
 
 	private Field field;

@@ -8,7 +8,7 @@ import cn.tenmg.sqltool.dsql.NamedSQL;
 /**
  * Sqltool工厂
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public interface SqltoolFactory extends Serializable {

@@ -4,6 +4,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 
+/**
+ * 属性工具类
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
 public abstract class FieldUtils {
 
 	public static final void parseFields(Map<String, Integer> feildNames, Map<Integer, Field> fieldMap,

@@ -18,7 +18,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
 /**
  * 动态结构化查询语言(DSQL)工具类
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public abstract class DSQLUtils {

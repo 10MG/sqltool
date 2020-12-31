@@ -8,7 +8,7 @@ import javax.script.ScriptException;
 /**
  * 宏
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  */
 public interface Macro extends Serializable {
 	/**

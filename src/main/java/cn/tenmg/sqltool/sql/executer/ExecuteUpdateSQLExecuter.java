@@ -7,7 +7,7 @@ import java.sql.SQLException;
 /**
  * 执行更新的SQL执行器
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class ExecuteUpdateSQLExecuter extends AbstractExecuteSQLExecuter<Integer> {

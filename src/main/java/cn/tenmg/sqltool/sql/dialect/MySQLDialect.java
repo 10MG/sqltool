@@ -9,7 +9,7 @@ import cn.tenmg.sqltool.utils.JdbcUtils;
 /**
  * Mysql 方言
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class MySQLDialect extends AbstractSQLDialect {
@@ -18,6 +18,9 @@ public class MySQLDialect extends AbstractSQLDialect {
 	 * 
 	 */
 	private static final long serialVersionUID = 7189284927835898553L;
+
+	private static final String UPDATE_SET_TEMPLATE = "${columnName}=?",
+			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName}=IFNULL(?, ${columnName})";
 
 	private static final String INSERT_IF_NOT_EXISTS = "INSERT IGNORE INTO ${tableName} (${columns}) VALUES (${values})";
 
@@ -41,6 +44,16 @@ public class MySQLDialect extends AbstractSQLDialect {
 	}
 
 	@Override
+	String getUpdateSetTemplate() {
+		return UPDATE_SET_TEMPLATE;
+	}
+
+	@Override
+	String getUpdateSetIfNotNullTemplate() {
+		return UPDATE_SET_IF_NOT_NULL_TEMPLATE;
+	}
+
+	@Override
 	List<String> getExtSQLTemplateParamNames() {
 		return null;
 	}
@@ -61,13 +74,13 @@ public class MySQLDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	void handleColumn(String columnName, Map<String, StringBuilder> templateParams) {
+	void handleColumnWhenSave(String columnName, Map<String, StringBuilder> templateParams) {
 		templateParams.get(COLUMNS).append(columnName);
 		templateParams.get(VALUES).append(JdbcUtils.PARAM_MARK);
 	}
 
 	@Override
-	void handleIdColumn(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
+	void handleIdColumnWhenSave(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
 
 	}
 

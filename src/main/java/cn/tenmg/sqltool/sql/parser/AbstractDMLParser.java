@@ -7,6 +7,12 @@ import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.DMLParser;
 import cn.tenmg.sqltool.utils.EntityUtils;
 
+/**
+ * 抽象数据操纵语言解析器
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
 public abstract class AbstractDMLParser implements DMLParser {
 
 	/**

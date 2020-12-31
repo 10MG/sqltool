@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * 使用命名参数的SQL对象模型
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class NamedSQL implements Serializable {

@@ -22,7 +22,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
 /**
  * 查询记录列表的SQL执行器
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  * @param <T>
  *            实体类

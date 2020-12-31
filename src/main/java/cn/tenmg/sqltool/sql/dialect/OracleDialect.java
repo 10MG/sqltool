@@ -9,7 +9,7 @@ import cn.tenmg.sqltool.utils.JdbcUtils;
 /**
  * Oracle方言
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class OracleDialect extends AbstractSQLDialect {
@@ -18,6 +18,9 @@ public class OracleDialect extends AbstractSQLDialect {
 	 * 
 	 */
 	private static final long serialVersionUID = 6036289971714384622L;
+
+	private static final String UPDATE_SET_TEMPLATE = "${columnName}=?",
+			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName}=NVL(?, ${columnName})";
 
 	private static final String INSERT_IF_NOT_EXISTS = "MERGE INTO ${tableName} X USING (SELECT ${fields} FROM DUAL) Y ON (${condition}) WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})";
 
@@ -44,6 +47,16 @@ public class OracleDialect extends AbstractSQLDialect {
 	}
 
 	@Override
+	String getUpdateSetTemplate() {
+		return UPDATE_SET_TEMPLATE;
+	}
+
+	@Override
+	String getUpdateSetIfNotNullTemplate() {
+		return UPDATE_SET_IF_NOT_NULL_TEMPLATE;
+	}
+
+	@Override
 	List<String> getExtSQLTemplateParamNames() {
 		return EXT_SQL_TEMPLATE_PARAM_NAMES;
 	}
@@ -64,14 +77,14 @@ public class OracleDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	void handleColumn(String columnName, Map<String, StringBuilder> templateParams) {
+	void handleColumnWhenSave(String columnName, Map<String, StringBuilder> templateParams) {
 		templateParams.get(FIELDS).append(JdbcUtils.PARAM_MARK).append(SPACE).append(columnName);
 		templateParams.get(COLUMNS).append(columnName);
 		templateParams.get(VALUES).append("Y.").append(columnName);
 	}
 
 	@Override
-	void handleIdColumn(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
+	void handleIdColumnWhenSave(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
 		StringBuilder condition = templateParams.get(CONDITION);
 		if (notFirst) {
 			condition.append(JdbcUtils.SPACE_AND_SPACE);

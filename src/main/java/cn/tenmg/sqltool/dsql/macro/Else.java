@@ -8,7 +8,7 @@ import javax.script.ScriptException;
 /**
  * else判断宏
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class Else extends AbstractMacro implements Macro {

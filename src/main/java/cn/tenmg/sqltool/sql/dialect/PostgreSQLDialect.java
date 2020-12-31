@@ -9,7 +9,7 @@ import cn.tenmg.sqltool.utils.JdbcUtils;
 /**
  * PostgreSQL方言
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class PostgreSQLDialect extends AbstractSQLDialect {
@@ -18,6 +18,9 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	 * 
 	 */
 	private static final long serialVersionUID = 6822267270540270971L;
+
+	private static final String UPDATE_SET_TEMPLATE = "${columnName}=?",
+			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName}=COALESCE(?, ${columnName})";
 
 	private static final String INSERT_IF_NOT_EXISTS = "INSERT INTO ${tableName} (${columns}) VALUES (${values}) ON CONFLICT(${ids}) DO NOTHING";
 
@@ -44,6 +47,16 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	}
 
 	@Override
+	String getUpdateSetTemplate() {
+		return UPDATE_SET_TEMPLATE;
+	}
+
+	@Override
+	String getUpdateSetIfNotNullTemplate() {
+		return UPDATE_SET_IF_NOT_NULL_TEMPLATE;
+	}
+
+	@Override
 	List<String> getExtSQLTemplateParamNames() {
 		return EXT_SQL_TEMPLATE_PARAM_NAMES;
 	}
@@ -64,13 +77,13 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	void handleColumn(String columnName, Map<String, StringBuilder> templateParams) {
+	void handleColumnWhenSave(String columnName, Map<String, StringBuilder> templateParams) {
 		templateParams.get(COLUMNS).append(columnName);
 		templateParams.get(VALUES).append(JdbcUtils.PARAM_MARK);
 	}
 
 	@Override
-	void handleIdColumn(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
+	void handleIdColumnWhenSave(String columnName, Map<String, StringBuilder> templateParams, boolean notFirst) {
 		StringBuilder ids = templateParams.get(IDS);
 		if (notFirst) {
 			ids.append(JdbcUtils.COMMA_SPACE);

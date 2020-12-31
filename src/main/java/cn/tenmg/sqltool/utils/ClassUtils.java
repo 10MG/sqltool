@@ -1,5 +1,14 @@
 package cn.tenmg.sqltool.utils;
 
+import javax.swing.Spring;
+
+/**
+ * 类工具类
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ * @see Spring
+ *
+ */
 public class ClassUtils {
 	/**
 	 * Return the default ClassLoader to use: typically the thread context

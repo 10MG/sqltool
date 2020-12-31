@@ -18,13 +18,15 @@ import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.MergeSQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.SQLExecuter;
+import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
+import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
 
 /**
  * JDBC工具类
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public abstract class JdbcUtils {
@@ -238,6 +240,76 @@ public abstract class JdbcUtils {
 		int counts[];
 		try {
 			DML dml = InsertDMLParser.getInstance().parse(rows.get(0).getClass());
+			String sql = dml.getSql();
+			List<Field> fields = dml.getFields();
+			ps = con.prepareStatement(sql);
+			if (showSql) {
+				log.info("Execute SQL: ".concat(sql));
+			}
+			for (int i = 0, size = rows.size(); i < size; i++) {
+				addBatch(ps, rows.get(i), fields);
+			}
+			counts = ps.executeBatch();
+			con.commit();
+			return getCount(counts);
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			if (ps != null) {
+				try {
+					ps.clearBatch();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			close(ps);
+		}
+	}
+
+	public static <T> int update(Connection con, boolean showSql, List<T> rows, UpdateSQL updateSQL)
+			throws SQLException {
+		PreparedStatement ps = null;
+		int counts[];
+		try {
+			String sql = updateSQL.getScript();
+			List<Field> fields = updateSQL.getFields();
+			if (showSql) {
+				log.info("Execute SQL: ".concat(sql));
+			}
+			ps = con.prepareStatement(sql);
+			for (int i = 0, size = rows.size(); i < size; i++) {
+				addBatch(ps, rows.get(i), fields);
+			}
+			counts = ps.executeBatch();
+			con.commit();
+			return getCount(counts);
+		} catch (SQLException e) {
+			try {
+				con.rollback();
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
+			throw e;
+		} catch (Exception e) {
+			throw new DataAccessException(e);
+		} finally {
+			if (ps != null) {
+				try {
+					ps.clearBatch();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			close(ps);
+		}
+	}
+
+	public static <T extends Serializable> int hardUpdate(Connection con, boolean showSql, List<T> rows)
+			throws SQLException {
+		PreparedStatement ps = null;
+		int counts[];
+		try {
+			DML dml = UpdateDMLParser.getInstance().parse(rows.get(0).getClass());
 			String sql = dml.getSql();
 			List<Field> fields = dml.getFields();
 			ps = con.prepareStatement(sql);

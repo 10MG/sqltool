@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 数据操纵语言转换器
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public interface DMLParser extends Serializable {

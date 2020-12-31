@@ -7,7 +7,7 @@ import cn.tenmg.sqltool.dsql.NamedSQL;
 /**
  * SQL引擎。用于解析带参数的SQL为可执行SQL
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public interface SQLEngine extends Serializable {

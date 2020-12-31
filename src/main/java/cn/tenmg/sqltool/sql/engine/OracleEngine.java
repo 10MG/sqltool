@@ -8,7 +8,7 @@ import cn.tenmg.sqltool.utils.DateUtils;
 /**
  * Oracle方言的SQL引擎
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class OracleEngine extends AbstractSQLEngine {

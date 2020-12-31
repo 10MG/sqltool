@@ -12,7 +12,7 @@ import cn.tenmg.sqltool.sql.dialect.PostgreSQLDialect;
 /**
  * 方言工具类
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class SQLDialectUtils {

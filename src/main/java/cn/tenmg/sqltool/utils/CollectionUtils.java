@@ -8,8 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 集合工具类
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
 public abstract class CollectionUtils {
-	
+
 	@SafeVarargs
 	public static <E> Set<E> asSet(E... elements) {
 		if (elements == null || elements.length == 0) {
@@ -26,13 +32,13 @@ public abstract class CollectionUtils {
 	}
 
 	/**
-	 * Returns {@code true} if the specified {@code Collection} is {@code null}
-	 * or {@link Collection#isEmpty empty}, {@code false} otherwise.
+	 * Returns {@code true} if the specified {@code Collection} is {@code null} or
+	 * {@link Collection#isEmpty empty}, {@code false} otherwise.
 	 *
 	 * @param c
 	 *            the collection to check
-	 * @return {@code true} if the specified {@code Collection} is {@code null}
-	 *         or {@link Collection#isEmpty empty}, {@code false} otherwise.
+	 * @return {@code true} if the specified {@code Collection} is {@code null} or
+	 *         {@link Collection#isEmpty empty}, {@code false} otherwise.
 	 * @since 1.0
 	 */
 	public static boolean isEmpty(Collection<?> c) {
@@ -53,13 +59,13 @@ public abstract class CollectionUtils {
 	}
 
 	/**
-	 * Returns the size of the specified collection or {@code 0} if the
-	 * collection is {@code null}.
+	 * Returns the size of the specified collection or {@code 0} if the collection
+	 * is {@code null}.
 	 *
 	 * @param c
 	 *            the collection to check
-	 * @return the size of the specified collection or {@code 0} if the
-	 *         collection is {@code null}.
+	 * @return the size of the specified collection or {@code 0} if the collection
+	 *         is {@code null}.
 	 */
 	public static int size(Collection<?> c) {
 		return c != null ? c.size() : 0;
@@ -89,7 +95,6 @@ public abstract class CollectionUtils {
 	}
 
 	static int computeListCapacity(int arraySize) {
-		return (int) Math.min(5L + arraySize + (arraySize / 10),
-				Integer.MAX_VALUE);
+		return (int) Math.min(5L + arraySize + (arraySize / 10), Integer.MAX_VALUE);
 	}
 }

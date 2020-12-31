@@ -3,7 +3,7 @@ package cn.tenmg.sqltool.sql.engine;
 /**
  * Spark SQL 方言的SQL引擎
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class SparkSQLEngine extends BasicSQLEngine {

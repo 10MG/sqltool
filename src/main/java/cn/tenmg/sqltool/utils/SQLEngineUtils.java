@@ -9,7 +9,7 @@ import cn.tenmg.sqltool.sql.engine.SparkSQLEngine;
 /**
  * SQL引擎工具
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public abstract class SQLEngineUtils {

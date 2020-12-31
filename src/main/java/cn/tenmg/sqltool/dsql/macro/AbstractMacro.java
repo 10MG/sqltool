@@ -10,7 +10,7 @@ import javax.script.ScriptException;
 /**
  * 抽象宏，封装宏基本功能
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public abstract class AbstractMacro implements Macro {

@@ -15,7 +15,7 @@ import cn.tenmg.sqltool.utils.SQLEngineUtils;
 /**
  * Spark数据加载器
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class SparkDataLoader implements Serializable {

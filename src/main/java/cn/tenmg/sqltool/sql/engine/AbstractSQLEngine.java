@@ -17,7 +17,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
 /**
  * 抽象SQL引擎
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public abstract class AbstractSQLEngine implements SQLEngine {

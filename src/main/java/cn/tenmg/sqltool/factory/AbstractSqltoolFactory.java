@@ -11,7 +11,7 @@ import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 /**
  * 抽象Sqltool工厂。封装了Sqltool工厂的基本功能
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public abstract class AbstractSqltoolFactory implements SqltoolFactory {

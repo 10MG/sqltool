@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * JDBC SQL
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class SQL implements Serializable {

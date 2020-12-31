@@ -8,6 +8,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * JSON工具类
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
 public abstract class JSONUtils {
 
 	/**

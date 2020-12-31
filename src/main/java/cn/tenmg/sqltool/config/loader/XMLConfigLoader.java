@@ -16,7 +16,7 @@ import cn.tenmg.sqltool.exception.IllegalConfigException;
 /**
  * XML配置加载器
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class XMLConfigLoader implements ConfigLoader {

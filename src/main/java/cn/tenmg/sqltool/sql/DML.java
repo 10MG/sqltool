@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 数据操纵语言
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class DML implements Serializable {

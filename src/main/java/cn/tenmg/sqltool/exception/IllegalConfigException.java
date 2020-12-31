@@ -3,7 +3,7 @@ package cn.tenmg.sqltool.exception;
 /**
  * 非法配置异常
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public class IllegalConfigException extends RuntimeException {

@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * 对象工具类
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public abstract class ObjectUtils {

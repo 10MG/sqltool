@@ -7,7 +7,7 @@ import cn.tenmg.sqltool.SqltoolContext.SqltoolExecutor;
 /**
  * 事务
  * 
- * @author 赵伟均
+ * @author 赵伟均 wjzhao@aliyun.com
  *
  */
 public interface Transaction extends Serializable {

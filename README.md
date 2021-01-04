@@ -454,17 +454,6 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	<T extends Serializable> void saveBatch(Map<String, String> options, List<T> rows, String... hardFields);
 
 	/**
-	 * 硬保存。对所有字段执行插入/更新操作
-	 * 
-	 * @param options
-	 *            数据库配置
-	 * @param obj
-	 *            实体对象
-	 * @return 返回受影响行数
-	 */
-	<T extends Serializable> int hardSave(Map<String, String> options, T obj);
-
-	/**
 	 * 
 	 * 批量软保存。仅对属性值不为null的字段执行插入/更新操作
 	 * 

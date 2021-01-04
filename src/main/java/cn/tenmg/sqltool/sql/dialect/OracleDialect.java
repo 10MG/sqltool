@@ -19,8 +19,8 @@ public class OracleDialect extends AbstractSQLDialect {
 	 */
 	private static final long serialVersionUID = 6036289971714384622L;
 
-	private static final String UPDATE_SET_TEMPLATE = "${columnName}=?",
-			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName}=NVL(?, ${columnName})";
+	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
+			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = NVL(?, ${columnName})";
 
 	private static final String INSERT_IF_NOT_EXISTS = "MERGE INTO ${tableName} X USING (SELECT ${fields} FROM DUAL) Y ON (${condition}) WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})";
 
@@ -31,8 +31,8 @@ public class OracleDialect extends AbstractSQLDialect {
 	private static final List<String> EXT_SQL_TEMPLATE_PARAM_NAMES = Arrays.asList(FIELDS, CONDITION),
 			NEEDS_COMMA_PARAM_NAMES = Arrays.asList(FIELDS, COLUMNS, VALUES);
 
-	private static final String SET_TEMPLATE = "X.${columnName}=Y.${columnName}",
-			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName}=NVL(Y.${columnName}, X.${columnName})";
+	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
+			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = NVL(Y.${columnName}, X.${columnName})";
 
 	private static class InstanceHolder {
 		private static final OracleDialect INSTANCE = new OracleDialect();

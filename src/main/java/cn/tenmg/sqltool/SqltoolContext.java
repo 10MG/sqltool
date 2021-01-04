@@ -119,7 +119,9 @@ public class SqltoolContext implements Serializable {
 				Class.forName(options.get("driver"));
 				con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 				con.setAutoCommit(false);
-				return JdbcUtils.insert(con, showSql, rows);
+				int count = JdbcUtils.insert(con, showSql, rows);
+				con.commit();
+				return count;
 			} catch (SQLException e) {
 				try {
 					con.rollback();
@@ -180,7 +182,23 @@ public class SqltoolContext implements Serializable {
 	}
 
 	/**
-	 * 软更新操作（实体对象集为空则直接返回null）
+	 * 部分硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @param hardFields
+	 *            硬更新属性
+	 * @return 返回受影响行数
+	 */
+	public <T extends Serializable> int update(Map<String, String> options, T obj, String... hardFields) {
+		SQL sql = SQLDialectUtils.getSQLDialect(options).update(obj, hardFields);
+		return execute(options, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+	}
+
+	/**
+	 * 软更新操作（实体对象集为空则直接返回0）
 	 * 
 	 * @param options
 	 *            数据库配置
@@ -196,6 +214,25 @@ public class SqltoolContext implements Serializable {
 	}
 
 	/**
+	 * 部分硬更新操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param hardFields
+	 *            硬更新属性
+	 * @return 返回受影响行数
+	 */
+	public <T extends Serializable> int update(Map<String, String> options, List<T> rows, String... hardFields) {
+		if (CollectionUtils.isEmpty(rows)) {
+			return 0;
+		}
+		return update(options, showSql, rows,
+				SQLDialectUtils.getSQLDialect(options).update(rows.get(0).getClass(), hardFields));
+	}
+
+	/**
 	 * 使用默认批容量执行批量软更新操作
 	 * 
 	 * @param options
@@ -205,6 +242,20 @@ public class SqltoolContext implements Serializable {
 	 */
 	public <T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows) {
 		updateBatch(options, rows, defaultBatchSize);
+	}
+
+	/**
+	 * 使用默认批容量执行批量部分硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param hardFields
+	 *            硬更新属性
+	 */
+	public <T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows, String... hardFields) {
+		updateBatch(options, rows, defaultBatchSize, hardFields);
 	}
 
 	/**
@@ -226,6 +277,28 @@ public class SqltoolContext implements Serializable {
 	}
 
 	/**
+	 * 
+	 * 批量部分硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 * @param hardFields
+	 *            硬更新属性
+	 */
+	public <T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows, int batchSize,
+			String... hardFields) {
+		if (CollectionUtils.isEmpty(rows)) {
+			return;
+		}
+		updateBatch(options, rows, batchSize,
+				SQLDialectUtils.getSQLDialect(options).update(rows.get(0).getClass(), hardFields));
+	}
+
+	/**
 	 * 硬更新操作
 	 * 
 	 * @param options
@@ -241,7 +314,7 @@ public class SqltoolContext implements Serializable {
 	}
 
 	/**
-	 * 硬更新操作（实体对象集为空则直接返回null）
+	 * 硬更新操作（实体对象集为空则直接返回0）
 	 * 
 	 * @param options
 	 *            数据库配置
@@ -258,7 +331,9 @@ public class SqltoolContext implements Serializable {
 				Class.forName(options.get("driver"));
 				con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 				con.setAutoCommit(false);
-				return JdbcUtils.hardUpdate(con, showSql, rows);
+				int count = JdbcUtils.hardUpdate(con, showSql, rows);
+				con.commit();
+				return count;
 			} catch (SQLException e) {
 				try {
 					con.rollback();
@@ -468,7 +543,9 @@ public class SqltoolContext implements Serializable {
 			Class.forName(options.get("driver"));
 			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 			con.setAutoCommit(false);
-			return JdbcUtils.hardSave(con, dialect, showSql, rows);
+			int count = JdbcUtils.hardSave(con, dialect, showSql, rows);
+			con.commit();
+			return count;
 		} catch (SQLException e) {
 			try {
 				con.rollback();
@@ -830,6 +907,137 @@ public class SqltoolContext implements Serializable {
 		}
 
 		/**
+		 * 软更新操作
+		 * 
+		 * @param obj
+		 *            实体对象（不能为null）
+		 * @return 返回受影响行数
+		 */
+		public <T extends Serializable> int update(T obj) {
+			SQL sql = dialect.update(obj);
+			try {
+				return JdbcUtils.execute(currentConnection.get(), sql.getScript(), sql.getParams(),
+						ExecuteUpdateSQLExecuter.getInstance(), showSql);
+			} catch (SQLException e) {
+				throw new cn.tenmg.sqltool.exception.SQLException(e);
+			}
+		}
+
+		/**
+		 * 部分硬更新操作
+		 * 
+		 * @param obj
+		 *            实体对象（不能为null）
+		 * @param hardFields
+		 *            硬更新属性
+		 * @return 返回受影响行数
+		 */
+		public <T extends Serializable> int update(T obj, String... hardFields) {
+			SQL sql = dialect.update(obj, hardFields);
+			try {
+				return JdbcUtils.execute(currentConnection.get(), sql.getScript(), sql.getParams(),
+						ExecuteUpdateSQLExecuter.getInstance(), showSql);
+			} catch (SQLException e) {
+				throw new cn.tenmg.sqltool.exception.SQLException(e);
+			}
+		}
+
+		/**
+		 * 软更新操作（实体对象集为空则直接返回0）
+		 * 
+		 * @param rows
+		 *            实体对象集
+		 * @return 返回受影响行数
+		 */
+		public <T extends Serializable> int update(List<T> rows) {
+			if (CollectionUtils.isEmpty(rows)) {
+				return 0;
+			}
+			try {
+				return JdbcUtils.update(currentConnection.get(), showSql, rows, dialect.update(rows.get(0).getClass()));
+			} catch (SQLException e) {
+				throw new cn.tenmg.sqltool.exception.SQLException(e);
+			}
+		}
+
+		/**
+		 * 部分硬更新操作（实体对象集为空则直接返回0）
+		 * 
+		 * @param rows
+		 *            实体对象集
+		 * @param hardFields
+		 *            硬更新属性
+		 * @return 返回受影响行数
+		 */
+		public <T extends Serializable> int update(List<T> rows, String... hardFields) {
+			if (CollectionUtils.isEmpty(rows)) {
+				return 0;
+			}
+			try {
+				return JdbcUtils.update(currentConnection.get(), showSql, rows,
+						dialect.update(rows.get(0).getClass(), hardFields));
+			} catch (SQLException e) {
+				throw new cn.tenmg.sqltool.exception.SQLException(e);
+			}
+		}
+
+		/**
+		 * 硬更新操作
+		 * 
+		 * @param options
+		 *            数据库配置
+		 * @param obj
+		 *            实体对象（不能为null）
+		 * @return 返回受影响行数
+		 */
+		public <T extends Serializable> int hardUpdate(Map<String, String> options, T obj) {
+			DML dml = UpdateDMLParser.getInstance().parse(obj.getClass());
+			PreparedStatement ps = null;
+			try {
+				String sql = dml.getSql();
+				ps = currentConnection.get().prepareStatement(sql);
+				List<Object> params = JdbcUtils.getParams(obj, dml.getFields());
+				JdbcUtils.setParams(ps, params);
+				if (showSql) {
+					StringBuilder sb = new StringBuilder();
+					sb.append("Execute SQL: ").append(sql).append(JdbcUtils.LINE_SEPARATOR).append("Params: ")
+							.append(JSONUtils.toJSONString(params));
+					log.info(sb.toString());
+				}
+				return ps.executeUpdate();
+			} catch (SQLException e) {
+				throw new cn.tenmg.sqltool.exception.SQLException(e);
+			} finally {
+				if (ps != null) {
+					try {
+						ps.clearBatch();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+				JdbcUtils.close(ps);
+			}
+		}
+
+		/**
+		 * 硬更新操作（实体对象集为空则直接返回0）
+		 * 
+		 * @param rows
+		 *            实体对象集
+		 * @return 返回受影响行数
+		 */
+		public <T extends Serializable> int hardUpdate(List<T> rows) {
+			if (CollectionUtils.isEmpty(rows)) {
+				return 0;
+			}
+			try {
+				return JdbcUtils.hardUpdate(currentConnection.get(), showSql, rows);
+			} catch (SQLException e) {
+				throw new cn.tenmg.sqltool.exception.SQLException(e);
+			}
+		}
+
+		/**
 		 * 软保存。仅对属性值不为null的字段执行插入/更新操作
 		 * 
 		 * @param obj
@@ -969,8 +1177,7 @@ public class SqltoolContext implements Serializable {
 		 *            查询参数键值集
 		 * @return 返回查询到的对象
 		 */
-		public <T extends Serializable> T get(Map<String, String> options, Class<T> type, String dsql,
-				Object... params) {
+		public <T extends Serializable> T get(Class<T> type, String dsql, Object... params) {
 			return get(sqltoolFactory.parse(dsql, params), type);
 		}
 
@@ -1080,8 +1287,16 @@ public class SqltoolContext implements Serializable {
 			boolean rs = false;
 			Connection con = currentConnection.get();
 			try {
-				ps = con.prepareStatement(sql.getScript());
+				String script = sql.getScript();
+				List<Object> params = sql.getParams();
+				ps = con.prepareStatement(script);
 				JdbcUtils.setParams(ps, sql.getParams());
+				if (showSql) {
+					StringBuilder sb = new StringBuilder();
+					sb.append("Execute SQL: ").append(script).append(JdbcUtils.LINE_SEPARATOR).append("Params: ")
+							.append(JSONUtils.toJSONString(params));
+					log.info(sb.toString());
+				}
 				rs = ps.execute();
 			} catch (SQLException e) {
 				try {
@@ -1236,7 +1451,9 @@ public class SqltoolContext implements Serializable {
 			Class.forName(options.get("driver"));
 			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 			con.setAutoCommit(false);
-			return JdbcUtils.update(con, showSql, rows, updateSQL);
+			int count = JdbcUtils.update(con, showSql, rows, updateSQL);
+			con.commit();
+			return count;
 		} catch (SQLException e) {
 			try {
 				con.rollback();
@@ -1257,7 +1474,9 @@ public class SqltoolContext implements Serializable {
 			Class.forName(options.get("driver"));
 			con = DriverManager.getConnection(options.get("url"), options.get("user"), options.get("password"));
 			con.setAutoCommit(false);
-			return JdbcUtils.save(con, showSql, rows, mergeSql);
+			int count = JdbcUtils.save(con, showSql, rows, mergeSql);
+			con.commit();
+			return count;
 		} catch (SQLException e) {
 			try {
 				con.rollback();

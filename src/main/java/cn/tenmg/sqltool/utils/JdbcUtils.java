@@ -180,6 +180,18 @@ public abstract class JdbcUtils {
 		}
 	}
 
+	/**
+	 * 获取结果当前行集指定列的值
+	 * 
+	 * @param rs
+	 *            结果集
+	 * @param columnIndex
+	 *            指定列索引
+	 * @param type
+	 *            值的类型
+	 * @return 返回当前行集指定列的值
+	 * @throws SQLException
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getValue(ResultSet rs, int columnIndex, Class<T> type) throws SQLException {
 		if (BigDecimal.class.isAssignableFrom(type)) {
@@ -211,6 +223,23 @@ public abstract class JdbcUtils {
 		return (T) rs.getObject(columnIndex);
 	}
 
+	/**
+	 * 执行一个SQL语句
+	 * 
+	 * @param con
+	 *            连接对象
+	 * @param sql
+	 *            SQL语句
+	 * @param params
+	 *            参数
+	 * @param sqlExecuter
+	 *            SQL执行器
+	 * @param showSql
+	 *            是否打印SQL
+	 * @return 返回执行SQL的返回值
+	 * @throws SQLException
+	 *             SQL异常
+	 */
 	public static <T> T execute(Connection con, String sql, List<Object> params, SQLExecuter<T> sqlExecuter,
 			boolean showSql) throws SQLException {
 		PreparedStatement ps = null;
@@ -234,10 +263,22 @@ public abstract class JdbcUtils {
 		}
 	}
 
+	/**
+	 * 使用实体对象列表插入数据
+	 * 
+	 * @param con
+	 *            连接对象
+	 * @param showSql
+	 *            是否打印SQL
+	 * @param rows
+	 *            实体对象列表
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
 	public static <T extends Serializable> int insert(Connection con, boolean showSql, List<T> rows)
 			throws SQLException {
 		PreparedStatement ps = null;
-		int counts[];
 		try {
 			DML dml = InsertDMLParser.getInstance().parse(rows.get(0).getClass());
 			String sql = dml.getSql();
@@ -249,9 +290,7 @@ public abstract class JdbcUtils {
 			for (int i = 0, size = rows.size(); i < size; i++) {
 				addBatch(ps, rows.get(i), fields);
 			}
-			counts = ps.executeBatch();
-			con.commit();
-			return getCount(counts);
+			return getCount(ps.executeBatch());
 		} catch (SQLException e) {
 			throw e;
 		} finally {
@@ -266,10 +305,24 @@ public abstract class JdbcUtils {
 		}
 	}
 
+	/**
+	 * 使用实体对象列表软更新数据
+	 * 
+	 * @param con
+	 *            连接对象
+	 * @param showSql
+	 *            是否打印SQL
+	 * @param rows
+	 *            实体对象列表
+	 * @param updateSQL
+	 *            更新数据操作对象
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
 	public static <T> int update(Connection con, boolean showSql, List<T> rows, UpdateSQL updateSQL)
 			throws SQLException {
 		PreparedStatement ps = null;
-		int counts[];
 		try {
 			String sql = updateSQL.getScript();
 			List<Field> fields = updateSQL.getFields();
@@ -280,9 +333,7 @@ public abstract class JdbcUtils {
 			for (int i = 0, size = rows.size(); i < size; i++) {
 				addBatch(ps, rows.get(i), fields);
 			}
-			counts = ps.executeBatch();
-			con.commit();
-			return getCount(counts);
+			return getCount(ps.executeBatch());
 		} catch (SQLException e) {
 			try {
 				con.rollback();
@@ -304,10 +355,22 @@ public abstract class JdbcUtils {
 		}
 	}
 
+	/**
+	 * 使用实体对象列表硬更新数据
+	 * 
+	 * @param con
+	 *            连接对象
+	 * @param showSql
+	 *            是否打印SQL
+	 * @param rows
+	 *            实体对象列表
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
 	public static <T extends Serializable> int hardUpdate(Connection con, boolean showSql, List<T> rows)
 			throws SQLException {
 		PreparedStatement ps = null;
-		int counts[];
 		try {
 			DML dml = UpdateDMLParser.getInstance().parse(rows.get(0).getClass());
 			String sql = dml.getSql();
@@ -319,9 +382,7 @@ public abstract class JdbcUtils {
 			for (int i = 0, size = rows.size(); i < size; i++) {
 				addBatch(ps, rows.get(i), fields);
 			}
-			counts = ps.executeBatch();
-			con.commit();
-			return getCount(counts);
+			return getCount(ps.executeBatch());
 		} catch (SQLException e) {
 			throw e;
 		} finally {
@@ -336,9 +397,23 @@ public abstract class JdbcUtils {
 		}
 	}
 
+	/**
+	 * 使用实体对象列表软保存数据
+	 * 
+	 * @param con
+	 *            连接对象
+	 * @param showSql
+	 *            是否打印SQL
+	 * @param rows
+	 *            实体对象列表
+	 * @param mergeSql
+	 *            合并数据操作对象
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
 	public static <T> int save(Connection con, boolean showSql, List<T> rows, MergeSQL mergeSql) throws SQLException {
 		PreparedStatement ps = null;
-		int counts[];
 		try {
 			String sql = mergeSql.getScript();
 			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
@@ -349,9 +424,7 @@ public abstract class JdbcUtils {
 			for (int i = 0, size = rows.size(); i < size; i++) {
 				addBatch(ps, fieldMetas, rows.get(i));
 			}
-			counts = ps.executeBatch();
-			con.commit();
-			return getCount(counts);
+			return getCount(ps.executeBatch());
 		} catch (SQLException e) {
 			try {
 				con.rollback();
@@ -373,10 +446,22 @@ public abstract class JdbcUtils {
 		}
 	}
 
+	/**
+	 * 使用实体对象列表硬保存数据
+	 * 
+	 * @param con
+	 *            连接对象
+	 * @param showSql
+	 *            是否打印SQL
+	 * @param rows
+	 *            实体对象列表
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
 	public static <T> int hardSave(Connection con, SQLDialect dialect, boolean showSql, List<T> rows)
 			throws SQLException {
 		PreparedStatement ps = null;
-		int counts[];
 		try {
 			MergeSQL mergeSql = dialect.hardSave(rows.get(0).getClass());
 			String sql = mergeSql.getScript();
@@ -388,9 +473,7 @@ public abstract class JdbcUtils {
 			for (int i = 0, size = rows.size(); i < size; i++) {
 				addBatch(ps, fieldMetas, rows.get(i));
 			}
-			counts = ps.executeBatch();
-			con.commit();
-			return getCount(counts);
+			return getCount(ps.executeBatch());
 		} catch (SQLException e) {
 			throw e;
 		} finally {
@@ -405,16 +488,47 @@ public abstract class JdbcUtils {
 		}
 	}
 
-	public static final <T> void addBatch(PreparedStatement ps, List<FieldMeta> fieldMetas, T row) throws SQLException {
-		setParams(ps, fieldMetas, row);
+	/**
+	 * 添加一个批量
+	 * 
+	 * @param ps
+	 *            准备声明对象
+	 * @param fieldMetas
+	 *            属性元数据列表
+	 * @param obj
+	 *            实体对象
+	 * @throws SQLException
+	 *             SQL异常
+	 */
+	public static final <T> void addBatch(PreparedStatement ps, List<FieldMeta> fieldMetas, T obj) throws SQLException {
+		setParams(ps, fieldMetas, obj);
 		ps.addBatch();
 	}
 
-	public static final <T> void addBatch(PreparedStatement ps, T row, List<Field> fields) throws SQLException {
-		setParams(ps, row, fields);
+	/**
+	 * 添加一个批量
+	 * 
+	 * @param ps
+	 *            准备声明对象
+	 * @param obj
+	 *            实体对象
+	 * @param fields
+	 *            属性列表
+	 * @throws SQLException
+	 *             SQL异常
+	 */
+	public static final <T> void addBatch(PreparedStatement ps, T obj, List<Field> fields) throws SQLException {
+		setParams(ps, obj, fields);
 		ps.addBatch();
 	}
 
+	/**
+	 * 根据批量提交返回结果集汇总影响行数
+	 * 
+	 * @param counts
+	 *            批量提交返回结果
+	 * @return 返回汇总的影响行数
+	 */
 	private static int getCount(int[] counts) {
 		int count = 0;
 		if (counts != null) {

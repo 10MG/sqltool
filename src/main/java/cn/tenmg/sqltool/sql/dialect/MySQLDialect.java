@@ -19,8 +19,8 @@ public class MySQLDialect extends AbstractSQLDialect {
 	 */
 	private static final long serialVersionUID = 7189284927835898553L;
 
-	private static final String UPDATE_SET_TEMPLATE = "${columnName}=?",
-			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName}=IFNULL(?, ${columnName})";
+	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
+			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(?, ${columnName})";
 
 	private static final String INSERT_IF_NOT_EXISTS = "INSERT IGNORE INTO ${tableName} (${columns}) VALUES (${values})";
 
@@ -28,8 +28,8 @@ public class MySQLDialect extends AbstractSQLDialect {
 
 	private static final List<String> NEEDS_COMMA_PARAM_NAMES = Arrays.asList(COLUMNS, VALUES);
 
-	private static final String SET_TEMPLATE = "${columnName}=VALUES(${columnName})",
-			SET_IF_NOT_NULL_TEMPLATE = "${columnName}=IFNULL(VALUES(${columnName}), ${columnName})";
+	private static final String SET_TEMPLATE = "${columnName} = VALUES(${columnName})",
+			SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(VALUES(${columnName}), ${columnName})";
 
 	private static class InstanceHolder {
 		private static final MySQLDialect INSTANCE = new MySQLDialect();

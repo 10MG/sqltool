@@ -19,8 +19,8 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	 */
 	private static final long serialVersionUID = 6822267270540270971L;
 
-	private static final String UPDATE_SET_TEMPLATE = "${columnName}=?",
-			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName}=COALESCE(?, ${columnName})";
+	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
+			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = COALESCE(?, ${columnName})";
 
 	private static final String INSERT_IF_NOT_EXISTS = "INSERT INTO ${tableName} (${columns}) VALUES (${values}) ON CONFLICT(${ids}) DO NOTHING";
 
@@ -31,8 +31,8 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	private static final List<String> EXT_SQL_TEMPLATE_PARAM_NAMES = Arrays.asList(IDS),
 			NEEDS_COMMA_PARAM_NAMES = Arrays.asList(COLUMNS, VALUES);
 
-	private static final String SET_TEMPLATE = "${columnName}=EXCLUDED.${columnName}",
-			SET_IF_NOT_NULL_TEMPLATE = "${columnName}=COALESCE(EXCLUDED.${columnName}, X.${columnName})";
+	private static final String SET_TEMPLATE = "${columnName} = EXCLUDED.${columnName}",
+			SET_IF_NOT_NULL_TEMPLATE = "${columnName} = COALESCE(EXCLUDED.${columnName}, X.${columnName})";
 
 	private static class InstanceHolder {
 		private static final PostgreSQLDialect INSTANCE = new PostgreSQLDialect();

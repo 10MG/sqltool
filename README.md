@@ -228,16 +228,149 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	<T extends Serializable> void insertBatch(Map<String, String> options, List<T> rows, int batchSize);
 
 	/**
-	 * 软保存。仅对属性值不为null的字段执行插入/更新操作
+	 * 软更新操作
 	 * 
 	 * @param options
 	 *            数据库配置
 	 * @param obj
-	 *            实体对象
+	 *            实体对象（不能为null）
 	 * @return 返回受影响行数
 	 */
-	<T extends Serializable> int save(Map<String, String> options, T obj);
-
+	<T extends Serializable> int update(Map<String, String> options, T obj);
+	
+	/**
+	 * 部分硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @param hardFields
+	 *            硬更新属性
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int update(Map<String, String> options, T obj, String... hardFields);
+	
+	/**
+	 * 软更新操作（实体对象集为空则直接返回null）
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int update(Map<String, String> options, List<T> rows);
+	
+	/**
+	 * 部分硬更新操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param hardFields
+	 *            硬更新属性
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int update(Map<String, String> options, List<T> rows, String... hardFields);
+	
+	/**
+	 * 使用默认批容量执行批量软更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 */
+	<T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows);
+	
+	/**
+	 * 使用默认批容量执行批量部分硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param hardFields
+	 *            硬更新属性
+	 */
+	<T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows, String... hardFields);
+	
+	/**
+	 * 
+	 * 批量软更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 */
+	<T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows, int batchSize);
+	
+	/**
+	 * 
+	 * 批量部分硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 * @param hardFields
+	 *            硬更新属性
+	 */
+	<T extends Serializable> void updateBatch(Map<String, String> options, List<T> rows, int batchSize,
+			String... hardFields);
+	
+	/**
+	 * 硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int hardUpdate(Map<String, String> options, T obj);
+	
+	/**
+	 * 硬更新操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int hardUpdate(Map<String, String> options, List<T> rows);
+	
+	/**
+	 * 使用默认批容量执行批量硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 */
+	<T extends Serializable> void hardUpdateBatch(Map<String, String> options, List<T> rows);
+	
+	/**
+	 * 
+	 * 批量硬更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 */
+	<T extends Serializable> void hardUpdateBatch(Map<String, String> options, List<T> rows, int batchSize);
+	
 	/**
 	 * 软保存。仅对属性值不为null的字段执行插入/更新操作
 	 * 
@@ -343,17 +476,7 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	 *            批容量
 	 */
 	<T extends Serializable> void saveBatch(Map<String, String> options, List<T> rows, int batchSize);
-
-	/**
-	 * 使用默认批容量批量硬保存。对所有字段执行插入/更新操作
-	 * 
-	 * @param options
-	 *            数据库配置
-	 * @param rows
-	 *            实体对象集
-	 */
-	<T extends Serializable> void hardSaveBatch(Map<String, String> options, List<T> rows);
-
+	
 	/**
 	 * 
 	 * 批量部分硬保存。仅对属性值不为null或硬保存的字段执行插入/更新操作
@@ -367,7 +490,8 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	 * @param batchSize
 	 *            批容量
 	 */
-	<T extends Serializable> void saveBatch(Map<String, String> options, List<T> rows, int batchSize, String... hardFields);
+	<T extends Serializable> void saveBatch(Map<String, String> options, List<T> rows, int batchSize,
+			String... hardFields);
 
 	/**
 	 * 硬保存。对所有字段执行插入/更新操作
@@ -379,7 +503,7 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	 * @return 返回受影响行数
 	 */
 	<T extends Serializable> int hardSave(Map<String, String> options, T obj);
-
+	
 	/**
 	 * 硬保存。对所有字段执行插入/更新操作
 	 * 
@@ -390,7 +514,7 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	 * @return 返回受影响行数
 	 */
 	<T extends Serializable> int hardSave(Map<String, String> options, List<T> rows);
-
+	
 	/**
 	 * 使用默认批容量批量硬保存。对所有字段执行插入/更新操作
 	 * 
@@ -400,6 +524,76 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	 *            实体对象集
 	 */
 	<T extends Serializable> void hardSaveBatch(Map<String, String> options, List<T> rows);
+
+	/**
+	 * 
+	 * 批量硬保存。对所有字段执行插入/更新操作
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 */
+	<T extends Serializable> void hardSaveBatch(Map<String, String> options, List<T> rows, int batchSize);
+	
+	/**
+	 * 从数据库查询并组装实体对象
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param obj
+	 *            实体对象
+	 * @return 返回查询到的实体对象
+	 */
+	@SuppressWarnings("unchecked")
+	<T extends Serializable> T get(Map<String, String> options, T obj);
+	
+	/**
+	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
+	 * Date、BigDecimal类型，这事将返回结果集中的第1行第1列的值
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param type
+	 *            对象类型
+	 * @param dsql
+	 *            动态结构化查询语言
+	 * @param params
+	 *            查询参数键值集
+	 * @return 返回查询到的对象
+	 */
+	<T extends Serializable> T get(Map<String, String> options, Class<T> type, String dsql, Object... params);
+	
+	/**
+	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
+	 * Date、BigDecimal类型，这时将返回结果集中的第1行第1列的值
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param type
+	 *            对象类型
+	 * @param dsql
+	 *            动态结构化查询语言
+	 * @param params
+	 *            查询参数键值集
+	 * @return 返回查询到的对象
+	 */
+	<T extends Serializable> T get(Map<String, String> options, Class<T> type, String dsql,
+			Map<String, ?> params);
+
+	/**
+	 * 从数据库查询并组装实体对象列表
+	 * 
+	 * @param options
+	 *            数据库配置
+	 * @param obj
+	 *            实体对象
+	 * @return 返回查询到的实体对象列表
+	 */
+	@SuppressWarnings("unchecked")
+	<T extends Serializable> List<T> select(Map<String, String> options, T obj);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）并组装对象列表，其中类型可以是实体对象，也可以是String、Number、
@@ -419,75 +613,6 @@ Object relational mapping is a very important technology in Java language. Sqlto
 			Object... params);
 
 	/**
-	 * 
-	 * 批量硬保存。对所有字段执行插入/更新操作
-	 * 
-	 * @param options
-	 *            数据库配置
-	 * @param rows
-	 *            实体对象集
-	 * @param batchSize
-	 *            批容量
-	 */
-	<T extends Serializable> void hardSaveBatch(Map<String, String> options, List<T> rows, int batchSize);
-
-	/**
-	 * 从数据库查询并组装实体对象
-	 * 
-	 * @param options
-	 *            数据库配置
-	 * @param obj
-	 *            实体对象
-	 * @return 返回查询到的实体对象
-	 */
-	@SuppressWarnings("unchecked")
-	<T extends Serializable> T get(Map<String, String> options, T obj);
-
-	/**
-	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
-	 * Date、BigDecimal类型，这事将返回结果集中的第1行第1列的值
-	 * 
-	 * @param options
-	 *            数据库配置
-	 * @param type
-	 *            对象类型
-	 * @param dsql
-	 *            动态结构化查询语言
-	 * @param params
-	 *            查询参数键值集
-	 * @return 返回查询到的对象
-	 */
-	<T extends Serializable> T get(Map<String, String> options, Class<T> type, String dsql, Object... params);
-
-	/**
-	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
-	 * Date、BigDecimal类型，这时将返回结果集中的第1行第1列的值
-	 * 
-	 * @param options
-	 *            数据库配置
-	 * @param type
-	 *            对象类型
-	 * @param dsql
-	 *            动态结构化查询语言
-	 * @param params
-	 *            查询参数键值集
-	 * @return 返回查询到的对象
-	 */
-	<T extends Serializable> T get(Map<String, String> options, Class<T> type, String dsql, Map<String, ?> params);
-
-	/**
-	 * 从数据库查询并组装实体对象列表
-	 * 
-	 * @param options
-	 *            数据库配置
-	 * @param obj
-	 *            实体对象
-	 * @return 返回查询到的实体对象列表
-	 */
-	@SuppressWarnings("unchecked")
-	<T extends Serializable> List<T> select(Map<String, String> options, T obj);
-
-	/**
 	 * 使用动态结构化查询语言（DSQL）并组装对象列表，其中类型可以是实体对象，也可以是String、Number、
 	 * Date、BigDecimal类型，这时将返回结果集中的第1列的值
 	 * 
@@ -502,32 +627,7 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	 * @return 返回查询到的对象列表
 	 */
 	<T extends Serializable> List<T> select(Map<String, String> options, Class<T> type, String dsql,
-			Object... params);
-
-	/**
-	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
-	 * 
-	 * @param dsql
-	 *            动态结构化查询语言
-	 * @param params
-	 *            查询参数键值集
-	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
-	 */
-	/**
-	 * 使用动态结构化查询语言（DSQL）并组装对象列表，其中类型可以是实体对象，也可以是String、Number、
-	 * Date、BigDecimal类型，这时将返回结果集中的第1列的值
-	 * 
-	 * @param options
-	 *            数据库配置
-	 * @param type
-	 *            对象类型
-	 * @param dsql
-	 *            动态结构化查询语言
-	 * @param params
-	 *            查询参数键值集
-	 * @return 返回查询到的对象列表
-	 */
-	<T extends Serializable> List<T> select(Map<String, String> options, Class<T> type, String dsql, Map<String, ?> params);
+			Map<String, ?> params);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作

@@ -9,7 +9,7 @@
 	</description>
 	<groupId>cn.tenmg</groupId>
 	<artifactId>sqltool</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.1</version>
 	<url>https://github.com/10MG/sqltool</url>
 
 	<properties>

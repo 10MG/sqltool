@@ -219,20 +219,46 @@ public abstract class TestUtils {
 		StaffInfo june = new StaffInfo(staffId), original = sqltoolContext.get(options, StaffInfo.class,
 				"get_staff_info_by_staff_id", "staffId", staffId);
 		june.setStaffName(staffName);
+		june.setPosition(position);
 		Assert.assertEquals(1, sqltoolContext.update(options, june));
 		StaffInfo newStaffInfo = sqltoolContext.get(options, StaffInfo.class, "get_staff_info_by_staff_id", "staffId",
 				staffId);
 		Assert.assertEquals(staffName, newStaffInfo.getStaffName());
 		Assert.assertEquals(original.getPosition(), newStaffInfo.getPosition());
 
+		june.setStaffName(null);
+		sqltoolContext.update(options, june);
+		// 软更新，不更新null属性
+		Assert.assertEquals(staffName, sqltoolContext
+				.get(options, StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId).getStaffName());
+		// 部分硬更新，属性即使是null也更新
+		Assert.assertEquals(1, sqltoolContext.update(options, june, "staffName"));
+		Assert.assertEquals(null, sqltoolContext
+				.get(options, StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId).getStaffName());
+
 		// 更新多条数据
-		for (int i = 0, size = staffInfos.size(); i < size; i++) {
+		for (int i = 0; i < defaultBatchSize; i++) {
 			staffInfo = staffInfos.get(i);
 			staffInfo.setStaffName(staffName);
 		}
-		System.out.println(sqltoolContext.update(options, staffInfos));
+		sqltoolContext.update(options, staffInfos);
 		Assert.assertEquals(defaultBatchSize, sqltoolContext
 				.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
+
+		// 软更新，不更新null属性
+		long count = sqltoolContext.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName);
+		for (int i = 0; i < defaultBatchSize; i++) {
+			staffInfo = staffInfos.get(i);
+			staffInfo.setStaffName(null);
+		}
+		sqltoolContext.update(options, staffInfos);
+		Assert.assertEquals(count, sqltoolContext
+				.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName).longValue());
+		
+		// 部分硬更新，属性即使是null也更新
+		sqltoolContext.update(options, staffInfos, "staffName");
+		Assert.assertEquals(0, sqltoolContext
+				.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName).longValue());
 
 		// 尝试更新不存在的数据
 		staffInfo = new StaffInfo();
@@ -267,12 +293,26 @@ public abstract class TestUtils {
 
 		// 批量更新多条数据
 		String staffName = "June";
-		for (int i = 0, size = staffInfos.size(); i < size; i++) {
+		for (int i = 0; i < defaultBatchSize; i++) {
 			staffInfo = staffInfos.get(i);
 			staffInfo.setStaffName(staffName);
 		}
 		sqltoolContext.updateBatch(options, staffInfos);
 		Assert.assertEquals(defaultBatchSize, sqltoolContext
+				.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
+		
+		// 软更新，不更新null属性
+		for (int i = 0; i < defaultBatchSize; i++) {
+			staffInfo = staffInfos.get(i);
+			staffInfo.setStaffName(null);
+		}
+		sqltoolContext.updateBatch(options, staffInfos);
+		Assert.assertEquals(defaultBatchSize, sqltoolContext
+				.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
+		
+		// 硬更新，null属性也更新
+		sqltoolContext.updateBatch(options, staffInfos, "staffName");
+		Assert.assertEquals(0, sqltoolContext
 				.get(options, Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
 
 		// 尝试更新不存在的数据

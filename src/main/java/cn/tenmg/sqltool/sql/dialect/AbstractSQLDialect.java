@@ -547,7 +547,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new DataAccessException(e);
 		}
-		return sql(type, hasId, hasGeneralColumn, entityMeta.getTableName(), sets, condition, values, conditionValues);
+		return sql(obj, hasId, hasGeneralColumn, entityMeta.getTableName(), sets, condition, values, conditionValues);
 	}
 
 	@Override
@@ -644,7 +644,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new DataAccessException(e);
 		}
-		return sql(type, hasId, hasGeneralColumn, entityMeta.getTableName(), sets, condition, values, conditionValues);
+		return sql(obj, hasId, hasGeneralColumn, entityMeta.getTableName(), sets, condition, values, conditionValues);
 	}
 
 	@Override

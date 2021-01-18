@@ -19,5 +19,5 @@ public interface ParamFilter {
 	 * @param params
 	 *            参数集
 	 */
-	void doFilter(Filter filter, Map<String, Object> params);
+	void doFilter(Filter filter, Map<String, ?> params);
 }

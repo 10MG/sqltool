@@ -56,7 +56,7 @@ public abstract class AbstractDSQLFactory implements DSQLFactory {
 	}
 
 	@Override
-	public NamedSQL parse(String dsql, Map<String, Object> params) {
+	public NamedSQL parse(String dsql, Map<String, ?> params) {
 		NamedSQL namedSQL = null;
 		Dsql obj = getDsql(dsql);
 		if (obj == null) {
@@ -76,7 +76,7 @@ public abstract class AbstractDSQLFactory implements DSQLFactory {
 	 *            参数列表
 	 * @return SQL对象
 	 */
-	protected NamedSQL parse(Dsql dsql, Map<String, Object> params) {
+	protected NamedSQL parse(Dsql dsql, Map<String, ?> params) {
 		Filter filter = dsql.getFilter();
 		if (filter != null) {
 			ServiceLoader<ParamFilter> loader = ServiceLoader.load(ParamFilter.class);
@@ -90,13 +90,16 @@ public abstract class AbstractDSQLFactory implements DSQLFactory {
 		}
 		Converter converter = dsql.getConverter();
 		if (converter != null) {
+			Map<String, Object> paramaters = new HashMap<String, Object>();
+			paramaters.putAll(params);
 			ServiceLoader<ParamConverter> loader = ServiceLoader.load(ParamConverter.class);
 			if (!CollectionUtils.isEmpty(params)) {
 				for (Iterator<ParamConverter> it = loader.iterator(); it.hasNext();) {
 					ParamConverter paramConverter = it.next();
-					paramConverter.convert(converter, params);
+					paramConverter.convert(converter, paramaters);
 				}
 			}
+			params = paramaters;
 		}
 		return DSQLUtils.parse(dsql.getScript(), params);
 	}

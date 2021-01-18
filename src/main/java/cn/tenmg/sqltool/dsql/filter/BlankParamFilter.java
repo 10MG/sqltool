@@ -21,8 +21,9 @@ public class BlankParamFilter implements ParamFilter {
 	/**
 	 * 将空白字符串参数过滤掉
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public void doFilter(Filter filter, Map<String, Object> params) {
+	public void doFilter(Filter filter, Map<String, ?> params) {
 		List<Blank> blanks = filter.getBlanks();
 		if (CollectionUtils.isEmpty(blanks)) {
 			return;
@@ -35,9 +36,9 @@ public class BlankParamFilter implements ParamFilter {
 				for (int i = 0; i < paramNames.length; i++) {
 					String paramName = paramNames[i].trim();
 					if ("*".equals(paramName)) {
-						Iterator<Entry<String, Object>> eit = params.entrySet().iterator();
+						Iterator<?> eit = params.entrySet().iterator();
 						while (eit.hasNext()) {
-							Entry<String, Object> e = eit.next();
+							Entry<String, ?> e = (Entry<String, ?>) eit.next();
 							Object paramValue = e.getValue();
 							if (paramValue == null || StringUtils.isBlank(paramValue.toString())) {
 								eit.remove();

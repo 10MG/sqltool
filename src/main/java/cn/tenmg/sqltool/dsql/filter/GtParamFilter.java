@@ -62,7 +62,7 @@ public class GtParamFilter implements ParamFilter {
 	 * 将参数值大于指定值的参数过滤掉
 	 */
 	@Override
-	public void doFilter(Filter filter, Map<String, Object> params) {
+	public void doFilter(Filter filter, Map<String, ?> params) {
 		List<Gt> gts = filter.getGts();
 		if (CollectionUtils.isEmpty(gts)) {
 			return;
@@ -96,10 +96,11 @@ public class GtParamFilter implements ParamFilter {
 	 * @param params
 	 *            参数集
 	 */
-	private void doFilter(String value, Map<String, Object> params) {
-		Iterator<Entry<String, Object>> it = params.entrySet().iterator();
+	@SuppressWarnings("unchecked")
+	private void doFilter(String value, Map<String, ?> params) {
+		Iterator<?> it = params.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Object> entry = it.next();
+			Entry<String, ?> entry = (Entry<String, ?>) it.next();
 			Object paramValue = entry.getValue();
 			if (paramValue != null && isFiltered(paramValue, value)) {
 				it.remove();
@@ -117,7 +118,7 @@ public class GtParamFilter implements ParamFilter {
 	 * @param params
 	 *            参数集
 	 */
-	private void doFilter(String paramName, String value, Map<String, Object> params) {
+	private void doFilter(String paramName, String value, Map<String, ?> params) {
 		Object paramValue = params.get(paramName);
 		if (paramValue != null && isFiltered(paramValue, value)) {
 			params.remove(paramName);

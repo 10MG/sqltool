@@ -2,6 +2,7 @@ package cn.tenmg.sqltool.utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import cn.tenmg.sqltool.exception.NosuitableSQLDialectExeption;
 import cn.tenmg.sqltool.sql.SQLDialect;
@@ -24,7 +25,14 @@ public class SQLDialectUtils {
 	}
 
 	public static SQLDialect getSQLDialect(Map<String, String> options) {
-		String url = options.get("url");
+		return getSQLDialect(options.get("url"));
+	}
+
+	public static SQLDialect getSQLDialect(Properties properties) {
+		return getSQLDialect(properties.getProperty("url"));
+	}
+
+	private static SQLDialect getSQLDialect(String url) {
 		SQLDialect dialect = null;
 		if (DIALECTS.containsKey(url)) {
 			dialect = DIALECTS.get(url);

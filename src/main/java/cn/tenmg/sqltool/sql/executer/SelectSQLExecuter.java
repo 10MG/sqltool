@@ -29,11 +29,6 @@ import cn.tenmg.sqltool.utils.StringUtils;
  */
 public class SelectSQLExecuter<T> implements SQLExecuter<List<T>> {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1602037760808777740L;
-
 	protected Class<T> type;
 
 	@SuppressWarnings("unchecked")

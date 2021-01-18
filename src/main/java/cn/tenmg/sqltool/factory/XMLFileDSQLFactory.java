@@ -8,14 +8,16 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 
-import cn.tenmg.sqltool.SqltoolFactory;
 import cn.tenmg.sqltool.config.ConfigLoader;
 import cn.tenmg.sqltool.config.loader.XMLConfigLoader;
 import cn.tenmg.sqltool.config.model.Dsql;
@@ -23,24 +25,25 @@ import cn.tenmg.sqltool.config.model.Sqltool;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.utils.ClassUtils;
 import cn.tenmg.sqltool.utils.CollectionUtils;
-import cn.tenmg.sqltool.utils.StringUtils;
 
 /**
- * 基于XML文件配置的Sqltool工厂
+ * 基于XML文件配置的动态结构化查询语言工厂
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  *
  */
-public class XMLFileSqltoolFactory extends AbstractSqltoolFactory implements SqltoolFactory {
+public class XMLFileDSQLFactory extends AbstractDSQLFactory {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 8125151681490092061L;
 
-	private static final Logger log = Logger.getLogger(XMLFileSqltoolFactory.class);
+	private static final Logger log = Logger.getLogger(XMLFileDSQLFactory.class);
 
 	private static final ConfigLoader loader = XMLConfigLoader.getInstance();
+
+	private final Map<String, Dsql> dsqls = new HashMap<String, Dsql>();
 
 	private String basePackages;
 
@@ -50,70 +53,61 @@ public class XMLFileSqltoolFactory extends AbstractSqltoolFactory implements Sql
 		return basePackages;
 	}
 
-	public void setBasePackages(String basePackages) {
-		this.basePackages = basePackages;
-	}
-
 	public String getSuffix() {
 		return suffix;
 	}
 
-	public void setSuffix(String suffix) {
+	public XMLFileDSQLFactory(String basePackages) {
+		this.basePackages = basePackages;
+		init();
+	}
+
+	public XMLFileDSQLFactory(String basePackages, String suffix) {
+		this.basePackages = basePackages;
 		this.suffix = suffix;
+		init();
 	}
 
-	private XMLFileSqltoolFactory() {
-		super();
-	}
-
-	public static final XMLFileSqltoolFactory bind(String basePackages) {
-		XMLFileSqltoolFactory factor = new XMLFileSqltoolFactory();
-		factor.setBasePackages(basePackages);
-		factor.init();
-		return factor;
-	}
-
-	public static final XMLFileSqltoolFactory bind(String basePackages, String suffix) {
-		XMLFileSqltoolFactory factor = new XMLFileSqltoolFactory();
-		factor.setBasePackages(basePackages);
-		factor.setSuffix(suffix);
-		factor.init();
-		return factor;
+	@Override
+	Map<String, Dsql> getDsqls() {
+		return dsqls;
 	}
 
 	private void init() {
-		if (StringUtils.isBlank(basePackages)) {
-			log.warn("参数basePackages没有配置");
+		if (basePackages == null) {
+			log.warn("The parameter basePackages is null");
 		} else {
 			String[] basePackages = this.basePackages.split(",");
 			for (int i = 0; i < basePackages.length; i++) {
-				String basePackage = basePackages[i];
+				String basePackage = basePackages[i],
+						basePath = basePackage.replaceAll("\\.", Matcher.quoteReplacement(File.separator)),
+						fileName = null, fullName;
 				try {
 					if (log.isInfoEnabled()) {
-						log.info("扫描包：".concat(basePackage));
+						log.info("Scan package: ".concat(basePackage));
 					}
-					List<Object> files = getDsqlFiles(basePackage.replaceAll("\\.", "/"));
+					List<Object> files = getDsqlFiles(basePath);
 					if (CollectionUtils.isEmpty(files)) {
-						log.warn("包：".concat(basePackage).concat("没有找到后缀名为").concat(suffix).concat("的文件"));
+						log.warn("The ".concat(suffix).concat(" file was not found in package : ").concat(basePackage));
 					} else {
 						for (int j = 0, size = files.size(); j < size; j++) {
 							Object file = files.get(j);
 							Sqltool sqltool;
-							String fileName;
 							if (file instanceof File) {
 								File f = (File) file;
-								fileName = f.getName();
+								fileName = basePath.concat(f.getName());
 								if (log.isInfoEnabled()) {
-									log.info("开始解析".concat(fileName));
+									log.info("Start parsing: ".concat(fileName));
 								}
 								sqltool = loader.load(f);
 							} else {
-								fileName = (String) file;
+								fullName = (String) file;
+								fileName = fullName.substring(basePath.lastIndexOf(basePath));
 								if (log.isInfoEnabled()) {
-									log.info("开始解析".concat(fileName));
+									log.info("Start parsing: ".concat(fileName));
 								}
 								ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
-								InputStream is = classLoader.getResourceAsStream(fileName);
+								InputStream is = classLoader.getResourceAsStream(fullName);
 								sqltool = loader.load(is);
 							}
 							List<Dsql> dsqls = sqltool.getDsql();
@@ -124,13 +118,17 @@ public class XMLFileSqltoolFactory extends AbstractSqltoolFactory implements Sql
 								}
 							}
 							if (log.isInfoEnabled()) {
-								log.info("完成解析".concat(fileName));
+								log.info("Completed parse: ".concat(fileName));
 							}
 						}
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
-					String msg = "扫描包：".concat(basePackage).concat("加载SQL文件失败");
+					String msg;
+					if (fileName == null) {
+						msg = "Failed to scan package: " + basePackage;
+					} else {
+						msg = "Failed to load file: " + fileName + " in package: " + basePackage;
+					}
 					throw new IllegalConfigException(msg, e);
 				}
 			}

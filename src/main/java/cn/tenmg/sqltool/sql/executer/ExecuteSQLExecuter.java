@@ -12,11 +12,6 @@ import java.sql.SQLException;
  */
 public class ExecuteSQLExecuter extends AbstractExecuteSQLExecuter<Boolean> {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8858877740885024842L;
-
 	private static class InstanceHolder {
 		private static final ExecuteSQLExecuter INSTANCE = new ExecuteSQLExecuter();
 	}

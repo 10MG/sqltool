@@ -36,7 +36,7 @@ public final class DataSourceFactory {
 			Class<DatasourceBuilder> datasourceBuilder = (Class<DatasourceBuilder>) Class.forName(buildName);
 			return datasourceBuilder.newInstance().createDataSource(properties);
 		} catch (ClassNotFoundException e) {
-			throw new IllegalConfigException("This type of datasource is not supported at the moment: " + type);
+			throw new IllegalConfigException("This type of datasource is not supported at the moment: " + type, e);
 		}
 	}
 

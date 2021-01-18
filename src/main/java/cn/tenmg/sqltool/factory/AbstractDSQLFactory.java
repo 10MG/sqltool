@@ -3,33 +3,38 @@ package cn.tenmg.sqltool.factory;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.tenmg.sqltool.SqltoolFactory;
+import cn.tenmg.sqltool.DSQLFactory;
 import cn.tenmg.sqltool.config.model.Dsql;
 import cn.tenmg.sqltool.dsql.NamedSQL;
 import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 
 /**
- * 抽象Sqltool工厂。封装了Sqltool工厂的基本功能
+ * 抽象动态结构化查询语言工厂
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  *
  */
-public abstract class AbstractSqltoolFactory implements SqltoolFactory {
+public abstract class AbstractDSQLFactory implements DSQLFactory {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -8235596978687106626L;
+	private static final long serialVersionUID = -169658678380590492L;
 
-	protected final Map<String, Dsql> dsqls = new HashMap<String, Dsql>();
+	abstract Map<String, Dsql> getDsqls();
+
+	@Override
+	public Dsql getDsql(String id) {
+		return getDsqls().get(id);
+	}
 
 	@Override
 	public String getScript(String id) {
-		Dsql sql = dsqls.get(id);
-		if (sql == null) {
+		Dsql dsql = getDsql(id);
+		if (dsql == null) {
 			return null;
 		}
-		return sql.getScript();
+		return dsql.getScript();
 	}
 
 	@Override
@@ -46,7 +51,7 @@ public abstract class AbstractSqltoolFactory implements SqltoolFactory {
 	@Override
 	public NamedSQL parse(String dsql, Map<String, ?> params) {
 		NamedSQL namedSQL = null;
-		Dsql obj = dsqls.get(dsql);
+		Dsql obj = getDsql(dsql);
 		if (obj == null) {
 			namedSQL = DSQLUtils.parse(dsql, params);
 		} else {

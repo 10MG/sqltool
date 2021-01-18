@@ -1,9 +1,11 @@
 package cn.tenmg.sqltool;
 
-import java.io.Serializable;
-import java.util.Map;
+import java.io.IOException;
+import java.util.Properties;
 
-import cn.tenmg.sqltool.dsql.NamedSQL;
+import cn.tenmg.sqltool.dao.BasicDao;
+import cn.tenmg.sqltool.exception.IllegalConfigException;
+import cn.tenmg.sqltool.utils.PropertiesLoaderUtils;
 
 /**
  * Sqltool工厂
@@ -11,37 +13,33 @@ import cn.tenmg.sqltool.dsql.NamedSQL;
  * @author 赵伟均 wjzhao@aliyun.com
  *
  */
-public interface SqltoolFactory extends Serializable {
+public abstract class SqltoolFactory {
 
 	/**
-	 * 根据指定编号获取SQL/动态SQL(DSQL)脚本
+	 * 创建数据库访问对象
 	 * 
-	 * @param id
-	 *            指定编号
-	 * @return SQL脚本
+	 * @param properties
+	 *            配置属性
+	 * @return 返回数据库访问对象
 	 */
-	String getScript(String id);
+	public static Dao createDao(Properties properties) {
+		return BasicDao.build(properties);
+	}
 
 	/**
-	 * 根据指定的参数params分析转换动态SQL（dsql）为SQL。dsql可以是工厂中动态SQL的编号(id)，也可以是动态SQL脚本
+	 * 创建数据库访问对象
 	 * 
-	 * @param dsql
-	 *            动态SQL的编号(id)或者动态SQL脚本
-	 * @param params
-	 *            参数列表(分别列出参数名和参数值，或使用一个Map对象)
-	 * @return SQL对象
-	 */
-	NamedSQL parse(String dsql, Object... params);
-
-	/**
-	 * 根据指定的参数params分析转换动态SQL（dsql）为SQL。dsql可以是工厂中动态SQL的编号(id)，也可以是动态SQL脚本
+	 * @param pathInClassPath
+	 *            配置文件相对于classPath的路径
 	 * 
-	 * @param dsql
-	 *            动态SQL的编号(id)或者动态SQL脚本
-	 * @param params
-	 *            参数列表
-	 * @return SQL对象
+	 * @return 返回数据库访问对象
 	 */
-	NamedSQL parse(String dsql, Map<String, ?> params);
+	public static Dao createDao(String pathInClassPath) {
+		try {
+			return BasicDao.build(PropertiesLoaderUtils.loadFromClassPath(pathInClassPath));
+		} catch (IOException e) {
+			throw new IllegalConfigException("Exception occurred when loading configuration", e);
+		}
+	}
 
 }

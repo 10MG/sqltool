@@ -11,14 +11,10 @@ import cn.tenmg.sqltool.sql.SQLExecuter;
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  *
- * @param <T> 返回结果类型
+ * @param <T>
+ *            返回结果类型
  */
 public abstract class AbstractExecuteSQLExecuter<T> implements SQLExecuter<T> {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5664359106430145890L;
 
 	@Override
 	public ResultSet execute(PreparedStatement ps) throws SQLException {

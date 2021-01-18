@@ -6,21 +6,20 @@ public class SqltoolTest {
 
 	@Test
 	public void doTest() {
-		SqltoolContext sqltoolContext = TestUtils.initSqltoolContext();
 		/**
 		 * 测试Mysql
 		 */
-		MySQLTest.doTest(sqltoolContext);
+		(new MySQLTest()).doTest();
 
 		/**
 		 * 测试Oracle
 		 */
-		OracleTest.doTest(sqltoolContext);
+		(new OracleTest()).doTest();
 
 		/**
 		 * 测试PostgresSQL
 		 */
-		PostgresSQLTest.doTest(sqltoolContext);
+		(new PostgresSQLTest()).doTest();
 	}
 
 }

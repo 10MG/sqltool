@@ -1,6 +1,5 @@
 package cn.tenmg.sqltool.sql;
 
-import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,7 +12,7 @@ import java.sql.SQLException;
  * @param <T>
  *            实体类
  */
-public interface SQLExecuter<T> extends Serializable {
+public interface SQLExecuter<T> {
 
 	ResultSet execute(PreparedStatement ps) throws SQLException;
 

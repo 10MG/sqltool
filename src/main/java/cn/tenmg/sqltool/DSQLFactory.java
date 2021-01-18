@@ -52,5 +52,5 @@ public interface DSQLFactory extends Serializable {
 	 *            参数列表
 	 * @return SQL对象
 	 */
-	NamedSQL parse(String dsql, Map<String, ?> params);
+	NamedSQL parse(String dsql, Map<String, Object> params);
 }

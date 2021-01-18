@@ -30,6 +30,18 @@ public class Dsql implements Serializable {
 	private String id;
 
 	/**
+	 * 参数过滤器配置
+	 */
+	@XmlElement(namespace = Sqltool.NAMESPACE)
+	private Filter filter;
+
+	/**
+	 * 参数类型转换器配置
+	 */
+	@XmlElement(namespace = Sqltool.NAMESPACE)
+	private Converter converter;
+
+	/**
 	 * 动态SQL配置
 	 */
 	@XmlElement(namespace = Sqltool.NAMESPACE)
@@ -41,6 +53,22 @@ public class Dsql implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public Filter getFilter() {
+		return filter;
+	}
+
+	public void setFilter(Filter filter) {
+		this.filter = filter;
+	}
+
+	public Converter getConverter() {
+		return converter;
+	}
+
+	public void setConverter(Converter converter) {
+		this.converter = converter;
 	}
 
 	public String getScript() {

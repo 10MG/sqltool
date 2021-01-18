@@ -1,12 +1,19 @@
 package cn.tenmg.sqltool.factory;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import cn.tenmg.sqltool.DSQLFactory;
+import cn.tenmg.sqltool.config.model.Converter;
 import cn.tenmg.sqltool.config.model.Dsql;
+import cn.tenmg.sqltool.config.model.Filter;
 import cn.tenmg.sqltool.dsql.NamedSQL;
+import cn.tenmg.sqltool.dsql.converter.ParamConverter;
+import cn.tenmg.sqltool.dsql.filter.ParamFilter;
 import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
+import cn.tenmg.sqltool.utils.CollectionUtils;
 
 /**
  * 抽象动态结构化查询语言工厂
@@ -49,7 +56,7 @@ public abstract class AbstractDSQLFactory implements DSQLFactory {
 	}
 
 	@Override
-	public NamedSQL parse(String dsql, Map<String, ?> params) {
+	public NamedSQL parse(String dsql, Map<String, Object> params) {
 		NamedSQL namedSQL = null;
 		Dsql obj = getDsql(dsql);
 		if (obj == null) {
@@ -69,7 +76,28 @@ public abstract class AbstractDSQLFactory implements DSQLFactory {
 	 *            参数列表
 	 * @return SQL对象
 	 */
-	protected NamedSQL parse(Dsql dsql, Map<String, ?> params) {
+	protected NamedSQL parse(Dsql dsql, Map<String, Object> params) {
+		Filter filter = dsql.getFilter();
+		if (filter != null) {
+			ServiceLoader<ParamFilter> loader = ServiceLoader.load(ParamFilter.class);
+			for (Iterator<ParamFilter> it = loader.iterator(); it.hasNext();) {
+				if (CollectionUtils.isEmpty(params)) {
+					break;
+				}
+				ParamFilter paramFilter = it.next();
+				paramFilter.doFilter(filter, params);
+			}
+		}
+		Converter converter = dsql.getConverter();
+		if (converter != null) {
+			ServiceLoader<ParamConverter> loader = ServiceLoader.load(ParamConverter.class);
+			if (!CollectionUtils.isEmpty(params)) {
+				for (Iterator<ParamConverter> it = loader.iterator(); it.hasNext();) {
+					ParamConverter paramConverter = it.next();
+					paramConverter.convert(converter, params);
+				}
+			}
+		}
 		return DSQLUtils.parse(dsql.getScript(), params);
 	}
 

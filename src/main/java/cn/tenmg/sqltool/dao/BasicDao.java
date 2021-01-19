@@ -36,9 +36,21 @@ public class BasicDao extends AbstractDao {
 
 	private static DataSource defaultDataSource;
 
-	private BasicDao() {
+	private BasicDao(Properties properties) {
 		super();
+		this.properties = properties;
+		String basePackages = properties.getProperty("sqltool.basePackages"),
+				suffix = properties.getProperty("sqltool.suffix");
+		if (suffix == null) {
+			this.dsqlFactory = new XMLFileDSQLFactory(basePackages);
+		} else {
+			this.dsqlFactory = new XMLFileDSQLFactory(basePackages, suffix);
+		}
+		this.showSql = Boolean.valueOf(properties.getProperty("sqltool.showSql", "false"));
+		this.defaultBatchSize = Integer.valueOf(properties.getProperty("sqltool.defaultBatchSize", "500"));
 	}
+
+	private Properties properties;
 
 	private DSQLFactory dsqlFactory;
 
@@ -46,18 +58,58 @@ public class BasicDao extends AbstractDao {
 
 	private int defaultBatchSize = 500;
 
-	public static BasicDao build(Properties properties) {
-		String basePackages = properties.getProperty("sqltool.basePackages"),
-				suffix = properties.getProperty("sqltool.suffix");
-		BasicDao dao = new BasicDao();
-		if (suffix == null) {
-			dao.dsqlFactory = new XMLFileDSQLFactory(basePackages);
-		} else {
-			dao.dsqlFactory = new XMLFileDSQLFactory(basePackages, suffix);
-		}
-		dao.showSql = Boolean.valueOf(properties.getProperty("sqltool.showSql", "false"));
-		dao.defaultBatchSize = Integer.valueOf(properties.getProperty("sqltool.defaultBatchSize", "500"));
+	private volatile boolean uninitialized = true;
 
+	public static BasicDao build(Properties properties) {
+		return new BasicDao(properties);
+	}
+
+	@Override
+	public DSQLFactory getDSQLFactory() {
+		if (uninitialized) {
+			initialized();
+		}
+		return dsqlFactory;
+	}
+
+	@Override
+	public DataSource getDefaultDataSource() {
+		if (uninitialized) {
+			initialized();
+		}
+		return defaultDataSource;
+	}
+
+	@Override
+	public DataSource getDataSource(String name) {
+		if (uninitialized) {
+			initialized();
+		}
+		return dataSources.get(name);
+	}
+
+	@Override
+	SQLDialect getSQLDialect(DataSource dataSource) {
+		if (uninitialized) {
+			initialized();
+		}
+		return DIALECTS.get(dataSource);
+	}
+
+	@Override
+	boolean isShowSql() {
+		return showSql;
+	}
+
+	@Override
+	int getDefaultBatchSize() {
+		return defaultBatchSize;
+	}
+
+	/**
+	 * 初始化
+	 */
+	private synchronized void initialized() {
 		Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
 		String key, name, param, firstName = null;
 		Object value;
@@ -111,37 +163,7 @@ public class BasicDao extends AbstractDao {
 		} catch (Exception e) {
 			throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);
 		}
-		return dao;
-	}
-
-	@Override
-	public DSQLFactory getDSQLFactory() {
-		return dsqlFactory;
-	}
-
-	@Override
-	public DataSource getDefaultDataSource() {
-		return defaultDataSource;
-	}
-
-	@Override
-	public DataSource getDataSource(String name) {
-		return dataSources.get(name);
-	}
-
-	@Override
-	SQLDialect getSQLDialect(DataSource dataSource) {
-		return DIALECTS.get(dataSource);
-	}
-
-	@Override
-	boolean isShowSql() {
-		return showSql;
-	}
-
-	@Override
-	int getDefaultBatchSize() {
-		return defaultBatchSize;
+		uninitialized = false;
 	}
 
 }

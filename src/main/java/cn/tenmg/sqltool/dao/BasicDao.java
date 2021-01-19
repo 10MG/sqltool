@@ -34,7 +34,7 @@ public class BasicDao extends AbstractDao {
 
 	private static final Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
 
-	private static DataSource defaultDataSource;
+	private static DataSource defaultDataSource = null;
 
 	private BasicDao(Properties properties) {
 		super();
@@ -58,7 +58,7 @@ public class BasicDao extends AbstractDao {
 
 	private int defaultBatchSize = 500;
 
-	private volatile boolean uninitialized = true;
+	private static volatile boolean uninitialized = true;
 
 	public static BasicDao build(Properties properties) {
 		return new BasicDao(properties);
@@ -66,9 +66,6 @@ public class BasicDao extends AbstractDao {
 
 	@Override
 	public DSQLFactory getDSQLFactory() {
-		if (uninitialized) {
-			initialized();
-		}
 		return dsqlFactory;
 	}
 

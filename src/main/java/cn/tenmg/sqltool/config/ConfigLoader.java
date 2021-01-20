@@ -3,7 +3,6 @@ package cn.tenmg.sqltool.config;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
-import java.io.Serializable;
 
 import cn.tenmg.sqltool.config.model.Sqltool;
 
@@ -13,7 +12,7 @@ import cn.tenmg.sqltool.config.model.Sqltool;
  * @author 赵伟均 wjzhao@aliyun.com
  *
  */
-public interface ConfigLoader extends Serializable {
+public interface ConfigLoader {
 
 	/**
 	 * 加载sqltool配置

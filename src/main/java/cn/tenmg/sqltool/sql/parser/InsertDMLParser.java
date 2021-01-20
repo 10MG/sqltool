@@ -24,11 +24,6 @@ import cn.tenmg.sqltool.utils.StringUtils;
  */
 public class InsertDMLParser extends AbstractDMLParser {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1072900553731732141L;
-
 	private static final String INSERT = "INSERT INTO %s(%s) VALUES (%s)";
 
 	private static class InstanceHolder {

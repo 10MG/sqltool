@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.tenmg.sqltool.exception.DataAccessException;
-import cn.tenmg.sqltool.sql.SQLExecuter;
 import cn.tenmg.sqltool.sql.utils.FieldUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
@@ -25,7 +24,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
  * @param <T>
  *            实体类
  */
-public class GetSQLExecuter<T> implements SQLExecuter<T> {
+public class GetSQLExecuter<T> extends ReadOnlySQLExecuter<T> {
 
 	protected Class<T> type;
 
@@ -36,6 +35,11 @@ public class GetSQLExecuter<T> implements SQLExecuter<T> {
 
 	public GetSQLExecuter(Class<T> type) {
 		this.type = type;
+	}
+
+	@Override
+	public boolean isReadOnly() {
+		return true;
 	}
 
 	@Override

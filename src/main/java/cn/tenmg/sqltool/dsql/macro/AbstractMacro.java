@@ -15,11 +15,6 @@ import javax.script.ScriptException;
  */
 public abstract class AbstractMacro implements Macro {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8970989215010295515L;
-
 	private static class ScriptEngineManagerHolder {
 		/**
 		 * 脚本引擎管理器

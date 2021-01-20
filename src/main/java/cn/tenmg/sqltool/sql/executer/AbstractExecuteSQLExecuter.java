@@ -17,6 +17,11 @@ import cn.tenmg.sqltool.sql.SQLExecuter;
 public abstract class AbstractExecuteSQLExecuter<T> implements SQLExecuter<T> {
 
 	@Override
+	public boolean isReadOnly() {
+		return false;
+	}
+
+	@Override
 	public ResultSet execute(PreparedStatement ps) throws SQLException {
 		return null;
 	}

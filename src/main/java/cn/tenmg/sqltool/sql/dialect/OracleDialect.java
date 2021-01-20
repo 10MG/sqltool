@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 
 /**
@@ -33,6 +34,9 @@ public class OracleDialect extends AbstractSQLDialect {
 
 	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = NVL(Y.${columnName}, X.${columnName})";
+
+	private static final String PAGE_WRAP_START = "SELECT * FROM (SELECT SQLTOOL.*, ROWNUM RN FROM (\n",
+			PAGE_WRAP_END = "\n) SQLTOOL  WHERE ROWNUM <= %d) WHERE RN >= %d";
 
 	private static class InstanceHolder {
 		private static final OracleDialect INSTANCE = new OracleDialect();
@@ -100,6 +104,15 @@ public class OracleDialect extends AbstractSQLDialect {
 	@Override
 	String getSetIfNotNullTemplate() {
 		return SET_IF_NOT_NULL_TEMPLATE;
+	}
+	
+	@Override
+	String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
+		return PAGE_WRAP_START.concat(sql).concat(pageWrapEnd(pageSize, currentPage));
+	}
+
+	private static String pageWrapEnd(int pageSize, long currentPage) {
+		return String.format(PAGE_WRAP_END, currentPage * pageSize, (currentPage - 1) * pageSize);
 	}
 
 }

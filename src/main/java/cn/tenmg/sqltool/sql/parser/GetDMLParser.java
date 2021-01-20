@@ -24,11 +24,6 @@ import cn.tenmg.sqltool.utils.StringUtils;
  */
 public class GetDMLParser extends AbstractDMLParser {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5532695002201313950L;
-
 	private static final String GET = "SELECT %s FROM %s WHERE %s";
 
 	private static class InstanceHolder {

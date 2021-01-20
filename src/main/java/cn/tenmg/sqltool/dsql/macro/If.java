@@ -13,11 +13,6 @@ import javax.script.ScriptException;
  */
 public class If extends AbstractMacro implements Macro {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8975289450043764439L;
-
 	@Override
 	Object excute(ScriptEngine scriptEngine, String code, Map<String, Object> context) throws ScriptException {
 		Object result = scriptEngine.eval(code);

@@ -13,11 +13,6 @@ import cn.tenmg.sqltool.utils.EntityUtils;
  */
 public abstract class AbstractDMLParser implements DMLParser {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1468279410790030572L;
-
 	protected abstract <T> void parseDML(DML dml, Class<T> type, String tableName);
 
 	@Override

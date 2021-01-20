@@ -21,11 +21,6 @@ import cn.tenmg.sqltool.exception.IllegalConfigException;
  */
 public class XMLConfigLoader implements ConfigLoader {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3321576666700440538L;
-
 	private static class InstanceHolder {
 		private static final XMLConfigLoader INSTANCE = new XMLConfigLoader();
 	}

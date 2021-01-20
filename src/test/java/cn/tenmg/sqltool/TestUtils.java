@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.junit.Assert;
 
+import cn.tenmg.sqltool.data.Page;
+
 public abstract class TestUtils {
 
 	/**
@@ -44,6 +46,8 @@ public abstract class TestUtils {
 		get(dao);
 		// 测试多条记录查询
 		select(dao);
+		// 测试分页查询
+		page(dao);
 		// 测试执行语句
 		execute(dao);
 		// 测试执行更新语句
@@ -599,6 +603,96 @@ public abstract class TestUtils {
 		Assert.assertEquals(2, staffInfos.size());
 		Assert.assertEquals("Sharry", staffInfos.get(0).getStaffName());
 		Assert.assertEquals("June", staffInfos.get(1).getStaffName());
+	}
+
+	private static void page(Dao dao) {
+		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
+
+		// 初始化数据
+		List<StaffInfo> staffInfos = new ArrayList<StaffInfo>();
+		StaffInfo staffInfo;
+		int staffNameLikeCount = 0;
+		String staffNameLike = "1", staffId;
+		for (int i = 1; i <= defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffId = df.format(i);
+			if (staffId.contains(staffNameLike)) {
+				staffNameLikeCount++;
+			}
+			staffInfo.setStaffId(staffId);
+			staffInfo.setStaffName("" + i);
+			staffInfo.setPosition(position);
+			staffInfos.add(staffInfo);
+		}
+		dao.save(staffInfos);
+
+		long currentPage = 1;
+		int pageSize = defaultBatchSize / 10;
+		Page<StaffInfo> page = dao.page(StaffInfo.class, "select * from staff_info", currentPage, pageSize);
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(defaultBatchSize, page.getTotal().intValue());
+		Assert.assertEquals(pageSize, page.getRows().size());
+
+		long totalPage = page.getTotalPage();
+		page = dao.page(StaffInfo.class, "select * from staff_info order by staff_id", totalPage, pageSize);
+		Assert.assertEquals(totalPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(defaultBatchSize, page.getTotal().intValue());
+		List<StaffInfo> rows = page.getRows();
+		Assert.assertEquals(df.format(defaultBatchSize), rows.get(rows.size() - 1).getStaffId());
+
+		page = dao.page(StaffInfo.class, "select * from staff_info order by staff_id desc", currentPage, pageSize);
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(defaultBatchSize, page.getTotal().intValue());
+		Assert.assertEquals(df.format(defaultBatchSize), page.getRows().get(0).getStaffId());
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("staffName", "1");
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like", currentPage, pageSize, params);
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like", currentPage, pageSize, "staffName", "1");
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
+				"find_staff_info_staff_name_like", currentPage, pageSize, params);
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
+				"find_staff_info_staff_name_like", currentPage, pageSize, "staffName", "1");
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
+				"find_staff_info_staff_name_like", currentPage, pageSize, params);
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+
+		params.put("limit", pageSize);
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_limit", currentPage, pageSize, params);
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+
+		params.put("limit", pageSize);
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_limit", currentPage, pageSize, "staffName",
+				"1", "limit", pageSize);
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertTrue(pageSize >= page.getTotal().intValue());
 	}
 
 	private static void execute(Dao dao) {

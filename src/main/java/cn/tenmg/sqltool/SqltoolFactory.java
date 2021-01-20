@@ -1,6 +1,6 @@
 package cn.tenmg.sqltool;
 
-import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Properties;
 
 import cn.tenmg.sqltool.dao.BasicDao;
@@ -14,6 +14,8 @@ import cn.tenmg.sqltool.utils.PropertiesLoaderUtils;
  *
  */
 public abstract class SqltoolFactory {
+
+	public static final String DAO_CONFIG_KEY = "sqltool.dao", DEFAULT_DAO = "cn.tenmg.sqltool.dao.BasicDao";
 
 	/**
 	 * 创建数据库访问对象
@@ -36,9 +38,16 @@ public abstract class SqltoolFactory {
 	 */
 	public static Dao createDao(String pathInClassPath) {
 		try {
-			return BasicDao.build(PropertiesLoaderUtils.loadFromClassPath(pathInClassPath));
-		} catch (IOException e) {
-			throw new IllegalConfigException("Exception occurred when loading configuration", e);
+			Properties properties = PropertiesLoaderUtils.loadFromClassPath(pathInClassPath);
+			String dao = properties.getProperty(DAO_CONFIG_KEY);
+			if (dao == null) {
+				dao = DEFAULT_DAO;
+			}
+			Class<?> cls = Class.forName(dao);
+			Method method = cls.getMethod("build", Properties.class);
+			return (Dao) method.invoke(null, properties);
+		} catch (Exception e) {
+			throw new IllegalConfigException("Exception occurred when building database access object", e);
 		}
 	}
 

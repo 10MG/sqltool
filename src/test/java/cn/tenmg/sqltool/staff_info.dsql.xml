@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sqltool xmlns="http://www.10mg.cn/schema/sqltool"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.10mg.cn/schema/sqltool http://www.10mg.cn/schema/sqltool.xsd">
 	<dsql id="get_total_staff_count">
 		<script>
 			<![CDATA[
@@ -8,6 +9,7 @@
 			]]>
 		</script>
 	</dsql>
+
 	<dsql id="get_staff_count_the_same_name">
 		<script>
 			<![CDATA[
@@ -15,6 +17,7 @@
 			]]>
 		</script>
 	</dsql>
+
 	<dsql id="get_staff_count_of_specific_position">
 		<script>
 			<![CDATA[
@@ -22,6 +25,7 @@
 			]]>
 		</script>
 	</dsql>
+
 	<dsql id="get_staff_info_by_staff_id">
 		<script>
 			<![CDATA[
@@ -29,10 +33,44 @@
 			]]>
 		</script>
 	</dsql>
+
 	<dsql id="find_staff_info_by_staff_ids">
 		<script>
 			<![CDATA[
 				SELECT * FROM STAFF_INFO WHERE STAFF_ID IN (:staffIds)
+			]]>
+		</script>
+	</dsql>
+
+	<dsql id="find_staff_info_staff_name_like">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName
+			]]>
+		</script>
+	</dsql>
+	
+	<dsql id="find_staff_info_staff_name_like_order_by_staff_name">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME
+			]]>
+		</script>
+	</dsql>
+	
+	<dsql id="find_staff_info_staff_name_like_limit">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName LIMIT :limit
 			]]>
 		</script>
 	</dsql>

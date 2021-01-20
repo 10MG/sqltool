@@ -1,6 +1,5 @@
 package cn.tenmg.sqltool.dsql.macro;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import javax.script.ScriptException;
@@ -10,7 +9,7 @@ import javax.script.ScriptException;
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  */
-public interface Macro extends Serializable {
+public interface Macro {
 	/**
 	 * 执行宏并返回计算结果
 	 * 

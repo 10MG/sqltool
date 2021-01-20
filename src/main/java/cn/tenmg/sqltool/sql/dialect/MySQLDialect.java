@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 
 /**
@@ -30,6 +31,9 @@ public class MySQLDialect extends AbstractSQLDialect {
 
 	private static final String SET_TEMPLATE = "${columnName} = VALUES(${columnName})",
 			SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(VALUES(${columnName}), ${columnName})";
+
+	private static final String PAGE_WRAP_START = "SELECT * FROM (\n", PAGE_WRAP_END = "\n) SQLTOOL",
+			LIMIT = " LIMIT %d,%d";
 
 	private static class InstanceHolder {
 		private static final MySQLDialect INSTANCE = new MySQLDialect();
@@ -94,4 +98,43 @@ public class MySQLDialect extends AbstractSQLDialect {
 		return SET_IF_NOT_NULL_TEMPLATE;
 	}
 
+	@Override
+	public String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
+		int length = sqlMetaData.getLength(), embedStartIndex = sqlMetaData.getEmbedStartIndex(),
+				embedEndIndex = sqlMetaData.getEmbedEndIndex();
+		if (sqlMetaData.getLimitIndex() >= 0) {
+			if (embedStartIndex > 0) {
+				if (embedEndIndex < length) {
+					return sql.substring(0, embedStartIndex).concat(PAGE_WRAP_START)
+							.concat(sql.substring(embedStartIndex, embedEndIndex))
+							.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
+				} else {
+					return sql.substring(0, embedStartIndex).concat(PAGE_WRAP_START)
+							.concat(sql.substring(embedStartIndex)).concat(pageEnd(pageSize, currentPage));
+				}
+			} else {
+				if (embedEndIndex < length) {
+					return PAGE_WRAP_START.concat(sql.substring(0, embedEndIndex))
+							.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
+				} else {
+					return PAGE_WRAP_START.concat(sql).concat(pageEnd(pageSize, currentPage));
+				}
+			}
+		} else {
+			if (embedEndIndex > 0 && embedEndIndex < length) {
+				return sql.substring(0, embedEndIndex).concat(generateLimit(pageSize, currentPage))
+						.concat(sql.substring(embedEndIndex));
+			} else {
+				return sql.concat(generateLimit(pageSize, currentPage));
+			}
+		}
+	}
+
+	private static String pageEnd(int pageSize, long currentPage) {
+		return PAGE_WRAP_END.concat(generateLimit(pageSize, currentPage));
+	}
+
+	private static String generateLimit(int pageSize, long currentPage) {
+		return String.format(LIMIT, (currentPage - 1) * pageSize, pageSize);
+	}
 }

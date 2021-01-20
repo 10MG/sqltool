@@ -2,3 +2,6 @@
 /.settings/
 /.classpath
 /.project
+/deploy.bat
+/install.bat
+/package.bat

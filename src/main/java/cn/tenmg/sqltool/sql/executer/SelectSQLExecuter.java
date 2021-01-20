@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import cn.tenmg.sqltool.exception.DataAccessException;
-import cn.tenmg.sqltool.sql.SQLExecuter;
 import cn.tenmg.sqltool.sql.utils.FieldUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
@@ -27,7 +26,7 @@ import cn.tenmg.sqltool.utils.StringUtils;
  * @param <T>
  *            实体类
  */
-public class SelectSQLExecuter<T> implements SQLExecuter<List<T>> {
+public class SelectSQLExecuter<T> extends ReadOnlySQLExecuter<List<T>> {
 
 	protected Class<T> type;
 

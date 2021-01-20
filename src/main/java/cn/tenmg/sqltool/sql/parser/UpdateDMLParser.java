@@ -24,11 +24,6 @@ import cn.tenmg.sqltool.utils.StringUtils;
  */
 public class UpdateDMLParser extends AbstractDMLParser {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2569556565530119318L;
-
 	private static final String UPDATE = "UPDATE %s SET %s WHERE %s";
 
 	private static class InstanceHolder {

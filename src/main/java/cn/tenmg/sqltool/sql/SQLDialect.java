@@ -108,4 +108,26 @@ public interface SQLDialect extends Serializable {
 	 * @return 返回获取硬保存数据SQL对象
 	 */
 	<T> SQL hardSave(T obj);
+
+	/**
+	 * 根据SQL生成特定数据库统计总记录数SQL
+	 * 
+	 * @param sql
+	 *            查询SQL
+	 * @return 返回查询总记录数的SQL
+	 */
+	String countSql(String sql);
+
+	/**
+	 * 根据SQL、页容量pageSize和当前页码currentPage生成特定数据库的分页查询SQL
+	 * 
+	 * @param sql
+	 *            SQL
+	 * @param pageSize
+	 *            页容量
+	 * @param currentPage
+	 *            当前页码
+	 * @return 返回分页查询SQL
+	 */
+	String pageSql(String sql, int pageSize, long currentPage);
 }

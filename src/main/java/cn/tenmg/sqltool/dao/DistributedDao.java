@@ -1,5 +1,6 @@
 package cn.tenmg.sqltool.dao;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -13,10 +14,21 @@ import cn.tenmg.sqltool.datasource.DataSourceFactory;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.exception.InitializeDataSourceException;
 import cn.tenmg.sqltool.factory.XMLFileDSQLFactory;
+import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
-public class BasicDao extends AbstractDao {
+/**
+ * 支持分布式环境的数据库访问对象
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
+public class DistributedDao extends AbstractDao implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5961378350698776883L;
 
 	private static final String DATASOURCE_PREFIX = "sqltool.datasource.", DEFAULT_NAME = "default",
 			DATASOURCE_REGEX = "^".concat(DATASOURCE_PREFIX.replaceAll("\\.", "\\\\."))
@@ -24,9 +36,13 @@ public class BasicDao extends AbstractDao {
 
 	private static final int DATASOURCE_PREFIX_LEN = DATASOURCE_PREFIX.length();
 
-	private final Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
+	private static final Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
 
-	private DataSource defaultDataSource = null;
+	private static DataSource defaultDataSource;
+
+	private static volatile boolean uninitialized = true;
+
+	private Properties properties;
 
 	private DSQLFactory dsqlFactory;
 
@@ -34,8 +50,9 @@ public class BasicDao extends AbstractDao {
 
 	private int defaultBatchSize = 500;
 
-	private BasicDao(Properties properties) {
+	private DistributedDao(Properties properties) {
 		super();
+		this.properties = properties;
 		String basePackages = properties.getProperty("sqltool.basePackages"),
 				suffix = properties.getProperty("sqltool.suffix");
 		if (suffix == null) {
@@ -45,6 +62,55 @@ public class BasicDao extends AbstractDao {
 		}
 		this.showSql = Boolean.valueOf(properties.getProperty("sqltool.showSql", "false"));
 		this.defaultBatchSize = Integer.valueOf(properties.getProperty("sqltool.defaultBatchSize", "500"));
+	}
+
+	public static DistributedDao build(Properties properties) {
+		return new DistributedDao(properties);
+	}
+
+	@Override
+	public DSQLFactory getDSQLFactory() {
+		return dsqlFactory;
+	}
+
+	@Override
+	public DataSource getDefaultDataSource() {
+		if (uninitialized) {
+			initialized(properties);
+		}
+		return defaultDataSource;
+	}
+
+	@Override
+	public DataSource getDataSource(String name) {
+		if (uninitialized) {
+			initialized(properties);
+		}
+		return dataSources.get(name);
+	}
+
+	@Override
+	protected SQLDialect getSQLDialect(DataSource dataSource) {
+		if (uninitialized) {
+			initialized(properties);
+		}
+		return DIALECTS.get(dataSource);
+	}
+
+	@Override
+	boolean isShowSql() {
+		return showSql;
+	}
+
+	@Override
+	int getDefaultBatchSize() {
+		return defaultBatchSize;
+	}
+
+	/**
+	 * 初始化
+	 */
+	private static synchronized void initialized(Properties properties) {
 		Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
 		String key, name, param, firstName = null;
 		Object value;
@@ -76,57 +142,31 @@ public class BasicDao extends AbstractDao {
 		if (CollectionUtils.isEmpty(datasourceConfigs)) {
 			throw new IllegalConfigException("No datasource is configured, please check the configuration");
 		}
-		String defaultName = DEFAULT_NAME;
 		datasourceConfig = datasourceConfigs.get(DEFAULT_NAME);
 		if (datasourceConfig == null) {// 默认数据源不存在则将第一个数据源作为默认数据源
-			defaultName = firstName;
+			name = firstName;
 			datasourceConfig = datasourceConfigs.get(firstName);
+		} else {
+			name = DEFAULT_NAME;
 		}
 		try {
 			defaultDataSource = DataSourceFactory.createDataSource(datasourceConfig);
-			dataSources.put(defaultName, defaultDataSource);
+			dataSources.put(name, defaultDataSource);
 			DIALECTS.put(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
-			datasourceConfigs.remove(defaultName);
+			datasourceConfigs.remove(name);
 			DataSource dataSource;
 			for (Iterator<Entry<String, Properties>> it = datasourceConfigs.entrySet().iterator(); it.hasNext();) {
 				Entry<String, Properties> entry = it.next();
+				name = entry.getKey();
 				datasourceConfig = entry.getValue();
 				dataSource = DataSourceFactory.createDataSource(datasourceConfig);
-				dataSources.put(entry.getKey(), dataSource);
+				dataSources.put(name, dataSource);
 				DIALECTS.put(dataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
 			}
 		} catch (Exception e) {
 			throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);
 		}
-	}
-
-	public static BasicDao build(Properties properties) {
-		return new BasicDao(properties);
-	}
-
-	@Override
-	public DSQLFactory getDSQLFactory() {
-		return dsqlFactory;
-	}
-
-	@Override
-	public DataSource getDefaultDataSource() {
-		return defaultDataSource;
-	}
-
-	@Override
-	public DataSource getDataSource(String name) {
-		return dataSources.get(name);
-	}
-
-	@Override
-	boolean isShowSql() {
-		return showSql;
-	}
-
-	@Override
-	int getDefaultBatchSize() {
-		return defaultBatchSize;
+		uninitialized = false;
 	}
 
 }

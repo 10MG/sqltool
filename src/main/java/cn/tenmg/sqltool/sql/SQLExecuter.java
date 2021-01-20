@@ -14,6 +14,8 @@ import java.sql.SQLException;
  */
 public interface SQLExecuter<T> {
 
+	boolean isReadOnly();
+	
 	ResultSet execute(PreparedStatement ps) throws SQLException;
 
 	T execute(PreparedStatement ps, ResultSet rs) throws SQLException;

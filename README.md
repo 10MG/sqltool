@@ -169,7 +169,7 @@ Sqltool provides several extremely useful classes: DsqlUtils, SqltoolFactory, Sq
 Object relational mapping is a very important technology in Java language. Sqltool certainly supports simple but sufficient object relationship mapping technology to deal with many situations. For example, the query data is automatically converted into objects, and records are saved to the database through objects.
 ## 提供了几乎你能想到的所有结构化数据库交互方法（It provides almost all kinds of structured database interaction methods you can imagine）
 
-	 /**
+	/**
 	 * 获取动态结构化查询语言工厂
 	 * 
 	 * @return 返回动态结构化查询语言工厂
@@ -959,6 +959,189 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	 * @return 返回查询到的对象列表
 	 */
 	<T extends Serializable> List<T> select(DataSource dataSource, Class<T> type, String dsql, Map<String, ?> params);
+
+	/**
+	 * 使用指定类，指定动态结构化查询语言（DSQL），指定页码，指定页容量和指定参数（分别列出参数名和参数值）分页查询对象。
+	 * 该方法将根据DSQL中的别名将对象映射为指定类的对象， 需要保证DSQL中的别名和对象属性名保持一致。
+	 * 
+	 * @param <T>
+	 *            实体类
+	 * @param type
+	 *            指定类
+	 * @param dsql
+	 *            指定动态结构化查询语言（DSQL）
+	 * @param currentPage
+	 *            指定页码
+	 * @param pageSize
+	 *            指定页容量
+	 * @param params
+	 *            指定参数（分别列出参数名和参数值）
+	 * @return 返回查询到的对象并封装为Page对象
+	 */
+	<T extends Serializable> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize, Object... params);
+
+	/**
+	 * 使用指定类，指定动态结构化查询语言（DSQL），指定页码，指定页容量和指定参数（分别列出参数名和参数值）分页查询对象。
+	 * 该方法将根据DSQL中的别名将对象映射为指定类的对象， 需要保证DSQL中的别名和对象属性名保持一致。
+	 * 
+	 * @param <T>
+	 *            实体类
+	 * @param dataSource
+	 *            数据源
+	 * @param type
+	 *            指定类
+	 * @param dsql
+	 *            指定动态结构化查询语言（DSQL）
+	 * @param currentPage
+	 *            指定页码
+	 * @param pageSize
+	 *            指定页容量
+	 * @param params
+	 *            指定参数（分别列出参数名和参数值）
+	 * @return 返回查询到的对象并封装为Page对象
+	 */
+	<T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
+			int pageSize, Object... params);
+
+	/**
+	 * 使用指定类，指定动态结构化查询语言（DSQL），指定统计总数DSQL，指定页码，指定页容量和指定参数（分别列出参数名和参数值）分页查询对象。
+	 * 该方法将根据DSQL中的别名将对象映射为指定类的对象， 需要保证DSQL中的别名和对象属性名保持一致。
+	 * 
+	 * @param <T>
+	 *            实体类
+	 * @param type
+	 *            指定类
+	 * @param dsql
+	 *            指定动态结构化查询语言（DSQL）
+	 * @param cntDsql
+	 *            指定统计总数DSQL
+	 * @param currentPage
+	 *            指定页码
+	 * @param pageSize
+	 *            指定页容量
+	 * @param params
+	 *            指定参数（分别列出参数名和参数值）
+	 * @return 返回查询到的对象并封装为Page对象
+	 */
+	<T extends Serializable> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage, int pageSize,
+			Object... params);
+
+	/**
+	 * 使用指定类，指定动态结构化查询语言（DSQL），指定统计总数DSQL，指定页码，指定页容量和指定参数（分别列出参数名和参数值）分页查询对象。
+	 * 该方法将根据DSQL中的别名将对象映射为指定类的对象， 需要保证DSQL中的别名和对象属性名保持一致。
+	 * 
+	 * @param <T>
+	 *            实体类
+	 * @param dataSource
+	 *            数据源
+	 * @param type
+	 *            指定类
+	 * @param dsql
+	 *            指定动态结构化查询语言（DSQL）
+	 * @param cntDsql
+	 *            指定统计总数DSQL
+	 * @param currentPage
+	 *            指定页码
+	 * @param pageSize
+	 *            指定页容量
+	 * @param params
+	 *            指定参数（分别列出参数名和参数值）
+	 * @return 返回查询到的对象并封装为Page对象
+	 */
+	<T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
+			long currentPage, int pageSize, Object... params);
+
+	/**
+	 * 使用指定类，指定动态结构化查询语言（DSQL），指定页码，指定页容量和指定参数分页查询对象。 该方法将根据DSQL中的别名将对象映射为指定类的对象，
+	 * 需要保证DSQL中的别名和对象属性名保持一致。
+	 * 
+	 * @param <T>
+	 *            实体类
+	 * @param type
+	 *            指定类
+	 * @param dsql
+	 *            指定动态结构化查询语言（DSQL）
+	 * @param currentPage
+	 *            指定页码
+	 * @param pageSize
+	 *            指定页容量
+	 * @param params
+	 *            指定参数
+	 * @return 返回查询到的对象并封装为Page对象
+	 */
+	<T extends Serializable> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
+			Map<String, Object> params);
+
+	/**
+	 * 使用指定类，指定动态结构化查询语言（DSQL），指定页码，指定页容量和指定参数分页查询对象。 该方法将根据DSQL中的别名将对象映射为指定类的对象，
+	 * 需要保证DSQL中的别名和对象属性名保持一致。
+	 * 
+	 * @param <T>
+	 *            实体类
+	 * @param dataSource
+	 *            数据源
+	 * @param type
+	 *            指定类
+	 * @param dsql
+	 *            指定动态结构化查询语言（DSQL）
+	 * @param currentPage
+	 *            指定页码
+	 * @param pageSize
+	 *            指定页容量
+	 * @param params
+	 *            指定参数
+	 * @return 返回查询到的对象并封装为Page对象
+	 */
+	<T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
+			int pageSize, Map<String, Object> params);
+
+	/**
+	 * 使用指定类，指定动态结构化查询语言（DSQL），指定统计总数DSQL，指定页码，指定页容量和指定参数分页查询对象。
+	 * 该方法将根据DSQL中的别名将对象映射为指定类的对象， 需要保证DSQL中的别名和对象属性名保持一致。
+	 * 
+	 * @param <T>
+	 *            实体类
+	 * @param type
+	 *            指定类
+	 * @param dsql
+	 *            指定动态结构化查询语言（DSQL）
+	 * @param cntDsql
+	 *            指定统计总数DSQL
+	 * @param currentPage
+	 *            指定页码
+	 * @param pageSize
+	 *            指定页容量
+	 * @param params
+	 *            指定参数
+	 * @return 返回查询到的对象并封装为Page对象
+	 */
+	<T extends Serializable> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage, int pageSize,
+			Map<String, Object> params);
+
+	/**
+	 * 使用指定类，指定动态结构化查询语言（DSQL），指定统计总数DSQL，指定页码，指定页容量和指定参数分页查询对象。
+	 * 该方法将根据DSQL中的别名将对象映射为指定类的对象， 需要保证DSQL中的别名和对象属性名保持一致。
+	 * 
+	 * @param <T>
+	 *            实体类
+	 * @param dataSource
+	 *            数据源
+	 * @param type
+	 *            指定类
+	 * @param dsql
+	 *            指定动态结构化查询语言（DSQL）
+	 * @param cntDsql
+	 *            指定统计总数DSQL
+	 * @param currentPage
+	 *            指定页码
+	 * @param pageSize
+	 *            指定页容量
+	 * @param params
+	 *            指定参数
+	 * @return 返回查询到的对象并封装为Page对象
+	 */
+	<T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
+			long currentPage, int pageSize, Map<String, Object> params);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作

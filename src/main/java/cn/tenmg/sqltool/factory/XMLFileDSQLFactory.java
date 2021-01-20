@@ -96,16 +96,12 @@ public class XMLFileDSQLFactory extends AbstractDSQLFactory {
 							if (file instanceof File) {
 								File f = (File) file;
 								fileName = basePath.concat(f.getName());
-								if (log.isInfoEnabled()) {
-									log.info("Start parsing: ".concat(fileName));
-								}
+								log.info("Starting parse: ".concat(fileName));
 								sqltool = loader.load(f);
 							} else {
 								fullName = (String) file;
 								fileName = fullName.substring(basePath.lastIndexOf(basePath));
-								if (log.isInfoEnabled()) {
-									log.info("Start parsing: ".concat(fileName));
-								}
+								log.info("Starting parse: ".concat(fileName));
 								ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
 								InputStream is = classLoader.getResourceAsStream(fullName);
 								sqltool = loader.load(is);
@@ -117,9 +113,7 @@ public class XMLFileDSQLFactory extends AbstractDSQLFactory {
 									this.dsqls.put(dsql.getId(), dsql);
 								}
 							}
-							if (log.isInfoEnabled()) {
-								log.info("Completed parse: ".concat(fileName));
-							}
+							log.info("Finished parse: ".concat(fileName));
 						}
 					}
 				} catch (Exception e) {

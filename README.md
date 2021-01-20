@@ -77,10 +77,9 @@ Dynamic Structured Query Language (DSQL) is a kind of Structured Query Language 
 Through the above simple example, we can see the magic of Dynamic Structured Query Language (DSQL). The source of this magic is the clever use of a value: null, because the value is often rarely used in Structured Query Language (SQL), and even if used, it is often used as a special constant, such as: NVL(email, 'none'), WHERE EMAIL IS NOT NULL, etc.
 
 ## 如何使用（How to use)
-Sqltool提供了几个极其有用的类：DsqlUtils、SqltoolFactory、SqltoolContext、SparkDataLoader。DsqlUtils提供了DSQL语法解析的支持，SqltoolFactory提供了DSQL配置的管理，SqltoolContext、SparkDataLoader则集成了DsqlUtils和SqltoolFactory，实现对数据库实现基于DSQL的操作和访问。下面使用一些简单的例子来说明如何使用Sqltoolcontext，但Sqltool远不止如此。
+以下是一个简单的例子可以帮你您起步。
 
-Sqltool provides several extremely useful classes: DsqlUtils, SqltoolFactory, SqltoolContext, and SparkdataLoader. DsqlUtils supports the parsing of DSQL syntax, SqltoolFactory provides the management of DSQL configuration, and SqltoolContext and SparkDataLoader integrate DsqlUtils and SqltoolFactory to realize the operation and access of database based on DSQL. Here are some simple examples to illustrate how to use SqltoolContext, but sqltool is much more than that.
-
+Here is a simple example to help you get started.
 
 ### sqltool.properties
 	# Packages to scan DSQL configuration file

@@ -89,6 +89,8 @@ Sqltool provides several extremely useful classes: DsqlUtils, SqltoolFactory, Sq
 	sqltool.suffix=.dsql.xml
 	# Show SQL when execute them
 	sqltool.showSql=true
+	# Type of Dao, default cn.tenmg.sqltool.dao.BasicDao
+	sqltool.dao=cn.tenmg.sqltool.dao.DistributedDao
 	# Use driud database connection pool(It's also default)
 	sqltool.datasource.type=com.alibaba.druid.pool.DruidDataSource
 	sqltool.datasource.driverClassName=com.mysql.cj.jdbc.Driver

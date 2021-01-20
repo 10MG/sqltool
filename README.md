@@ -128,9 +128,7 @@ Here is a simple example to help you get started.
 ### Java
 
 	/**
-	 * 加载DSQL配置文件的基本包名
-	 * 
-	 * Base packages for where the configuration file is located
+	 * 创建数据库访问对象
 	 */
 	Dao dao = SqltoolFactory.createDao("sqltool.properties");
 

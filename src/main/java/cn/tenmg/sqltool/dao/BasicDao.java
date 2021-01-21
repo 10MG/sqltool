@@ -85,7 +85,7 @@ public class BasicDao extends AbstractDao {
 		try {
 			defaultDataSource = DataSourceFactory.createDataSource(datasourceConfig);
 			dataSources.put(defaultName, defaultDataSource);
-			DIALECTS.put(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
+			cacheSQLDialect(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
 			datasourceConfigs.remove(defaultName);
 			DataSource dataSource;
 			for (Iterator<Entry<String, Properties>> it = datasourceConfigs.entrySet().iterator(); it.hasNext();) {
@@ -93,7 +93,7 @@ public class BasicDao extends AbstractDao {
 				datasourceConfig = entry.getValue();
 				dataSource = DataSourceFactory.createDataSource(datasourceConfig);
 				dataSources.put(entry.getKey(), dataSource);
-				DIALECTS.put(dataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
+				cacheSQLDialect(dataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
 			}
 		} catch (Exception e) {
 			throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);

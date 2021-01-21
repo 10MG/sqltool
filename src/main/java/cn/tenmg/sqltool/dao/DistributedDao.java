@@ -94,7 +94,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 		if (uninitialized) {
 			initialized(properties);
 		}
-		return DIALECTS.get(dataSource);
+		return super.getSQLDialect(dataSource);
 	}
 
 	@Override
@@ -152,7 +152,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 		try {
 			defaultDataSource = DataSourceFactory.createDataSource(datasourceConfig);
 			dataSources.put(name, defaultDataSource);
-			DIALECTS.put(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
+			cacheSQLDialect(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
 			datasourceConfigs.remove(name);
 			DataSource dataSource;
 			for (Iterator<Entry<String, Properties>> it = datasourceConfigs.entrySet().iterator(); it.hasNext();) {
@@ -161,7 +161,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 				datasourceConfig = entry.getValue();
 				dataSource = DataSourceFactory.createDataSource(datasourceConfig);
 				dataSources.put(name, dataSource);
-				DIALECTS.put(dataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
+				cacheSQLDialect(dataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
 			}
 		} catch (Exception e) {
 			throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);

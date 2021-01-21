@@ -47,11 +47,15 @@ public abstract class AbstractDao implements Dao {
 
 	private static final Logger log = Logger.getLogger(AbstractDao.class);
 
-	protected static final Map<DataSource, SQLDialect> DIALECTS = new HashMap<DataSource, SQLDialect>();
+	private static final Map<DataSource, SQLDialect> DIALECTS = new HashMap<DataSource, SQLDialect>();
 
 	abstract boolean isShowSql();
 
 	abstract int getDefaultBatchSize();
+	
+	protected static synchronized void cacheSQLDialect(DataSource dataSource, SQLDialect dialect) {
+		DIALECTS.put(dataSource, dialect);
+	}
 
 	protected SQLDialect getSQLDialect(DataSource dataSource) {
 		SQLDialect dialect = DIALECTS.get(dataSource);
@@ -62,6 +66,7 @@ public abstract class AbstractDao implements Dao {
 				con.setReadOnly(true);
 				String url = con.getMetaData().getURL();
 				dialect = SQLDialectUtils.getSQLDialect(url);
+				cacheSQLDialect(dataSource, dialect);
 			} catch (SQLException e) {
 				throw new DetermineSQLDialectException("SQLException occured while getting url of the dataSource", e);
 			} finally {

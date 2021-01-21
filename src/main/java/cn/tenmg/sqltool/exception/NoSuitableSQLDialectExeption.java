@@ -6,26 +6,26 @@ package cn.tenmg.sqltool.exception;
  * @author 赵伟均 wjzhao@aliyun.com
  *
  */
-public class NosuitableSQLDialectExeption extends RuntimeException {
+public class NoSuitableSQLDialectExeption extends RuntimeException {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1096220289612512140L;
 
-	public NosuitableSQLDialectExeption() {
+	public NoSuitableSQLDialectExeption() {
 		super();
 	}
 
-	public NosuitableSQLDialectExeption(String massage) {
+	public NoSuitableSQLDialectExeption(String massage) {
 		super(massage);
 	}
 
-	public NosuitableSQLDialectExeption(Throwable cause) {
+	public NoSuitableSQLDialectExeption(Throwable cause) {
 		super(cause);
 	}
 
-	public NosuitableSQLDialectExeption(String massage, Throwable cause) {
+	public NoSuitableSQLDialectExeption(String massage, Throwable cause) {
 		super(massage, cause);
 	}
 }

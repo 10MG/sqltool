@@ -1,6 +1,6 @@
 package cn.tenmg.sqltool.utils;
 
-import cn.tenmg.sqltool.exception.NosuitableSqlEngineException;
+import cn.tenmg.sqltool.exception.NoSuitableSqlEngineException;
 import cn.tenmg.sqltool.sql.SQLEngine;
 import cn.tenmg.sqltool.sql.engine.MySQLEngine;
 import cn.tenmg.sqltool.sql.engine.OracleEngine;
@@ -28,6 +28,6 @@ public abstract class SQLEngineUtils {
 		} else if (url.contains("oracle")) {
 			return OracleEngine.getInstance();
 		}
-		throw new NosuitableSqlEngineException("There is no suitable SQL engine here for url: " + url);
+		throw new NoSuitableSqlEngineException("There is no suitable SQL engine here for url: " + url);
 	}
 }

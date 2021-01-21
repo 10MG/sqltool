@@ -18,6 +18,7 @@ import cn.tenmg.sqltool.Transaction;
 import cn.tenmg.sqltool.data.Page;
 import cn.tenmg.sqltool.dsql.NamedSQL;
 import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
+import cn.tenmg.sqltool.exception.DetermineSQLDialectException;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.exception.TransactionException;
 import cn.tenmg.sqltool.sql.DML;
@@ -40,6 +41,7 @@ import cn.tenmg.sqltool.transaction.CurrentConnectionHolder;
 import cn.tenmg.sqltool.transaction.TransactionExecutor;
 import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
+import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
 public abstract class AbstractDao implements Dao {
 
@@ -52,7 +54,21 @@ public abstract class AbstractDao implements Dao {
 	abstract int getDefaultBatchSize();
 
 	protected SQLDialect getSQLDialect(DataSource dataSource) {
-		return DIALECTS.get(dataSource);
+		SQLDialect dialect = DIALECTS.get(dataSource);
+		if (dialect == null) {
+			Connection con = null;
+			try {
+				con = dataSource.getConnection();
+				con.setReadOnly(true);
+				String url = con.getMetaData().getURL();
+				dialect = SQLDialectUtils.getSQLDialect(url);
+			} catch (SQLException e) {
+				throw new DetermineSQLDialectException("SQLException occured while getting url of the dataSource", e);
+			} finally {
+				JdbcUtils.close(con);
+			}
+		}
+		return dialect;
 	}
 
 	@Override

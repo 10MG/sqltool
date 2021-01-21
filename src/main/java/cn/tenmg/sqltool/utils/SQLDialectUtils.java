@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import cn.tenmg.sqltool.exception.NosuitableSQLDialectExeption;
+import cn.tenmg.sqltool.exception.NoSuitableSQLDialectExeption;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.dialect.MySQLDialect;
 import cn.tenmg.sqltool.sql.dialect.OracleDialect;
@@ -32,7 +32,7 @@ public class SQLDialectUtils {
 		return getSQLDialect(properties.getProperty("url"));
 	}
 
-	private static SQLDialect getSQLDialect(String url) {
+	public static SQLDialect getSQLDialect(String url) {
 		SQLDialect dialect = null;
 		if (DIALECTS.containsKey(url)) {
 			dialect = DIALECTS.get(url);
@@ -47,7 +47,7 @@ public class SQLDialectUtils {
 			cacheSQLDialect(url, dialect);
 		}
 		if (dialect == null) {
-			throw new NosuitableSQLDialectExeption("There is no suitable SQL dialect provide for url: " + url);
+			throw new NoSuitableSQLDialectExeption("There is no suitable SQL dialect provide for url: " + url);
 		}
 		return dialect;
 	}

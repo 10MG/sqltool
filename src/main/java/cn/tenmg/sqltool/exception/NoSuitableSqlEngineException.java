@@ -6,26 +6,26 @@ package cn.tenmg.sqltool.exception;
  * @author 赵伟均 wjzhao@aliyun.com
  *
  */
-public class NosuitableSqlEngineException extends RuntimeException {
+public class NoSuitableSqlEngineException extends RuntimeException {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1719250710633071189L;
 
-	public NosuitableSqlEngineException() {
+	public NoSuitableSqlEngineException() {
 		super();
 	}
 
-	public NosuitableSqlEngineException(String massage) {
+	public NoSuitableSqlEngineException(String massage) {
 		super(massage);
 	}
 
-	public NosuitableSqlEngineException(Throwable cause) {
+	public NoSuitableSqlEngineException(Throwable cause) {
 		super(cause);
 	}
 
-	public NosuitableSqlEngineException(String massage, Throwable cause) {
+	public NoSuitableSqlEngineException(String massage, Throwable cause) {
 		super(massage, cause);
 	}
 }

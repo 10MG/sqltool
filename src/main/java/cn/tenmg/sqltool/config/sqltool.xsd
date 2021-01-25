@@ -10,25 +10,41 @@
 				<xsd:element name="dsql" maxOccurs="unbounded"
 					minOccurs="0" type="dsqlType">
 					<xsd:annotation>
-						<xsd:documentation><![CDATA[动态结构化查询语言（DSQL）配置]]></xsd:documentation>
+						<xsd:documentation><![CDATA[动态结构化查询语言（DSQL）]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:choice>
 		</xsd:complexType>
 	</xsd:element>
 
+	<xsd:complexType name="comparableFilter">
+		<xsd:attribute name="params" type="xsd:string"
+			default="*">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[参数列表，使用逗号分隔。默认*，代表全部]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+
+		<xsd:attribute name="value" type="xsd:string"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[供比较的值]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
 	<xsd:complexType name="dsqlType">
 		<xsd:sequence>
 			<xsd:element name="filter" maxOccurs="1" minOccurs="0">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[参数过滤器配置]]></xsd:documentation>
+					<xsd:documentation><![CDATA[参数过滤器]]></xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
 					<xsd:sequence>
 						<xsd:element name="blank" maxOccurs="unbounded"
 							minOccurs="0">
 							<xsd:annotation>
-								<xsd:documentation><![CDATA[空白字符串参数过滤器配置]]></xsd:documentation>
+								<xsd:documentation><![CDATA[空白字符串参数过滤器]]></xsd:documentation>
 							</xsd:annotation>
 							<xsd:complexType>
 								<xsd:attribute name="params" type="xsd:string"
@@ -41,25 +57,38 @@
 						</xsd:element>
 
 						<xsd:element name="eq" maxOccurs="unbounded"
-							minOccurs="0">
+							minOccurs="0" type="comparableFilter">
 							<xsd:annotation>
-								<xsd:documentation><![CDATA[等值参数过滤器配置]]></xsd:documentation>
+								<xsd:documentation><![CDATA[等值参数过滤器]]></xsd:documentation>
 							</xsd:annotation>
-							<xsd:complexType>
-								<xsd:attribute name="params" type="xsd:string"
-									default="*">
-									<xsd:annotation>
-										<xsd:documentation><![CDATA[参数列表，使用逗号分隔。默认*，代表全部]]></xsd:documentation>
-									</xsd:annotation>
-								</xsd:attribute>
-
-								<xsd:attribute name="value" type="xsd:string"
-									use="required">
-									<xsd:annotation>
-										<xsd:documentation><![CDATA[供比较的值]]></xsd:documentation>
-									</xsd:annotation>
-								</xsd:attribute>
-							</xsd:complexType>
+						</xsd:element>
+						
+						<xsd:element name="gt" maxOccurs="unbounded"
+							minOccurs="0" type="comparableFilter">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[大值参数过滤器]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+						<xsd:element name="gte" maxOccurs="unbounded"
+							minOccurs="0" type="comparableFilter">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[大于等于参数过滤器]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+						<xsd:element name="lt" maxOccurs="unbounded"
+							minOccurs="0" type="comparableFilter">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[小值参数过滤器]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+						<xsd:element name="lte" maxOccurs="unbounded"
+							minOccurs="0" type="comparableFilter">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[小于等于参数过滤器]]></xsd:documentation>
+							</xsd:annotation>
 						</xsd:element>
 					</xsd:sequence>
 				</xsd:complexType>
@@ -67,14 +96,14 @@
 
 			<xsd:element name="converter" maxOccurs="1" minOccurs="0">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[参数转换器配置]]></xsd:documentation>
+					<xsd:documentation><![CDATA[参数转换器]]></xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
 					<xsd:sequence>
 						<xsd:element name="to-number" maxOccurs="unbounded"
 							minOccurs="0">
 							<xsd:annotation>
-								<xsd:documentation><![CDATA[参数数字类型转换器配置模型]]></xsd:documentation>
+								<xsd:documentation><![CDATA[参数数字类型转换器]]></xsd:documentation>
 							</xsd:annotation>
 							<xsd:complexType>
 								<xsd:attribute name="params" type="xsd:string"
@@ -95,7 +124,7 @@
 						<xsd:element name="to-date" maxOccurs="unbounded"
 							minOccurs="0">
 							<xsd:annotation>
-								<xsd:documentation><![CDATA[参数日期类型转换器配置模型]]></xsd:documentation>
+								<xsd:documentation><![CDATA[参数日期类型转换器]]></xsd:documentation>
 							</xsd:annotation>
 							<xsd:complexType>
 								<xsd:attribute name="params" type="xsd:string"
@@ -117,7 +146,7 @@
 						<xsd:element name="wrap-string" maxOccurs="unbounded"
 							minOccurs="0">
 							<xsd:annotation>
-								<xsd:documentation><![CDATA[字符串参数包装转换器配置模型]]></xsd:documentation>
+								<xsd:documentation><![CDATA[字符串参数包装转换器]]></xsd:documentation>
 							</xsd:annotation>
 							<xsd:complexType>
 								<xsd:attribute name="params" type="xsd:string"

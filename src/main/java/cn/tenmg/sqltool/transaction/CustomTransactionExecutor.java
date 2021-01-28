@@ -399,6 +399,7 @@ public class CustomTransactionExecutor implements Serializable {
 		} finally {
 			JdbcUtils.close(con);
 			currentConnection.remove();
+			currentSQLDialect.remove();
 		}
 	}
 

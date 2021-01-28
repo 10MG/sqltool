@@ -1,11 +1,11 @@
-# sqltool
+# 文档（Document）
+<p>http://www.10mg.cn/sqltool</p>
+<p>https://github.com/10MG/sqltool/wiki</p>
+
 ## 关于（About）
 Sqltool是一个给分布式环境提供动态结构化查询语言（DSQL）解析和执行的框架，如Spark、Spring Cloud、Dubbo等等。Sqltool能帮助程序员管理和执行庞大而复杂的动态结构化查询语言（DSQL），并使程序员从手动拼接繁杂的SQL工作中解脱；Sqltool还能给使用Spark SQL的程序员带来福音，因为动态结构化查询语言（DSQL）可以直接提交给Spark执行，解决Spark SQL传参的难题。
 
 A framework provides Dynamic Structured Query Language(DSQL) Parsing for distributed environment, such as spark, spring cloud, Dubbo and so on... Sqltool can help programmers manage and execute large scale and complex Dynamic Structured Query Language (DSQL), and make programmers free from manual splicing of complicated SQL work; Sqltool can also bring good news to programmers who use Spark SQL, because Dynamic Structured Query Language (DSQL) can be directly submitted to spark for execution and solve the problem of transferring Spark SQL parameters.
-# 文档（Document）
-http://www.10mg.cn/sqltool
-https://github.com/10MG/sqltool/wiki
 
 
 ## 什么是动态结构化查询语言（What is Dynamic Structured Query Language）？

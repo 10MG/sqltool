@@ -10,7 +10,7 @@ public class PostgresSQLTest {
 	}
 
 	public static void doTest(Dao dao) {
-		TestUtils.testDao(dao);
+		TestUtils.testDao(dao, true);
 	}
 
 }

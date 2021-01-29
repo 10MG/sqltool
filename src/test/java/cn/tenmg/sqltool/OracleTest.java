@@ -6,10 +6,10 @@ public class OracleTest {
 
 	@Test
 	public void doTest() {
-		doTest(SqltoolFactory.createDao("mysql.properties"));
+		doTest(SqltoolFactory.createDao("oracle.properties"));
 	}
 
 	public static void doTest(Dao dao) {
-		TestUtils.testDao(dao);
+		TestUtils.testDao(dao, false);
 	}
 }

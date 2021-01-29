@@ -35,8 +35,8 @@ public class OracleDialect extends AbstractSQLDialect {
 	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = NVL(Y.${columnName}, X.${columnName})";
 
-	private static final String PAGE_WRAP_START = "SELECT * FROM (SELECT SQLTOOL.*, ROWNUM RN FROM (\n",
-			PAGE_WRAP_END = "\n) SQLTOOL  WHERE ROWNUM <= %d) WHERE RN > %d";
+	private static final String PAGE_WRAP_START = "SELECT * FROM (SELECT SQLTOOL.*, ROWNUM SQLTOOL_RN FROM (\n",
+			PAGE_WRAP_END = "\n) SQLTOOL  WHERE ROWNUM <= %d) WHERE SQLTOOL_RN > %d";
 
 	private static class InstanceHolder {
 		private static final OracleDialect INSTANCE = new OracleDialect();

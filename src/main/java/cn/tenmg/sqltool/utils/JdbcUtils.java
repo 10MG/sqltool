@@ -15,12 +15,12 @@ import org.apache.log4j.Logger;
 
 import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.sql.DML;
+import cn.tenmg.sqltool.sql.DMLParser;
 import cn.tenmg.sqltool.sql.MergeSQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.SQLExecuter;
 import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
-import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
 
 /**
@@ -240,17 +240,20 @@ public abstract class JdbcUtils {
 	 * @throws SQLException
 	 *             SQL异常
 	 */
-	public static <T> T execute(Connection con, String sql, List<Object> params, SQLExecuter<T> sqlExecuter,
+	public static <T> T execute(Connection con, String id, String sql, List<Object> params, SQLExecuter<T> sqlExecuter,
 			boolean showSql) throws SQLException {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			ps = con.prepareStatement(sql);
 			setParams(ps, params);
-			if (showSql) {
+			if (showSql && log.isInfoEnabled()) {
 				StringBuilder sb = new StringBuilder();
-				sb.append("Execute SQL: ").append(sql).append(LINE_SEPARATOR).append("Params: ")
+				sb.append("Execute SQL: ").append(sql).append(COMMA_SPACE).append("parameters: ")
 						.append(JSONUtils.toJSONString(params));
+				if (id != null) {
+					sb.append(COMMA_SPACE).append("id: ").append(id);
+				}
 				log.info(sb.toString());
 			}
 			rs = sqlExecuter.execute(ps);
@@ -264,7 +267,7 @@ public abstract class JdbcUtils {
 	}
 
 	/**
-	 * 使用实体对象列表插入数据
+	 * 使用实体对象列表批处理插入、更新或删除数据
 	 * 
 	 * @param con
 	 *            连接对象
@@ -272,19 +275,21 @@ public abstract class JdbcUtils {
 	 *            是否打印SQL
 	 * @param rows
 	 *            实体对象列表
+	 * @param dmlParser
+	 *            数据库操纵对象
 	 * @return 返回受影响行数
 	 * @throws SQLException
 	 *             SQL异常
 	 */
-	public static <T extends Serializable> int insert(Connection con, boolean showSql, List<T> rows)
-			throws SQLException {
+	public static <T extends Serializable> int executeBatch(Connection con, boolean showSql, List<T> rows,
+			DMLParser dmlParser) throws SQLException {
 		PreparedStatement ps = null;
 		try {
-			DML dml = InsertDMLParser.getInstance().parse(rows.get(0).getClass());
+			DML dml = dmlParser.parse(rows.get(0).getClass());
 			String sql = dml.getSql();
 			List<Field> fields = dml.getFields();
 			ps = con.prepareStatement(sql);
-			if (showSql) {
+			if (showSql && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			for (int i = 0, size = rows.size(); i < size; i++) {
@@ -326,7 +331,7 @@ public abstract class JdbcUtils {
 		try {
 			String sql = updateSQL.getScript();
 			List<Field> fields = updateSQL.getFields();
-			if (showSql) {
+			if (showSql && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			ps = con.prepareStatement(sql);
@@ -376,7 +381,7 @@ public abstract class JdbcUtils {
 			String sql = dml.getSql();
 			List<Field> fields = dml.getFields();
 			ps = con.prepareStatement(sql);
-			if (showSql) {
+			if (showSql && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			for (int i = 0, size = rows.size(); i < size; i++) {
@@ -417,7 +422,7 @@ public abstract class JdbcUtils {
 		try {
 			String sql = mergeSql.getScript();
 			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
-			if (showSql) {
+			if (showSql && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			ps = con.prepareStatement(sql);
@@ -466,7 +471,7 @@ public abstract class JdbcUtils {
 			MergeSQL mergeSql = dialect.hardSave(rows.get(0).getClass());
 			String sql = mergeSql.getScript();
 			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
-			if (showSql) {
+			if (showSql && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			ps = con.prepareStatement(sql);

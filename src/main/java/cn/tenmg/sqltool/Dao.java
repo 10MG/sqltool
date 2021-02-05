@@ -646,6 +646,88 @@ public interface Dao {
 	 *            批容量
 	 */
 	<T extends Serializable> void hardSaveBatch(DataSource dataSource, List<T> rows, int batchSize);
+	
+	/**
+	 * 删除操作
+	 * 
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int delete(T obj);
+
+	/**
+	 * 删除操作
+	 * 
+	 * @param dataSource
+	 *            数据源
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int delete(DataSource dataSource, T obj);
+
+	/**
+	 * 删除操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int delete(List<T> rows);
+
+	/**
+	 * 删除操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param dataSource
+	 *            数据源
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int delete(DataSource dataSource, List<T> rows);
+
+	/**
+	 * 使用默认批容量执行批量删除操作
+	 * 
+	 * @param rows
+	 *            实体对象集
+	 */
+	<T extends Serializable> void deleteBatch(List<T> rows);
+
+	/**
+	 * 使用默认批容量执行批量删除操作
+	 * 
+	 * @param dataSource
+	 *            数据源
+	 * @param rows
+	 *            实体对象集
+	 */
+	<T extends Serializable> void deleteBatch(DataSource dataSource, List<T> rows);
+
+	/**
+	 * 
+	 * 批量删除操作
+	 * 
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 */
+	<T extends Serializable> void deleteBatch(List<T> rows, int batchSize);
+
+	/**
+	 * 
+	 * 批量删除操作
+	 * 
+	 * @param dataSource
+	 *            数据源
+	 * @param rows
+	 *            实体对象集
+	 * @param batchSize
+	 *            批容量
+	 */
+	<T extends Serializable> void deleteBatch(DataSource dataSource, List<T> rows, int batchSize);
 
 	/**
 	 * 从数据库查询并组装实体对象

@@ -101,7 +101,9 @@ public abstract class AbstractDSQLFactory implements DSQLFactory {
 			}
 			params = paramaters;
 		}
-		return DSQLUtils.parse(dsql.getScript(), params);
+		NamedSQL namedSQL = DSQLUtils.parse(dsql.getScript(), params);
+		namedSQL.setId(dsql.getId());
+		return namedSQL;
 	}
 
 }

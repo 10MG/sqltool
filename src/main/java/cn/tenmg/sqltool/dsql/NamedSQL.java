@@ -17,6 +17,11 @@ public class NamedSQL implements Serializable {
 	private static final long serialVersionUID = 3876821753500865601L;
 
 	/**
+	 * DSQL编号
+	 */
+	private String id;
+	
+	/**
 	 * SQL
 	 */
 	private String script;
@@ -39,6 +44,14 @@ public class NamedSQL implements Serializable {
 		super();
 		this.script = script;
 		this.params = params;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getScript() {

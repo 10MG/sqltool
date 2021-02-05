@@ -22,6 +22,7 @@ import cn.tenmg.sqltool.exception.DetermineSQLDialectException;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.exception.TransactionException;
 import cn.tenmg.sqltool.sql.DML;
+import cn.tenmg.sqltool.sql.DMLParser;
 import cn.tenmg.sqltool.sql.MergeSQL;
 import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
@@ -33,6 +34,7 @@ import cn.tenmg.sqltool.sql.executer.GetSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.LongResultSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.SelectSQLExecuter;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
+import cn.tenmg.sqltool.sql.parser.DeleteDMLParser;
 import cn.tenmg.sqltool.sql.parser.GetDMLParser;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
@@ -52,7 +54,7 @@ public abstract class AbstractDao implements Dao {
 	abstract boolean isShowSql();
 
 	abstract int getDefaultBatchSize();
-	
+
 	protected static synchronized void cacheSQLDialect(DataSource dataSource, SQLDialect dialect) {
 		DIALECTS.put(dataSource, dialect);
 	}
@@ -83,9 +85,7 @@ public abstract class AbstractDao implements Dao {
 
 	@Override
 	public <T extends Serializable> int insert(DataSource dataSource, T obj) {
-		DML dml = InsertDMLParser.getInstance().parse(obj.getClass());
-		List<Object> params = JdbcUtils.getParams(obj, dml.getFields());
-		return execute(dataSource, dml.getSql(), params, ExecuteUpdateSQLExecuter.getInstance());
+		return execute(dataSource, obj, InsertDMLParser.getInstance(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -98,24 +98,7 @@ public abstract class AbstractDao implements Dao {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		} else {
-			Connection con = null;
-			try {
-				con = dataSource.getConnection();
-				con.setAutoCommit(false);
-				con.setReadOnly(false);
-				int count = JdbcUtils.insert(con, isShowSql(), rows);
-				con.commit();
-				return count;
-			} catch (SQLException e) {
-				try {
-					con.rollback();
-				} catch (SQLException ex) {
-					ex.printStackTrace();
-				}
-				throw new cn.tenmg.sqltool.exception.SQLException(e);
-			} finally {
-				JdbcUtils.close(con);
-			}
+			return execute(dataSource, rows, InsertDMLParser.getInstance());
 		}
 	}
 
@@ -137,8 +120,7 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> void insertBatch(DataSource dataSource, List<T> rows, int batchSize) {
 		if (!CollectionUtils.isEmpty(rows)) {
-			DML dml = InsertDMLParser.getInstance().parse(rows.get(0).getClass());
-			executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize);
+			executeBatch(dataSource, rows, InsertDMLParser.getInstance(), batchSize);
 		}
 	}
 
@@ -150,7 +132,7 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> int update(DataSource dataSource, T obj) {
 		SQL sql = getSQLDialect(dataSource).update(obj);
-		return execute(dataSource, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -161,7 +143,7 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> int update(DataSource dataSource, T obj, String... hardFields) {
 		SQL sql = getSQLDialect(dataSource).update(obj, hardFields);
-		return execute(dataSource, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -242,9 +224,7 @@ public abstract class AbstractDao implements Dao {
 
 	@Override
 	public <T extends Serializable> int hardUpdate(DataSource dataSource, T obj) {
-		DML dml = UpdateDMLParser.getInstance().parse(obj.getClass());
-		List<Object> params = JdbcUtils.getParams(obj, dml.getFields());
-		return execute(dataSource, dml.getSql(), params, ExecuteUpdateSQLExecuter.getInstance());
+		return execute(dataSource, obj, UpdateDMLParser.getInstance(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -309,7 +289,7 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> int save(DataSource dataSource, T obj) {
 		SQL sql = getSQLDialect(dataSource).save(obj);
-		return execute(dataSource, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -320,7 +300,7 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> int save(DataSource dataSource, T obj, String... hardFields) {
 		SQL sql = getSQLDialect(dataSource).save(obj, hardFields);
-		return execute(dataSource, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -404,7 +384,7 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> int hardSave(DataSource dataSource, T obj) {
 		SQL sql = getSQLDialect(dataSource).hardSave(obj);
-		return execute(dataSource, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -468,7 +448,7 @@ public abstract class AbstractDao implements Dao {
 			MergeSQL mergeSql = dialect.hardSave(rows.get(0).getClass());
 			String sql = mergeSql.getScript();
 			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
-			if (isShowSql()) {
+			if (isShowSql() && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			ps = con.prepareStatement(sql);
@@ -504,6 +484,49 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
+	public <T extends Serializable> int delete(T obj) {
+		return delete(getDefaultDataSource(), obj);
+
+	}
+
+	@Override
+	public <T extends Serializable> int delete(DataSource dataSource, T obj) {
+		return execute(dataSource, obj, DeleteDMLParser.getInstance(), ExecuteUpdateSQLExecuter.getInstance());
+	}
+
+	@Override
+	public <T extends Serializable> int delete(List<T> rows) {
+		return delete(getDefaultDataSource(), rows);
+	}
+
+	@Override
+	public <T extends Serializable> int delete(DataSource dataSource, List<T> rows) {
+		return execute(dataSource, rows, DeleteDMLParser.getInstance());
+	}
+
+	@Override
+	public <T extends Serializable> void deleteBatch(List<T> rows) {
+		deleteBatch(getDefaultDataSource(), rows);
+	}
+
+	@Override
+	public <T extends Serializable> void deleteBatch(DataSource dataSource, List<T> rows) {
+		deleteBatch(dataSource, rows, getDefaultBatchSize());
+	}
+
+	@Override
+	public <T extends Serializable> void deleteBatch(List<T> rows, int batchSize) {
+		deleteBatch(getDefaultDataSource(), rows, batchSize);
+	}
+
+	@Override
+	public <T extends Serializable> void deleteBatch(DataSource dataSource, List<T> rows, int batchSize) {
+		if (!CollectionUtils.isEmpty(rows)) {
+			executeBatch(dataSource, rows, DeleteDMLParser.getInstance(), batchSize);
+		}
+	}
+
+	@Override
 	public <T extends Serializable> T get(T obj) {
 		return get(getDefaultDataSource(), obj);
 	}
@@ -511,10 +534,7 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T extends Serializable> T get(DataSource dataSource, T obj) {
-		Class<T> type = (Class<T>) obj.getClass();
-		DML dml = GetDMLParser.getInstance().parse(type);
-		return execute(dataSource, dml.getSql(), JdbcUtils.getParams(obj, dml.getFields()),
-				new GetSQLExecuter<T>(type));
+		return execute(dataSource, obj, GetDMLParser.getInstance(), new GetSQLExecuter<T>((Class<T>) obj.getClass()));
 	}
 
 	@Override
@@ -547,7 +567,7 @@ public abstract class AbstractDao implements Dao {
 	public <T extends Serializable> List<T> select(DataSource dataSource, T obj) {
 		Class<T> type = (Class<T>) obj.getClass();
 		SQL sql = SQLUtils.parseSelect(obj);
-		return execute(dataSource, sql.getScript(), sql.getParams(), new SelectSQLExecuter<T>(type));
+		return execute(dataSource, null, sql.getScript(), sql.getParams(), new SelectSQLExecuter<T>(type));
 	}
 
 	@Override
@@ -701,20 +721,53 @@ public abstract class AbstractDao implements Dao {
 		return getDSQLFactory().parse(dsql, params);
 	}
 
-	private <T> T execute(DataSource dataSource, String sql, List<Object> params, SQLExecuter<T> sqlExecuter) {
+	private <T> T execute(DataSource dataSource, Object obj, DMLParser dmlParser, SQLExecuter<T> sqlExecuter) {
+		DML dml = dmlParser.parse(obj.getClass());
+		return execute(dataSource, null, dml.getSql(), JdbcUtils.getParams(obj, dml.getFields()), sqlExecuter);
+	}
+
+	private <T> T execute(DataSource dataSource, String id, String sql, List<Object> params,
+			SQLExecuter<T> sqlExecuter) {
 		Connection con = null;
 		T result = null;
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
 			con.setReadOnly(sqlExecuter.isReadOnly());
-			result = JdbcUtils.execute(con, sql, params, sqlExecuter, isShowSql());
+			result = JdbcUtils.execute(con, id, sql, params, sqlExecuter, isShowSql());
 		} catch (SQLException e) {
 			throw new cn.tenmg.sqltool.exception.SQLException(e);
 		} finally {
 			JdbcUtils.close(con);
 		}
 		return result;
+	}
+
+	private <T extends Serializable> int execute(DataSource dataSource, List<T> rows, DMLParser dmlParser) {
+		Connection con = null;
+		try {
+			con = dataSource.getConnection();
+			con.setAutoCommit(false);
+			con.setReadOnly(false);
+			int count = JdbcUtils.executeBatch(con, isShowSql(), rows, dmlParser);
+			con.commit();
+			return count;
+		} catch (SQLException e) {
+			try {
+				con.rollback();
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
+			throw new cn.tenmg.sqltool.exception.SQLException(e);
+		} finally {
+			JdbcUtils.close(con);
+		}
+	}
+
+	private <T extends Serializable> void executeBatch(DataSource dataSource, List<T> rows, DMLParser dmlParser,
+			int batchSize) {
+		DML dml = dmlParser.parse(rows.get(0).getClass());
+		executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize);
 	}
 
 	private <T extends Serializable> void executeBatch(DataSource dataSource, String sql, List<T> rows,
@@ -726,7 +779,7 @@ public abstract class AbstractDao implements Dao {
 			con.setAutoCommit(false);
 			con.setReadOnly(false);
 			ps = con.prepareStatement(sql);
-			if (isShowSql()) {
+			if (isShowSql() && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			int size = rows.size(), current = 0, times = (int) Math.ceil(size / (double) batchSize);
@@ -799,7 +852,7 @@ public abstract class AbstractDao implements Dao {
 			con.setReadOnly(false);
 			String sql = updateSql.getScript();
 			List<Field> fields = updateSql.getFields();
-			if (isShowSql()) {
+			if (isShowSql() && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			ps = con.prepareStatement(sql);
@@ -864,7 +917,7 @@ public abstract class AbstractDao implements Dao {
 			con.setReadOnly(false);
 			String sql = mergeSql.getScript();
 			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
-			if (isShowSql()) {
+			if (isShowSql() && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
 			ps = con.prepareStatement(sql);
@@ -904,7 +957,7 @@ public abstract class AbstractDao implements Dao {
 
 	private <T> T execute(DataSource dataSource, NamedSQL namedSQL, SQLExecuter<T> sqlExecuter) {
 		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
-		return execute(dataSource, sql.getScript(), sql.getParams(), sqlExecuter);
+		return execute(dataSource, namedSQL.getId(), sql.getScript(), sql.getParams(), sqlExecuter);
 	}
 
 	private <T extends Serializable> List<T> select(DataSource dataSource, NamedSQL namedSQL, Class<T> type) {
@@ -925,7 +978,8 @@ public abstract class AbstractDao implements Dao {
 		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		String script = sql.getScript();
 		List<Object> params = sql.getParams();
-		return page(dataSource, dialect, script, dialect.countSql(script), params, params, currentPage, pageSize, type);
+		return page(dataSource, dialect, namedSQL.getId(), script, dialect.countSql(script), params, params,
+				currentPage, pageSize, type);
 	}
 
 	private <T extends Serializable> Page<T> page(DataSource dataSource, NamedSQL namedSQL, NamedSQL countNamedSQL,
@@ -934,11 +988,11 @@ public abstract class AbstractDao implements Dao {
 		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		SQL countSql = DSQLUtils.toSQL(countNamedSQL.getScript(), countNamedSQL.getParams());
 		String script = sql.getScript();
-		return page(dataSource, dialect, script, dialect.countSql(script), sql.getParams(), countSql.getParams(),
-				currentPage, pageSize, type);
+		return page(dataSource, dialect, namedSQL.getId(), script, dialect.countSql(script), sql.getParams(),
+				countSql.getParams(), currentPage, pageSize, type);
 	}
 
-	private <T extends Serializable> Page<T> page(DataSource dataSource, SQLDialect dialect, String sql,
+	private <T extends Serializable> Page<T> page(DataSource dataSource, SQLDialect dialect, String id, String sql,
 			String countSql, List<Object> params, List<Object> countParams, long currentPage, int pageSize,
 			Class<T> type) {
 		Connection con = null;
@@ -950,11 +1004,12 @@ public abstract class AbstractDao implements Dao {
 			con.setAutoCommit(true);
 			con.setReadOnly(true);
 			boolean showSql = isShowSql();
-			Long total = JdbcUtils.execute(con, countSql, countParams, LongResultSQLExecuter.getInstance(), showSql);
+			Long total = JdbcUtils.execute(con, id, countSql, countParams, LongResultSQLExecuter.getInstance(),
+					showSql);
 			page.setTotal(total);
 			if (total != null && total > 0) {
 				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
-				page.setRows(JdbcUtils.execute(con, dialect.pageSql(sql, pageSize, currentPage), params,
+				page.setRows(JdbcUtils.execute(con, id, dialect.pageSql(sql, pageSize, currentPage), params,
 						new SelectSQLExecuter<T>(type), showSql));
 			} else {
 				page.setTotalPage(0L);

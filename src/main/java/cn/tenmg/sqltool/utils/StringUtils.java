@@ -14,7 +14,7 @@ public abstract class StringUtils {
 
 	private final static String EMPTY = "";
 
-	private final static int INDEX_NOT_FOUND = -1;
+	public final static int INDEX_NOT_FOUND = -1;
 
 	private static final String UNDERLINE = "_";
 

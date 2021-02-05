@@ -42,6 +42,10 @@ public abstract class TestUtils {
 		hardSave(dao);
 		// 测试批量硬保存数据
 		hardSaveBatch(dao);
+		// 测试删除数据
+		delete(dao);
+		// 测试删除数据
+		deleteBatch(dao);
 		// 测试单条记录查询
 		get(dao);
 		// 测试多条记录查询
@@ -513,6 +517,111 @@ public abstract class TestUtils {
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 		Assert.assertEquals(defaultBatchSize + 1,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", null).intValue());
+	}
+
+	private static void delete(Dao dao) {
+		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
+
+		// 初始化数据
+		List<StaffInfo> staffInfos = new ArrayList<StaffInfo>();
+		StaffInfo staffInfo;
+		int total = defaultBatchSize * 3 + 1;
+		for (int i = 1; i <= total; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(i));
+			staffInfo.setStaffName("" + i);
+			staffInfo.setPosition(position);
+			staffInfos.add(staffInfo);
+		}
+		dao.hardSaveBatch(staffInfos);
+		Assert.assertEquals(total,
+				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
+
+		// 删除单条记录
+		StaffInfo first = new StaffInfo(df.format(1));
+		Assert.assertEquals(1, dao.delete(first));
+		Assert.assertEquals(null, dao.get(first));
+
+		// 删除多条记录
+		// 小于批容量
+		List<StaffInfo> staffInfosForDelete = new ArrayList<StaffInfo>();
+		for (int i = 2; i <= defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(i));
+			staffInfosForDelete.add(staffInfo);
+		}
+		Assert.assertEquals(defaultBatchSize - 1, dao.delete(staffInfosForDelete));
+		Assert.assertEquals(total - defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+
+		// 等于批容量
+		staffInfosForDelete = new ArrayList<StaffInfo>();
+		for (int i = 1; i <= defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(defaultBatchSize + i));
+			staffInfosForDelete.add(staffInfo);
+		}
+		Assert.assertEquals(defaultBatchSize, dao.delete(staffInfosForDelete));
+		Assert.assertEquals(total - 2 * defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+
+		// 大于批容量
+		staffInfosForDelete = new ArrayList<StaffInfo>();
+		for (int i = 0; i <= defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(2 * defaultBatchSize + i + 1));
+			staffInfosForDelete.add(staffInfo);
+		}
+		Assert.assertEquals(defaultBatchSize + 1, dao.delete(staffInfosForDelete));
+		Assert.assertEquals(0, dao.get(Long.class, "get_total_staff_count").intValue());
+	}
+
+	private static void deleteBatch(Dao dao) {
+		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
+
+		// 初始化数据
+		List<StaffInfo> staffInfos = new ArrayList<StaffInfo>();
+		StaffInfo staffInfo;
+		int total = defaultBatchSize * 3;
+		for (int i = 1; i <= total; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(i));
+			staffInfo.setStaffName("" + i);
+			staffInfo.setPosition(position);
+			staffInfos.add(staffInfo);
+		}
+		dao.hardSaveBatch(staffInfos);
+		Assert.assertEquals(total,
+				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
+
+		// 删除多条记录
+		// 小于批容量
+		List<StaffInfo> staffInfosForDelete = new ArrayList<StaffInfo>();
+		for (int i = 1; i < defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(i));
+			staffInfosForDelete.add(staffInfo);
+		}
+		Assert.assertEquals(defaultBatchSize - 1, dao.delete(staffInfosForDelete));
+		Assert.assertEquals(total - defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
+
+		// 等于批容量
+		staffInfosForDelete = new ArrayList<StaffInfo>();
+		for (int i = 0; i < defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(defaultBatchSize + i));
+			staffInfosForDelete.add(staffInfo);
+		}
+		Assert.assertEquals(defaultBatchSize, dao.delete(staffInfosForDelete));
+		Assert.assertEquals(total - 2 * defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
+
+		// 大于批容量
+		staffInfosForDelete = new ArrayList<StaffInfo>();
+		for (int i = 0; i <= defaultBatchSize; i++) {
+			staffInfo = new StaffInfo();
+			staffInfo.setStaffId(df.format(2 * defaultBatchSize + i));
+			staffInfosForDelete.add(staffInfo);
+		}
+		Assert.assertEquals(defaultBatchSize + 1, dao.delete(staffInfosForDelete));
+		Assert.assertEquals(0, dao.get(Long.class, "get_total_staff_count").intValue());
 	}
 
 	private static void get(Dao dao) {

@@ -27,6 +27,8 @@ public abstract class DSQLUtils {
 
 	private static final char PARAM_BEGIN = ':';
 
+	private static final String LINE_SPLITOR = "\r\n", EMPTY_CHARS = LINE_SPLITOR.concat("\t ");
+
 	/**
 	 * 将指定的源动态结构化查询语言（DSQL）及查询参数转换为含有命名参数的SQL（命名参数以“:”开头）以及实际使用的参数集组成的对象
 	 * 
@@ -43,12 +45,14 @@ public abstract class DSQLUtils {
 		if (StringUtils.isBlank(source)) {
 			return new NamedSQL(source, params);
 		}
+		source = StringUtils.stripStart(source, LINE_SPLITOR);// 去除仅含换行符的行
+		source = StringUtils.stripEnd(source, EMPTY_CHARS);// 去除空白字符
 		int len = source.length();
-		if (len < 3) {// 长度小于最小动态SQL单元 #[]的长度直接返回
+		if (len < 3) {// 长度小于最小动态SQL单元 “#[]”的长度直接返回
 			return new NamedSQL(source, params);
 		}
 		int i = 0, deep = 0;
-		char a = ' ', b = ' ';
+		char a = ' ', b = ' ', c;
 		boolean isString = false;// 是否在字符串区域
 		boolean isDynamic = false;// 是否在动态SQL区域
 		boolean isParam = false;// 是否在参数区域
@@ -59,7 +63,7 @@ public abstract class DSQLUtils {
 		HashMap<Integer, StringBuilder> dsqlMap = new HashMap<Integer, StringBuilder>();
 		HashMap<Integer, Map<String, Object>> contexts = new HashMap<Integer, Map<String, Object>>();
 		while (i < len) {
-			char c = source.charAt(i);
+			c = source.charAt(i);
 			if (isString) {
 				if (isStringEnd(a, b, c)) {// 字符串区域结束
 					isString = false;
@@ -107,7 +111,6 @@ public abstract class DSQLUtils {
 						if (isParam) {// 处于动态参数区域
 							if (DSQLUtils.isParamChar(c)) {
 								paramName.append(c);
-
 								StringBuilder dsql = dsqlMap.get(deep);
 								if (dsql == null) {
 									dsql = new StringBuilder();

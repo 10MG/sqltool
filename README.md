@@ -818,6 +818,46 @@ Object relational mapping is a very important technology in Java language. Sqlto
 	<T extends Serializable> void hardSaveBatch(DataSource dataSource, List<T> rows, int batchSize);
 
 	/**
+	 * 删除操作
+	 * 
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int delete(T obj);
+
+	/**
+	 * 删除操作
+	 * 
+	 * @param dataSource
+	 *            数据源
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int delete(DataSource dataSource, T obj);
+
+	/**
+	 * 删除操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int delete(List<T> rows);
+
+	/**
+	 * 删除操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param dataSource
+	 *            数据源
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 */
+	<T extends Serializable> int delete(DataSource dataSource, List<T> rows);
+
+	/**
 	 * 从数据库查询并组装实体对象
 	 * 
 	 * @param obj

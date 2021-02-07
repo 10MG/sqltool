@@ -16,7 +16,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cn.tenmg.sqltool.config.ConfigLoader;
 import cn.tenmg.sqltool.config.loader.XMLConfigLoader;
@@ -39,7 +40,7 @@ public class XMLFileDSQLFactory extends AbstractDSQLFactory {
 	 */
 	private static final long serialVersionUID = 8125151681490092061L;
 
-	private static final Logger log = Logger.getLogger(XMLFileDSQLFactory.class);
+	private static final Logger log = LogManager.getLogger(XMLFileDSQLFactory.class);
 
 	private static final ConfigLoader loader = XMLConfigLoader.getInstance();
 

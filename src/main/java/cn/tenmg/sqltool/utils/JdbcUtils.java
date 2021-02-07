@@ -11,7 +11,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.sql.DML;
@@ -31,7 +32,7 @@ import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
  */
 public abstract class JdbcUtils {
 
-	private static final Logger log = Logger.getLogger(JdbcUtils.class);
+	private static final Logger log = LogManager.getLogger(JdbcUtils.class);
 
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n"), COMMA_SPACE = ", ",
 			SPACE_AND_SPACE = " AND ", SPACE_EQ_SPACE = " = ";

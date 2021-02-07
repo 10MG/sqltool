@@ -7,7 +7,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cn.tenmg.sqltool.DSQLFactory;
 import cn.tenmg.sqltool.dsql.NamedSQL;
@@ -33,7 +34,7 @@ public class TransactionExecutor implements Serializable {
 	 */
 	private static final long serialVersionUID = -4415310449248911047L;
 
-	private static final Logger log = Logger.getLogger(TransactionExecutor.class);
+	private static final Logger log = LogManager.getLogger(TransactionExecutor.class);
 
 	private boolean showSql = true;
 

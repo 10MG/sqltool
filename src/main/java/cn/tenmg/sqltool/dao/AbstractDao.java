@@ -11,7 +11,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cn.tenmg.sqltool.Dao;
 import cn.tenmg.sqltool.Transaction;
@@ -47,7 +48,7 @@ import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
 public abstract class AbstractDao implements Dao {
 
-	private static final Logger log = Logger.getLogger(AbstractDao.class);
+	private static final Logger log = LogManager.getLogger(AbstractDao.class);
 
 	private static final Map<DataSource, SQLDialect> DIALECTS = new HashMap<DataSource, SQLDialect>();
 

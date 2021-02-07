@@ -16,6 +16,12 @@ import cn.tenmg.sqltool.factory.XMLFileDSQLFactory;
 import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
+/**
+ * 基本数据库访问对象
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
 public class BasicDao extends AbstractDao {
 
 	private static final String DATASOURCE_PREFIX = "sqltool.datasource.", DEFAULT_NAME = "default",

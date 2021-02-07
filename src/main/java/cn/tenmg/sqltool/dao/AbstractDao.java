@@ -46,6 +46,12 @@ import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
+/**
+ * 抽象数据库访问对象
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ *
+ */
 public abstract class AbstractDao implements Dao {
 
 	private static final Logger log = LogManager.getLogger(AbstractDao.class);

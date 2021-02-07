@@ -24,24 +24,73 @@ public class BasicDao extends AbstractDao {
 
 	private static final int DATASOURCE_PREFIX_LEN = DATASOURCE_PREFIX.length();
 
-	private final Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
+	private DataSource defaultDataSource;
 
-	private DataSource defaultDataSource = null;
+	private Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
 
-	private DSQLFactory dsqlFactory;
+	private DSQLFactory DSQLFactory;
 
 	private boolean showSql;
 
 	private int defaultBatchSize = 500;
+
+	public void setDefaultDataSource(DataSource defaultDataSource) {
+		this.defaultDataSource = defaultDataSource;
+	}
+
+	@Override
+	public DataSource getDefaultDataSource() {
+		return defaultDataSource;
+	}
+
+	@Override
+	public DataSource getDataSource(String name) {
+		return dataSources.get(name);
+	}
+
+	public Map<String, DataSource> getDataSources() {
+		return dataSources;
+	}
+
+	public void setDataSources(Map<String, DataSource> dataSources) {
+		this.dataSources = dataSources;
+	}
+
+	public void setDSQLFactory(DSQLFactory dSQLFactory) {
+		DSQLFactory = dSQLFactory;
+	}
+
+	@Override
+	public DSQLFactory getDSQLFactory() {
+		return DSQLFactory;
+	}
+
+	public void setShowSql(boolean showSql) {
+		this.showSql = showSql;
+	}
+
+	@Override
+	public boolean isShowSql() {
+		return showSql;
+	}
+
+	public void setDefaultBatchSize(int defaultBatchSize) {
+		this.defaultBatchSize = defaultBatchSize;
+	}
+
+	@Override
+	public int getDefaultBatchSize() {
+		return defaultBatchSize;
+	}
 
 	private BasicDao(Properties properties) {
 		super();
 		String basePackages = properties.getProperty("sqltool.basePackages"),
 				suffix = properties.getProperty("sqltool.suffix");
 		if (suffix == null) {
-			this.dsqlFactory = new XMLFileDSQLFactory(basePackages);
+			this.DSQLFactory = new XMLFileDSQLFactory(basePackages);
 		} else {
-			this.dsqlFactory = new XMLFileDSQLFactory(basePackages, suffix);
+			this.DSQLFactory = new XMLFileDSQLFactory(basePackages, suffix);
 		}
 		this.showSql = Boolean.valueOf(properties.getProperty("sqltool.showSql", "false"));
 		this.defaultBatchSize = Integer.valueOf(properties.getProperty("sqltool.defaultBatchSize", "500"));
@@ -102,31 +151,6 @@ public class BasicDao extends AbstractDao {
 
 	public static BasicDao build(Properties properties) {
 		return new BasicDao(properties);
-	}
-
-	@Override
-	public DSQLFactory getDSQLFactory() {
-		return dsqlFactory;
-	}
-
-	@Override
-	public DataSource getDefaultDataSource() {
-		return defaultDataSource;
-	}
-
-	@Override
-	public DataSource getDataSource(String name) {
-		return dataSources.get(name);
-	}
-
-	@Override
-	boolean isShowSql() {
-		return showSql;
-	}
-
-	@Override
-	int getDefaultBatchSize() {
-		return defaultBatchSize;
 	}
 
 }

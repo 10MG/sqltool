@@ -48,18 +48,18 @@ public class CustomTransactionExecutor implements Serializable {
 
 	private static ThreadLocal<SQLDialect> currentSQLDialect = new ThreadLocal<SQLDialect>();
 
-	private DSQLFactory dsqlFactory;
+	private DSQLFactory DSQLFactory;
 
 	private boolean showSql = true;
 
 	private int defaultBatchSize = 500;
 
 	public DSQLFactory getDSQLFactory() {
-		return dsqlFactory;
+		return DSQLFactory;
 	}
 
-	public void setDSQLFactory(DSQLFactory dsqlFactory) {
-		this.dsqlFactory = dsqlFactory;
+	public void setDSQLFactory(DSQLFactory DSQLFactory) {
+		this.DSQLFactory = DSQLFactory;
 	}
 
 	public boolean isShowSql() {
@@ -288,7 +288,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public <T extends Serializable> T get(Class<T> type, String dsql, Object... params) throws SQLException {
-		return get(CurrentConnectionHolder.get(), dsqlFactory.parse(dsql, params), type);
+		return get(CurrentConnectionHolder.get(), DSQLFactory.parse(dsql, params), type);
 	}
 
 	/**
@@ -306,7 +306,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public <T extends Serializable> T get(Class<T> type, String dsql, Map<String, ?> params) throws SQLException {
-		return get(CurrentConnectionHolder.get(), dsqlFactory.parse(dsql, params), type);
+		return get(CurrentConnectionHolder.get(), DSQLFactory.parse(dsql, params), type);
 	}
 
 	/**
@@ -341,7 +341,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Object... params) throws SQLException {
-		return select(CurrentConnectionHolder.get(), dsqlFactory.parse(dsql, params), type);
+		return select(CurrentConnectionHolder.get(), DSQLFactory.parse(dsql, params), type);
 	}
 
 	/**
@@ -360,7 +360,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 */
 	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Map<String, ?> params)
 			throws SQLException {
-		return select(CurrentConnectionHolder.get(), dsqlFactory.parse(dsql, params), type);
+		return select(CurrentConnectionHolder.get(), DSQLFactory.parse(dsql, params), type);
 	}
 
 	/**
@@ -373,7 +373,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
 	 */
 	public boolean execute(String dsql, Object... params) {
-		return this.execute(dsqlFactory.parse(dsql, params));
+		return this.execute(DSQLFactory.parse(dsql, params));
 	}
 
 	/**
@@ -386,7 +386,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
 	 */
 	public boolean execute(String dsql, Map<String, ?> params) {
-		return this.execute(dsqlFactory.parse(dsql, params));
+		return this.execute(DSQLFactory.parse(dsql, params));
 	}
 
 	/**
@@ -399,7 +399,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 * @return 返回受影响行数
 	 */
 	public int executeUpdate(String dsql, Object... params) {
-		return executeUpdate(dsqlFactory.parse(dsql, params));
+		return executeUpdate(DSQLFactory.parse(dsql, params));
 	}
 
 	/**
@@ -412,7 +412,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 * @return 返回受影响行数
 	 */
 	public int executeUpdate(String dsql, Map<String, ?> params) {
-		return executeUpdate(dsqlFactory.parse(dsql, params));
+		return executeUpdate(DSQLFactory.parse(dsql, params));
 	}
 
 	/**

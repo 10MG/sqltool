@@ -44,7 +44,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private Properties properties;
 
-	private DSQLFactory dsqlFactory;
+	private DSQLFactory DSQLFactory;
 
 	private boolean showSql;
 
@@ -56,9 +56,9 @@ public class DistributedDao extends AbstractDao implements Serializable {
 		String basePackages = properties.getProperty("sqltool.basePackages"),
 				suffix = properties.getProperty("sqltool.suffix");
 		if (suffix == null) {
-			this.dsqlFactory = new XMLFileDSQLFactory(basePackages);
+			this.DSQLFactory = new XMLFileDSQLFactory(basePackages);
 		} else {
-			this.dsqlFactory = new XMLFileDSQLFactory(basePackages, suffix);
+			this.DSQLFactory = new XMLFileDSQLFactory(basePackages, suffix);
 		}
 		this.showSql = Boolean.valueOf(properties.getProperty("sqltool.showSql", "false"));
 		this.defaultBatchSize = Integer.valueOf(properties.getProperty("sqltool.defaultBatchSize", "500"));
@@ -70,7 +70,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	@Override
 	public DSQLFactory getDSQLFactory() {
-		return dsqlFactory;
+		return DSQLFactory;
 	}
 
 	@Override

@@ -38,14 +38,14 @@ public class TransactionExecutor implements Serializable {
 
 	private boolean showSql = true;
 
-	private DSQLFactory dsqlFactory;
+	private DSQLFactory DSQLFactory;
 
 	private SQLDialect dialect;
 
-	public TransactionExecutor(boolean showSql, DSQLFactory dsqlFactory, SQLDialect dialect) {
+	public TransactionExecutor(boolean showSql, DSQLFactory DSQLFactory, SQLDialect dialect) {
 		super();
 		this.showSql = showSql;
-		this.dsqlFactory = dsqlFactory;
+		this.DSQLFactory = DSQLFactory;
 		this.dialect = dialect;
 	}
 
@@ -372,7 +372,7 @@ public class TransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public <T extends Serializable> T get(Class<T> type, String dsql, Object... params) throws SQLException {
-		return get(dsqlFactory.parse(dsql, params), type);
+		return get(DSQLFactory.parse(dsql, params), type);
 	}
 
 	/**
@@ -390,7 +390,7 @@ public class TransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public <T extends Serializable> T get(Class<T> type, String dsql, Map<String, ?> params) throws SQLException {
-		return get(dsqlFactory.parse(dsql, params), type);
+		return get(DSQLFactory.parse(dsql, params), type);
 	}
 
 	/**
@@ -408,7 +408,7 @@ public class TransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Object... params) throws SQLException {
-		return select(dsqlFactory.parse(dsql, params), type);
+		return select(DSQLFactory.parse(dsql, params), type);
 	}
 
 	/**
@@ -427,7 +427,7 @@ public class TransactionExecutor implements Serializable {
 	 */
 	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Map<String, ?> params)
 			throws SQLException {
-		return select(dsqlFactory.parse(dsql, params), type);
+		return select(DSQLFactory.parse(dsql, params), type);
 	}
 
 	/**
@@ -442,7 +442,7 @@ public class TransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public boolean execute(String dsql, Object... params) throws SQLException {
-		return this.execute(dsqlFactory.parse(dsql, params));
+		return this.execute(DSQLFactory.parse(dsql, params));
 	}
 
 	/**
@@ -457,7 +457,7 @@ public class TransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public boolean execute(String dsql, Map<String, ?> params) throws SQLException {
-		return this.execute(dsqlFactory.parse(dsql, params));
+		return this.execute(DSQLFactory.parse(dsql, params));
 	}
 
 	/**
@@ -472,7 +472,7 @@ public class TransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public int executeUpdate(String dsql, Object... params) throws SQLException {
-		return executeUpdate(dsqlFactory.parse(dsql, params));
+		return executeUpdate(DSQLFactory.parse(dsql, params));
 	}
 
 	/**
@@ -487,7 +487,7 @@ public class TransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public int executeUpdate(String dsql, Map<String, ?> params) throws SQLException {
-		return executeUpdate(dsqlFactory.parse(dsql, params));
+		return executeUpdate(DSQLFactory.parse(dsql, params));
 	}
 
 	private boolean execute(NamedSQL namedSQL) throws SQLException {

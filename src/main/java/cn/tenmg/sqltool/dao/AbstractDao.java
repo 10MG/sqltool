@@ -486,7 +486,6 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> int delete(T obj) {
 		return delete(getDefaultDataSource(), obj);
-
 	}
 
 	@Override

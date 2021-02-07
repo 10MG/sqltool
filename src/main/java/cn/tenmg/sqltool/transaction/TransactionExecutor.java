@@ -18,6 +18,7 @@ import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.executer.ExecuteUpdateSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.GetSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.SelectSQLExecuter;
+import cn.tenmg.sqltool.sql.parser.DeleteDMLParser;
 import cn.tenmg.sqltool.sql.parser.GetDMLParser;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
@@ -53,8 +54,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param obj
 	 *            实体对象（不能为null）
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public int insert(Object obj) {
+	public int insert(Object obj) throws SQLException {
 		DML dml = InsertDMLParser.getInstance().parse(obj.getClass());
 		String sql = dml.getSql();
 		List<Object> params = JdbcUtils.getParams(obj, dml.getFields());
@@ -64,12 +67,8 @@ public class TransactionExecutor implements Serializable {
 					.append(JSONUtils.toJSONString(params));
 			log.info(sb.toString());
 		}
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql, params,
-					ExecuteUpdateSQLExecuter.getInstance(), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql, params,
+				ExecuteUpdateSQLExecuter.getInstance(), showSql);
 	}
 
 	/**
@@ -78,8 +77,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param rows
 	 *            实体对象集
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int insert(List<T> rows) {
+	public <T extends Serializable> int insert(List<T> rows) throws SQLException {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		} else {
@@ -88,12 +89,7 @@ public class TransactionExecutor implements Serializable {
 			if (showSql && log.isInfoEnabled()) {
 				log.info("Execute SQL: ".concat(sql));
 			}
-			try {
-				return JdbcUtils.executeBatch(CurrentConnectionHolder.get(), showSql, rows,
-						InsertDMLParser.getInstance());
-			} catch (SQLException e) {
-				throw new cn.tenmg.sqltool.exception.SQLException(e);
-			}
+			return JdbcUtils.executeBatch(CurrentConnectionHolder.get(), showSql, rows, InsertDMLParser.getInstance());
 		}
 	}
 
@@ -103,15 +99,13 @@ public class TransactionExecutor implements Serializable {
 	 * @param obj
 	 *            实体对象（不能为null）
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int update(T obj) {
+	public <T extends Serializable> int update(T obj) throws SQLException {
 		SQL sql = dialect.update(obj);
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
-					ExecuteUpdateSQLExecuter.getInstance(), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
+				ExecuteUpdateSQLExecuter.getInstance(), showSql);
 	}
 
 	/**
@@ -122,15 +116,13 @@ public class TransactionExecutor implements Serializable {
 	 * @param hardFields
 	 *            硬更新属性
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int update(T obj, String... hardFields) {
+	public <T extends Serializable> int update(T obj, String... hardFields) throws SQLException {
 		SQL sql = dialect.update(obj, hardFields);
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
-					ExecuteUpdateSQLExecuter.getInstance(), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
+				ExecuteUpdateSQLExecuter.getInstance(), showSql);
 	}
 
 	/**
@@ -139,17 +131,14 @@ public class TransactionExecutor implements Serializable {
 	 * @param rows
 	 *            实体对象集
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int update(List<T> rows) {
+	public <T extends Serializable> int update(List<T> rows) throws SQLException {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		try {
-			return JdbcUtils.update(CurrentConnectionHolder.get(), showSql, rows,
-					dialect.update(rows.get(0).getClass()));
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.update(CurrentConnectionHolder.get(), showSql, rows, dialect.update(rows.get(0).getClass()));
 	}
 
 	/**
@@ -160,17 +149,15 @@ public class TransactionExecutor implements Serializable {
 	 * @param hardFields
 	 *            硬更新属性
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int update(List<T> rows, String... hardFields) {
+	public <T extends Serializable> int update(List<T> rows, String... hardFields) throws SQLException {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		try {
-			return JdbcUtils.update(CurrentConnectionHolder.get(), showSql, rows,
-					dialect.update(rows.get(0).getClass(), hardFields));
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.update(CurrentConnectionHolder.get(), showSql, rows,
+				dialect.update(rows.get(0).getClass(), hardFields));
 	}
 
 	/**
@@ -179,8 +166,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param obj
 	 *            实体对象（不能为null）
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int hardUpdate(T obj) {
+	public <T extends Serializable> int hardUpdate(T obj) throws SQLException {
 		DML dml = UpdateDMLParser.getInstance().parse(obj.getClass());
 		PreparedStatement ps = null;
 		try {
@@ -196,7 +185,7 @@ public class TransactionExecutor implements Serializable {
 			}
 			return ps.executeUpdate();
 		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw e;
 		} finally {
 			if (ps != null) {
 				try {
@@ -215,16 +204,14 @@ public class TransactionExecutor implements Serializable {
 	 * @param rows
 	 *            实体对象集
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int hardUpdate(List<T> rows) {
+	public <T extends Serializable> int hardUpdate(List<T> rows) throws SQLException {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		try {
-			return JdbcUtils.hardUpdate(CurrentConnectionHolder.get(), showSql, rows);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.hardUpdate(CurrentConnectionHolder.get(), showSql, rows);
 	}
 
 	/**
@@ -233,15 +220,13 @@ public class TransactionExecutor implements Serializable {
 	 * @param obj
 	 *            实体对象
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int save(T obj) {
+	public <T extends Serializable> int save(T obj) throws SQLException {
 		SQL sql = dialect.save(obj);
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
-					ExecuteUpdateSQLExecuter.getInstance(), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
+				ExecuteUpdateSQLExecuter.getInstance(), showSql);
 	}
 
 	/**
@@ -252,15 +237,13 @@ public class TransactionExecutor implements Serializable {
 	 * @param hardFields
 	 *            硬保存属性
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int save(T obj, String... hardFields) {
+	public <T extends Serializable> int save(T obj, String... hardFields) throws SQLException {
 		SQL sql = dialect.save(obj, hardFields);
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
-					ExecuteUpdateSQLExecuter.getInstance(), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
+				ExecuteUpdateSQLExecuter.getInstance(), showSql);
 	}
 
 	/**
@@ -269,16 +252,14 @@ public class TransactionExecutor implements Serializable {
 	 * @param rows
 	 *            实体对象集
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int save(List<T> rows) {
+	public <T extends Serializable> int save(List<T> rows) throws SQLException {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		try {
-			return JdbcUtils.save(CurrentConnectionHolder.get(), showSql, rows, dialect.save(rows.get(0).getClass()));
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.save(CurrentConnectionHolder.get(), showSql, rows, dialect.save(rows.get(0).getClass()));
 	}
 
 	/**
@@ -289,17 +270,15 @@ public class TransactionExecutor implements Serializable {
 	 * @param hardFields
 	 *            硬保存属性
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int save(List<T> rows, String... hardFields) {
+	public <T extends Serializable> int save(List<T> rows, String... hardFields) throws SQLException {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		try {
-			return JdbcUtils.save(CurrentConnectionHolder.get(), showSql, rows,
-					dialect.save(rows.get(0).getClass(), hardFields));
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.save(CurrentConnectionHolder.get(), showSql, rows,
+				dialect.save(rows.get(0).getClass(), hardFields));
 	}
 
 	/**
@@ -308,15 +287,13 @@ public class TransactionExecutor implements Serializable {
 	 * @param obj
 	 *            实体对象
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int hardSave(T obj) {
+	public <T extends Serializable> int hardSave(T obj) throws SQLException {
 		SQL sql = dialect.hardSave(obj);
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
-					ExecuteUpdateSQLExecuter.getInstance(), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, sql.getScript(), sql.getParams(),
+				ExecuteUpdateSQLExecuter.getInstance(), showSql);
 	}
 
 	/**
@@ -324,16 +301,42 @@ public class TransactionExecutor implements Serializable {
 	 * 
 	 * @param rows
 	 *            实体对象集
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> int hardSave(List<T> rows) {
+	public <T extends Serializable> int hardSave(List<T> rows) throws SQLException {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		try {
-			return JdbcUtils.hardSave(CurrentConnectionHolder.get(), dialect, showSql, rows);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.hardSave(CurrentConnectionHolder.get(), dialect, showSql, rows);
+	}
+
+	/**
+	 * 删除操作
+	 * 
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
+	public <T extends Serializable> int delete(T obj) throws SQLException {
+		DML dml = DeleteDMLParser.getInstance().parse(obj.getClass());
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, dml.getSql(),
+				JdbcUtils.getParams(obj, dml.getFields()), ExecuteUpdateSQLExecuter.getInstance(), showSql);
+	}
+
+	/**
+	 * 删除操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
+	public <T extends Serializable> int delete(List<T> rows) throws SQLException {
+		return JdbcUtils.executeBatch(CurrentConnectionHolder.get(), showSql, rows, DeleteDMLParser.getInstance());
 	}
 
 	/**
@@ -342,17 +345,15 @@ public class TransactionExecutor implements Serializable {
 	 * @param obj
 	 *            实体对象
 	 * @return 返回查询到的实体对象
+	 * @throws SQLException
+	 *             SQL异常
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Serializable> T get(T obj) {
+	public <T extends Serializable> T get(T obj) throws SQLException {
 		Class<T> type = (Class<T>) obj.getClass();
 		DML dml = GetDMLParser.getInstance().parse(type);
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), null, dml.getSql(),
-					JdbcUtils.getParams(obj, dml.getFields()), new GetSQLExecuter<T>(type), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, dml.getSql(),
+				JdbcUtils.getParams(obj, dml.getFields()), new GetSQLExecuter<T>(type), showSql);
 	}
 
 	/**
@@ -366,8 +367,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 返回查询到的对象
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> T get(Class<T> type, String dsql, Object... params) {
+	public <T extends Serializable> T get(Class<T> type, String dsql, Object... params) throws SQLException {
 		return get(dsqlFactory.parse(dsql, params), type);
 	}
 
@@ -382,8 +385,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 返回查询到的对象
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> T get(Class<T> type, String dsql, Map<String, ?> params) {
+	public <T extends Serializable> T get(Class<T> type, String dsql, Map<String, ?> params) throws SQLException {
 		return get(dsqlFactory.parse(dsql, params), type);
 	}
 
@@ -398,8 +403,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 返回查询到的对象列表
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Object... params) {
+	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Object... params) throws SQLException {
 		return select(dsqlFactory.parse(dsql, params), type);
 	}
 
@@ -414,8 +421,11 @@ public class TransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 返回查询到的对象列表
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Map<String, ?> params) {
+	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Map<String, ?> params)
+			throws SQLException {
 		return select(dsqlFactory.parse(dsql, params), type);
 	}
 
@@ -427,8 +437,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public boolean execute(String dsql, Object... params) {
+	public boolean execute(String dsql, Object... params) throws SQLException {
 		return this.execute(dsqlFactory.parse(dsql, params));
 	}
 
@@ -440,8 +452,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public boolean execute(String dsql, Map<String, ?> params) {
+	public boolean execute(String dsql, Map<String, ?> params) throws SQLException {
 		return this.execute(dsqlFactory.parse(dsql, params));
 	}
 
@@ -453,8 +467,10 @@ public class TransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public int executeUpdate(String dsql, Object... params) {
+	public int executeUpdate(String dsql, Object... params) throws SQLException {
 		return executeUpdate(dsqlFactory.parse(dsql, params));
 	}
 
@@ -466,12 +482,14 @@ public class TransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public int executeUpdate(String dsql, Map<String, ?> params) {
+	public int executeUpdate(String dsql, Map<String, ?> params) throws SQLException {
 		return executeUpdate(dsqlFactory.parse(dsql, params));
 	}
 
-	private boolean execute(NamedSQL namedSQL) {
+	private boolean execute(NamedSQL namedSQL) throws SQLException {
 		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		PreparedStatement ps = null;
 		boolean rs = false;
@@ -498,14 +516,14 @@ public class TransactionExecutor implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw e;
 		} finally {
 			JdbcUtils.close(ps);
 		}
 		return rs;
 	}
 
-	private int executeUpdate(NamedSQL namedSQL) {
+	private int executeUpdate(NamedSQL namedSQL) throws SQLException {
 		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		PreparedStatement ps = null;
 		int count = 0;
@@ -532,30 +550,22 @@ public class TransactionExecutor implements Serializable {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw e;
 		} finally {
 			JdbcUtils.close(ps);
 		}
 		return count;
 	}
 
-	private <T extends Serializable> T get(NamedSQL namedSQL, Class<T> type) {
+	private <T extends Serializable> T get(NamedSQL namedSQL, Class<T> type) throws SQLException {
 		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), namedSQL.getId(), sql.getScript(), sql.getParams(),
-					new GetSQLExecuter<T>(type), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), namedSQL.getId(), sql.getScript(), sql.getParams(),
+				new GetSQLExecuter<T>(type), showSql);
 	}
 
-	private <T extends Serializable> List<T> select(NamedSQL namedSQL, Class<T> type) {
+	private <T extends Serializable> List<T> select(NamedSQL namedSQL, Class<T> type) throws SQLException {
 		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
-		try {
-			return JdbcUtils.execute(CurrentConnectionHolder.get(), namedSQL.getId(), sql.getScript(), sql.getParams(),
-					new SelectSQLExecuter<T>(type), showSql);
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		}
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), namedSQL.getId(), sql.getScript(), sql.getParams(),
+				new SelectSQLExecuter<T>(type), showSql);
 	}
 }

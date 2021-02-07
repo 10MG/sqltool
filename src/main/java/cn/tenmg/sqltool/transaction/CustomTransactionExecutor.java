@@ -22,6 +22,7 @@ import cn.tenmg.sqltool.sql.SQLExecuter;
 import cn.tenmg.sqltool.sql.executer.ExecuteUpdateSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.GetSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.SelectSQLExecuter;
+import cn.tenmg.sqltool.sql.parser.DeleteDMLParser;
 import cn.tenmg.sqltool.sql.parser.GetDMLParser;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 import cn.tenmg.sqltool.utils.CollectionUtils;
@@ -224,6 +225,34 @@ public class CustomTransactionExecutor implements Serializable {
 			return 0;
 		}
 		return JdbcUtils.hardSave(CurrentConnectionHolder.get(), currentSQLDialect.get(), showSql, rows);
+	}
+
+	/**
+	 * 删除操作
+	 * 
+	 * @param obj
+	 *            实体对象（不能为null）
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
+	public <T extends Serializable> int delete(T obj) throws SQLException {
+		DML dml = DeleteDMLParser.getInstance().parse(obj.getClass());
+		return JdbcUtils.execute(CurrentConnectionHolder.get(), null, dml.getSql(),
+				JdbcUtils.getParams(obj, dml.getFields()), ExecuteUpdateSQLExecuter.getInstance(), showSql);
+	}
+
+	/**
+	 * 删除操作（实体对象集为空则直接返回0）
+	 * 
+	 * @param rows
+	 *            实体对象集
+	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
+	 */
+	public <T extends Serializable> int delete(List<T> rows) throws SQLException {
+		return JdbcUtils.executeBatch(CurrentConnectionHolder.get(), showSql, rows, DeleteDMLParser.getInstance());
 	}
 
 	/**

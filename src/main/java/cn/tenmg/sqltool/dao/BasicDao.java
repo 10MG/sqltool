@@ -83,6 +83,14 @@ public class BasicDao extends AbstractDao {
 		return defaultBatchSize;
 	}
 
+	public BasicDao() {
+		super();
+	}
+
+	public static BasicDao build(Properties properties) {
+		return new BasicDao(properties);
+	}
+
 	private BasicDao(Properties properties) {
 		super();
 		String basePackages = properties.getProperty("sqltool.basePackages"),
@@ -148,9 +156,4 @@ public class BasicDao extends AbstractDao {
 			throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);
 		}
 	}
-
-	public static BasicDao build(Properties properties) {
-		return new BasicDao(properties);
-	}
-
 }

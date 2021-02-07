@@ -54,8 +54,16 @@ public class XMLFileDSQLFactory extends AbstractDSQLFactory {
 		return basePackages;
 	}
 
+	public void setBasePackages(String basePackages) {
+		this.basePackages = basePackages;
+	}
+
 	public String getSuffix() {
 		return suffix;
+	}
+
+	public void setSuffix(String suffix) {
+		this.suffix = suffix;
 	}
 
 	public XMLFileDSQLFactory(String basePackages) {

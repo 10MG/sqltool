@@ -1,5 +1,5 @@
 # 文档（Document）
-<p>http://www.10mg.cn/sqltool</p>
+<p>http://doc.10mg.cn/sqltool</p>
 <p>https://github.com/10MG/sqltool/wiki</p>
 
 ## 关于（About）

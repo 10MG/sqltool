@@ -309,8 +309,8 @@ public abstract class SQLUtils {
 									sqlMetaData.setSelectIndex(i - SELECT.length());
 									isWith = false;
 								}
-								sb.setLength(0);
 							}
+							sb.setLength(0);
 						} else {
 							sb.append(c);// 拼接单词
 						}
@@ -327,19 +327,30 @@ public abstract class SQLUtils {
 					isString = true;
 					i = stepForward(charsBefore, c, i);
 				} else {
-					if (c <= BLANK_SPACE) {// 遇到空白字符
-						decideLineSplitorIndex(lineSplitorIndexs, c, i);
-						String s = sb.toString();
-						if (SELECT.equalsIgnoreCase(s)) {
-							sqlMetaData.setSelectIndex(i - SELECT.length());
-							if (fromIndex > 0) {
-								break;
-							}
-						} else if (FROM.equalsIgnoreCase(s)) {
-							sqlMetaData.setFromIndex(i - FROM.length());
+					if (c == LEFT_BRACKET) {// 左括号
+						deep++;
+					} else if (c == RIGHT_BRACKET) {// 右括号
+						deep--;
+						if (deep == 0) {
+							sb.setLength(0);
+						} else if (deep < 0) {
 							break;
-						} else if (WITH.equalsIgnoreCase(s)) {
-							isWith = true;
+						}
+					} else if (c <= BLANK_SPACE) {// 遇到空白字符
+						if (deep == 0) {
+							decideLineSplitorIndex(lineSplitorIndexs, c, i);
+							String s = sb.toString();
+							if (SELECT.equalsIgnoreCase(s)) {
+								sqlMetaData.setSelectIndex(i - SELECT.length());
+								if (fromIndex > 0) {
+									break;
+								}
+							} else if (FROM.equalsIgnoreCase(s)) {
+								sqlMetaData.setFromIndex(i - FROM.length());
+								break;
+							} else if (WITH.equalsIgnoreCase(s)) {
+								isWith = true;
+							}
 						}
 						sb.setLength(0);
 					} else {

@@ -7,21 +7,10 @@ import java.util.Map;
 import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 
-/**
- * Oracle方言
- * 
- * @author 赵伟均 wjzhao@aliyun.com
- *
- */
-public class OracleDialect extends AbstractSQLDialect {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6036289971714384622L;
+public class SQLServerDialect extends AbstractSQLDialect {
 
 	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
-			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = NVL(?, ${columnName})";
+			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = ISNULL(?, ${columnName})";
 
 	private static final String INSERT_IF_NOT_EXISTS = "MERGE INTO ${tableName} X USING (SELECT ${fields} FROM DUAL) Y ON (${condition}) WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})";
 
@@ -33,19 +22,15 @@ public class OracleDialect extends AbstractSQLDialect {
 			NEEDS_COMMA_PARAM_NAMES = Arrays.asList(FIELDS, COLUMNS, VALUES);
 
 	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
-			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = NVL(Y.${columnName}, X.${columnName})";
+			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = ISNULL(Y.${columnName}, X.${columnName})";
 
-	private static final String PAGE_WRAP_START = "SELECT * FROM (SELECT SQLTOOL.*, ROWNUM SQLTOOL_RN FROM (\n",
+	private static final String PAGE_WRAP_START = "SELECT * FROM (SELECT SQLTOOL.*, ROW_NUMBER() SQLTOOL_RN FROM (\n",
 			PAGE_WRAP_END = "\n) SQLTOOL WHERE ROWNUM <= %d) WHERE SQLTOOL_RN > %d";
 
-	private static final OracleDialect INSTANCE = new OracleDialect();
+	private static final SQLServerDialect INSTANCE = new SQLServerDialect();
 
-	public static final OracleDialect getInstance() {
+	public static final SQLServerDialect getInstance() {
 		return INSTANCE;
-	}
-
-	private OracleDialect() {
-		super();
 	}
 
 	@Override
@@ -103,7 +88,7 @@ public class OracleDialect extends AbstractSQLDialect {
 	String getSetIfNotNullTemplate() {
 		return SET_IF_NOT_NULL_TEMPLATE;
 	}
-	
+
 	@Override
 	String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
 		return PAGE_WRAP_START.concat(sql).concat(pageWrapEnd(pageSize, currentPage));

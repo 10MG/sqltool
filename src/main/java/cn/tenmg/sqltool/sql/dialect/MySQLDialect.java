@@ -35,12 +35,10 @@ public class MySQLDialect extends AbstractSQLDialect {
 	private static final String PAGE_WRAP_START = "SELECT * FROM (\n", PAGE_WRAP_END = "\n) SQLTOOL",
 			LIMIT = " LIMIT %d,%d";
 
-	private static class InstanceHolder {
-		private static final MySQLDialect INSTANCE = new MySQLDialect();
-	}
+	private static final MySQLDialect INSTANCE = new MySQLDialect();
 
 	public static final MySQLDialect getInstance() {
-		return InstanceHolder.INSTANCE;
+		return INSTANCE;
 	}
 
 	private MySQLDialect() {

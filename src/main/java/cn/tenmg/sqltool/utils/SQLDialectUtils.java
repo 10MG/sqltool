@@ -8,6 +8,7 @@ import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.dialect.MySQLDialect;
 import cn.tenmg.sqltool.sql.dialect.OracleDialect;
 import cn.tenmg.sqltool.sql.dialect.PostgreSQLDialect;
+import cn.tenmg.sqltool.sql.dialect.SQLServerDialect;
 
 /**
  * 方言工具类
@@ -40,6 +41,8 @@ public class SQLDialectUtils {
 				dialect = MySQLDialect.getInstance();
 			} else if (url.contains("oracle")) {
 				dialect = OracleDialect.getInstance();
+			} else if (url.contains("sqlserver")) {
+				dialect = SQLServerDialect.getInstance();
 			} else {
 				dialect = PostgreSQLDialect.getInstance();
 			}

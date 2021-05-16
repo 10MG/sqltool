@@ -38,12 +38,10 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	private static final String PAGE_WRAP_START = "SELECT * FROM (\n", PAGE_WRAP_END = "\n) SQLTOOL",
 			LIMIT = " LIMIT %d OFFSET %d";
 
-	private static class InstanceHolder {
-		private static final PostgreSQLDialect INSTANCE = new PostgreSQLDialect();
-	}
+	private static final PostgreSQLDialect INSTANCE = new PostgreSQLDialect();
 
 	public static final PostgreSQLDialect getInstance() {
-		return InstanceHolder.INSTANCE;
+		return INSTANCE;
 	}
 
 	private PostgreSQLDialect() {

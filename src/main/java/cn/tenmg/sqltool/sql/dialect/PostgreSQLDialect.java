@@ -105,32 +105,37 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 
 	@Override
 	public String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
-		int length = sqlMetaData.getLength(), embedStartIndex = sqlMetaData.getEmbedStartIndex(),
-				embedEndIndex = sqlMetaData.getEmbedEndIndex();
-		if (sqlMetaData.getLimitIndex() >= 0) {
-			if (embedStartIndex > 0) {
-				if (embedEndIndex < length) {
-					return sql.substring(0, embedStartIndex).concat(PAGE_WRAP_START)
-							.concat(sql.substring(embedStartIndex, embedEndIndex))
-							.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
-				} else {
-					return sql.substring(0, embedStartIndex).concat(PAGE_WRAP_START)
-							.concat(sql.substring(embedStartIndex)).concat(pageEnd(pageSize, currentPage));
-				}
-			} else {
-				if (embedEndIndex < length) {
-					return PAGE_WRAP_START.concat(sql.substring(0, embedEndIndex))
-							.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
-				} else {
-					return PAGE_WRAP_START.concat(sql).concat(pageEnd(pageSize, currentPage));
-				}
-			}
+		int selectIndex = sqlMetaData.getSelectIndex();
+		if (selectIndex < 0) {// 正常情况下selectIndex不可能<0，但如果用户的确写错了，这里直接返回错误的SQL
+			return sql;
 		} else {
-			if (embedEndIndex > 0 && embedEndIndex < length) {
-				return sql.substring(0, embedEndIndex).concat(generateLimit(pageSize, currentPage))
-						.concat(sql.substring(embedEndIndex));
+			int length = sqlMetaData.getLength(), embedEndIndex = sqlMetaData.getEmbedEndIndex();
+			if (sqlMetaData.getLimitIndex() >= 0) {
+				int embedStartIndex = sqlMetaData.getEmbedStartIndex();
+				if (embedStartIndex > 0) {
+					if (embedEndIndex < length) {
+						return sql.substring(0, embedStartIndex).concat(PAGE_WRAP_START)
+								.concat(sql.substring(embedStartIndex, embedEndIndex))
+								.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
+					} else {
+						return sql.substring(0, embedStartIndex).concat(PAGE_WRAP_START)
+								.concat(sql.substring(embedStartIndex)).concat(pageEnd(pageSize, currentPage));
+					}
+				} else {
+					if (embedEndIndex < length) {
+						return PAGE_WRAP_START.concat(sql.substring(0, embedEndIndex))
+								.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
+					} else {
+						return PAGE_WRAP_START.concat(sql).concat(pageEnd(pageSize, currentPage));
+					}
+				}
 			} else {
-				return sql.concat(generateLimit(pageSize, currentPage));
+				if (embedEndIndex > 0 && embedEndIndex < length) {
+					return sql.substring(0, embedEndIndex).concat(generateLimit(pageSize, currentPage))
+							.concat(sql.substring(embedEndIndex));
+				} else {
+					return sql.concat(generateLimit(pageSize, currentPage));
+				}
 			}
 		}
 	}

@@ -103,7 +103,7 @@ public class OracleDialect extends AbstractSQLDialect {
 	String getSetIfNotNullTemplate() {
 		return SET_IF_NOT_NULL_TEMPLATE;
 	}
-	
+
 	@Override
 	String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
 		return PAGE_WRAP_START.concat(sql).concat(pageWrapEnd(pageSize, currentPage));

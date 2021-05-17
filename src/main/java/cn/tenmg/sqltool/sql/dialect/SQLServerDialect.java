@@ -29,9 +29,9 @@ public class SQLServerDialect extends AbstractSQLDialect {
 	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = ISNULL(Y.${columnName}, X.${columnName})";
 
-	private static final String SQLTOOL_COLUMN = "1 SQLTOOL_COLUMN, ",
-			SUBQUERY_START = "SELECT " + SQLTOOL_COLUMN + "SQLTOOL.* FROM (\n", SUBQUERY_END = ") SQLTOOL",
-			ORDER_BY = " ORDER BY SQLTOOL_COLUMN", PAGE_WRAP_END = " OFFSET %d ROW FETCH NEXT %d ROW ONLY";
+	private static final String SQLTOOL_COLUMN = " 1 SQLTOOL_COLUMN, ",
+			SUBQUERY_START = "SELECT" + SQLTOOL_COLUMN + "SQLTOOL.* FROM (\n", SUBQUERY_END = ") SQLTOOL",
+			ORDER_BY = "\nORDER BY SQLTOOL_COLUMN", PAGE_WRAP_END = " OFFSET %d ROW FETCH NEXT %d ROW ONLY";
 
 	private static final SQLServerDialect INSTANCE = new SQLServerDialect();
 

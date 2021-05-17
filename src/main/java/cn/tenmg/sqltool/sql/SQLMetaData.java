@@ -44,6 +44,11 @@ public class SQLMetaData {
 	private int limitIndex = -1;
 
 	/**
+	 * 主查询OFFSET子句索引
+	 */
+	private int offsetIndex = -1;
+
+	/**
 	 * SQL的长度
 	 */
 	private int length = 0;
@@ -102,6 +107,14 @@ public class SQLMetaData {
 
 	public void setLimitIndex(int limitIndex) {
 		this.limitIndex = limitIndex;
+	}
+
+	public int getOffsetIndex() {
+		return offsetIndex;
+	}
+
+	public void setOffsetIndex(int offsetIndex) {
+		this.offsetIndex = offsetIndex;
 	}
 
 	public int getLength() {

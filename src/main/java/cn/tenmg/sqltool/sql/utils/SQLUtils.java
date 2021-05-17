@@ -25,7 +25,7 @@ public abstract class SQLUtils {
 
 	private static final String WITH = "WITH", SELECT = "SELECT", FROM = "FROM", FROM_REVERSE = "MORF",
 			ON_REVERSE = "NO", WHERE_REVERSE = "EREHW", GROUP_REVERSE = "PUORG", ORDER_REVERSE = "REDRO",
-			BY_REVERSE = "YB", LIMIT_REVERSE = "TIMIL",
+			BY_REVERSE = "YB", LIMIT_REVERSE = "TIMIL", OFFSET_REVERSE = "TESFFO",
 			/**
 			 * 最小标准SQL
 			 */
@@ -202,7 +202,7 @@ public abstract class SQLUtils {
 		int i = len - 1;
 		char c = sql.charAt(i);
 		boolean isString = false;
-		int[] lineSplitorIndexs = { len, len };
+		int deep = 0, lineSplitorIndexs[] = { len, len };
 		StringBuilder sba = new StringBuilder(), sbb = new StringBuilder();
 		while (i > 0 && c <= BLANK_SPACE) {// 跳过空白字符
 			decideLineSplitorIndex(lineSplitorIndexs, c, i);
@@ -225,34 +225,46 @@ public abstract class SQLUtils {
 					isString = true;
 					c = sql.charAt(--i);
 				} else {
-					if (c <= BLANK_SPACE) {// 遇到空白字符
-						String sa = sba.toString(), sb = sbb.toString();
-						if (i >= MIN_SQL_LEN) {
-							if (BY_REVERSE.equalsIgnoreCase(sa)) {
-								if (GROUP_REVERSE.equalsIgnoreCase(sb)) {
-									sqlMetaData.setGroupByIndex(i + 1);
+					if (c == RIGHT_BRACKET) {// 右括号
+						deep++;
+						sba.setLength(0);
+						sba.setLength(0);
+					} else if (c == LEFT_BRACKET) {// 左括号
+						deep--;
+						sba.setLength(0);
+						sba.setLength(0);
+					} else if (deep == 0) {// 深度为0，表示主查询
+						if (c <= BLANK_SPACE) {// 遇到空白字符
+							String sa = sba.toString(), sb = sbb.toString();
+							if (i >= MIN_SQL_LEN) {
+								if (BY_REVERSE.equalsIgnoreCase(sa)) {
+									if (GROUP_REVERSE.equalsIgnoreCase(sb)) {
+										sqlMetaData.setGroupByIndex(i + 1);
+										break;
+									} else if (ORDER_REVERSE.equalsIgnoreCase(sb)) {
+										sqlMetaData.setOrderByIndex(i + 1);
+									}
+								} else if (LIMIT_REVERSE.equalsIgnoreCase(sb)) {
+									sqlMetaData.setLimitIndex(i + 1);
+								} else if (OFFSET_REVERSE.equalsIgnoreCase(sb)) {
+									sqlMetaData.setOffsetIndex(i + 1);
+								} else if (WHERE_REVERSE.equalsIgnoreCase(sb) || ON_REVERSE.equalsIgnoreCase(sb)) {
 									break;
-								} else if (ORDER_REVERSE.equalsIgnoreCase(sb)) {
-									sqlMetaData.setOrderByIndex(i + 1);
+								} else if (FROM_REVERSE.equalsIgnoreCase(sb)) {
+									sqlMetaData.setFromIndex(i + 1);
+									break;
 								}
-							} else if (LIMIT_REVERSE.equalsIgnoreCase(sb)) {
-								sqlMetaData.setLimitIndex(i + 1);
 							} else if (WHERE_REVERSE.equalsIgnoreCase(sb) || ON_REVERSE.equalsIgnoreCase(sb)) {
 								break;
 							} else if (FROM_REVERSE.equalsIgnoreCase(sb)) {
 								sqlMetaData.setFromIndex(i + 1);
 								break;
 							}
-						} else if (WHERE_REVERSE.equalsIgnoreCase(sb) || ON_REVERSE.equalsIgnoreCase(sb)) {
-							break;
-						} else if (FROM_REVERSE.equalsIgnoreCase(sb)) {
-							sqlMetaData.setFromIndex(i + 1);
-							break;
+							sba = sbb;
+							sbb = new StringBuilder();
+						} else {
+							sbb.append(c);// 拼接单词
 						}
-						sba = sbb;
-						sbb = new StringBuilder();
-					} else {
-						sbb.append(c);// 拼接单词
 					}
 					c = sql.charAt(--i);
 				}
@@ -381,10 +393,10 @@ public abstract class SQLUtils {
 	}
 
 	/**
-	 * 确定SELECT字句之前最后一个换行符的位置
+	 * 确定SELECT子句之前最后一个换行符的位置
 	 * 
 	 * @param lineSplitorIndexs
-	 *            SELECT字句之前最后一个换行符的位置
+	 *            SELECT子句之前最后一个换行符的位置
 	 * @param c
 	 *            当前字符
 	 * @param i
@@ -409,18 +421,19 @@ public abstract class SQLUtils {
 	 *            /n的索引
 	 */
 	private static void setEmbedStartIndex(SQLMetaData sqlMetaData, int r, int n) {
+		int selectIndex = sqlMetaData.getSelectIndex();
 		if (r < n) {
-			if (n <= sqlMetaData.getSelectIndex()) {
+			if (n <= selectIndex) {
 				sqlMetaData.setEmbedStartIndex(n + 1);
 				return;
 			}
 		} else if (r > n) {
-			if (r <= sqlMetaData.getSelectIndex()) {
+			if (r <= selectIndex) {
 				sqlMetaData.setEmbedStartIndex(r + 1);
 				return;
 			}
 		}
-		sqlMetaData.setEmbedStartIndex(sqlMetaData.getSelectIndex());
+		sqlMetaData.setEmbedStartIndex(selectIndex);
 	}
 
 	/**
@@ -434,18 +447,19 @@ public abstract class SQLUtils {
 	 *            /n的索引
 	 */
 	private static void setEmbedEndIndex(SQLMetaData sqlMetaData, int r, int n) {
+		int len = sqlMetaData.getLength();
 		if (r < n) {
-			if (r <= sqlMetaData.getLength()) {
+			if (r <= len) {
 				sqlMetaData.setEmbedEndIndex(r);
 				return;
 			}
 		} else if (r > n) {
-			if (n <= sqlMetaData.getLength()) {
+			if (n <= len) {
 				sqlMetaData.setEmbedEndIndex(n);
 				return;
 			}
 		}
-		sqlMetaData.setEmbedEndIndex(sqlMetaData.getLength());
+		sqlMetaData.setEmbedEndIndex(len);
 	}
 
 }

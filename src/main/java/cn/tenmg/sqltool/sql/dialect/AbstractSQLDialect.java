@@ -45,20 +45,20 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	protected static final String TABLE_NAME = "tableName", COLUMNS = "columns", VALUES = "values", SETS = "sets",
 			LEFT_COLUMN_NAME = "columnName", RIGHT_COLUMN_NAME = "columnName";
 
-	private static final int SELECT_LEN = "SELECT".length();
+	protected static final int SELECT_LEN = "SELECT".length();
 
 	private static final String COUNT = " COUNT(*) ", COUNT_START = "SELECT COUNT(*) FROM (\n",
 			COUNT_END = "\n) SQLTOOL";
 
 	/**
-	 * 获取更新语句的SET字句模板。例如Mysql数据库为<code>${columnName}=?</code>
+	 * 获取更新语句的SET子句模板。例如Mysql数据库为<code>${columnName}=?</code>
 	 */
 	abstract String getUpdateSetTemplate();
 
 	/**
-	 * 获取更新语句非空时SET字句模板。例如Mysql数据库为<code>${columnName}=IFNULL(${columnName}, ?)</code>
+	 * 获取更新语句非空时SET子句模板。例如Mysql数据库为<code>${columnName}=IFNULL(${columnName}, ?)</code>
 	 * 
-	 * @return 返回非空时SET字句模板
+	 * @return 返回非空时SET子句模板
 	 */
 	abstract String getUpdateSetIfNotNullTemplate();
 
@@ -112,16 +112,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			boolean notFirst);
 
 	/**
-	 * 获取SET字句模板。例如Mysql数据库为<code>${columnName}=VALUES(${columnName})</code>
+	 * 获取SET子句模板。例如Mysql数据库为<code>${columnName}=VALUES(${columnName})</code>
 	 * 
-	 * @return 返回SET字句模板
+	 * @return 返回SET子句模板
 	 */
 	abstract String getSetTemplate();
 
 	/**
-	 * 获取非空时SET字句模板。例如Mysql数据库为<code>${columnName}=IFNULL(VALUES(${columnName}), ${columnName})</code>
+	 * 获取非空时SET子句模板。例如Mysql数据库为<code>${columnName}=IFNULL(VALUES(${columnName}), ${columnName})</code>
 	 * 
-	 * @return 返回非空时SET字句模板
+	 * @return 返回非空时SET子句模板
 	 */
 	abstract String getSetIfNotNullTemplate();
 

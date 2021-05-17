@@ -9,6 +9,11 @@ import cn.tenmg.sqltool.utils.JdbcUtils;
 
 public class SQLServerDialect extends AbstractSQLDialect {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -253323537155093627L;
+
 	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
 			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = ISNULL(?, ${columnName})";
 
@@ -24,8 +29,9 @@ public class SQLServerDialect extends AbstractSQLDialect {
 	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = ISNULL(Y.${columnName}, X.${columnName})";
 
-	private static final String PAGE_WRAP_START = "SELECT * FROM (SELECT SQLTOOL.*, ROW_NUMBER() SQLTOOL_RN FROM (\n",
-			PAGE_WRAP_END = "\n) SQLTOOL WHERE ROWNUM <= %d) WHERE SQLTOOL_RN > %d";
+	private static final String SQLTOOL_COLUMN = "1 SQLTOOL_COLUMN, ",
+			SUBQUERY_START = "SELECT " + SQLTOOL_COLUMN + "SQLTOOL.* FROM (\n", SUBQUERY_END = ") SQLTOOL",
+			ORDER_BY = " ORDER BY SQLTOOL_COLUMN", PAGE_WRAP_END = " OFFSET %d ROW FETCH NEXT %d ROW ONLY";
 
 	private static final SQLServerDialect INSTANCE = new SQLServerDialect();
 
@@ -91,11 +97,62 @@ public class SQLServerDialect extends AbstractSQLDialect {
 
 	@Override
 	String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
-		return PAGE_WRAP_START.concat(sql).concat(pageWrapEnd(pageSize, currentPage));
+		int selectIndex = sqlMetaData.getSelectIndex();
+		if (selectIndex < 0) {// 正常情况下selectIndex不可能<0，但如果用户的确写错了，这里直接返回错误的SQL
+			return sql;
+		} else {
+			int offsetIndex = sqlMetaData.getOffsetIndex(), length = sqlMetaData.getLength(),
+					embedEndIndex = sqlMetaData.getEmbedEndIndex();
+			if (offsetIndex > 0) {// 有OFFSET子句，直接包装子查询并追加行数限制条件
+				int embedStartIndex = sqlMetaData.getEmbedStartIndex();
+				if (embedStartIndex > 0) {
+					if (embedEndIndex < length) {
+						return sql.substring(0, embedStartIndex).concat(SUBQUERY_START)
+								.concat(sql.substring(embedStartIndex, embedEndIndex)).concat(SUBQUERY_END)
+								.concat(ORDER_BY).concat(pageEnd(pageSize, currentPage))
+								.concat(sql.substring(embedEndIndex));
+					} else {
+						return sql.substring(0, embedStartIndex).concat(SUBQUERY_START)
+								.concat(sql.substring(embedStartIndex)).concat(SUBQUERY_END).concat(ORDER_BY)
+								.concat(pageEnd(pageSize, currentPage));
+					}
+				} else {
+					if (embedEndIndex < length) {
+						return SUBQUERY_START.concat(sql.substring(0, embedEndIndex)).concat(SUBQUERY_END)
+								.concat(ORDER_BY).concat(pageEnd(pageSize, currentPage))
+								.concat(sql.substring(embedEndIndex));
+					} else {
+						return SUBQUERY_START.concat(sql).concat(SUBQUERY_END).concat(ORDER_BY)
+								.concat(pageEnd(pageSize, currentPage));
+					}
+				}
+			} else {
+				int orderByIndex = sqlMetaData.getOrderByIndex();
+				if (orderByIndex > 0) {// 没有OFFSET子句但有ORDER BY子句，直接末尾追加行数限制条件
+					if (embedEndIndex > 0 && embedEndIndex < length) {
+						return sql.substring(0, embedEndIndex).concat(pageEnd(pageSize, currentPage))
+								.concat(sql.substring(embedEndIndex));
+					} else {
+						return sql.concat(pageEnd(pageSize, currentPage));
+					}
+				} else {// 没有OFFSET子句也没有ORDER BY子句，增加一常量列并按此列排序，再追加行数限制条件
+					int selectEndIndex = selectIndex + embedEndIndex;
+					if (embedEndIndex > 0 && embedEndIndex < length) {
+						return sql.substring(0, selectEndIndex).concat(SQLTOOL_COLUMN)
+								.concat(sql.substring(selectEndIndex, embedEndIndex)).concat(ORDER_BY)
+								.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
+					} else {
+						return sql.substring(0, selectEndIndex).concat(SQLTOOL_COLUMN)
+								.concat(sql.substring(selectEndIndex)).concat(ORDER_BY)
+								.concat(pageEnd(pageSize, currentPage));
+					}
+				}
+			}
+		}
 	}
 
-	private static String pageWrapEnd(int pageSize, long currentPage) {
-		return String.format(PAGE_WRAP_END, currentPage * pageSize, (currentPage - 1) * pageSize);
+	private static String pageEnd(int pageSize, long currentPage) {
+		return String.format(PAGE_WRAP_END, (currentPage - 1) * pageSize, pageSize);
 	}
 
 }

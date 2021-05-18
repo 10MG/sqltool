@@ -1290,7 +1290,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	private String countSql(String sql, SQLMetaData sqlMetaData) {
 		int embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex(),
 				length = sqlMetaData.getLength();
-		if (sqlMetaData.getLimitIndex() > 0) {
+		if (sqlMetaData.getLimitIndex() > 0 || sqlMetaData.getOffsetIndex() > 0) {// 含有LIMIT或OFFSET子句
 			return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
 		}
 		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex();

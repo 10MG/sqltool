@@ -10,6 +10,6 @@ public class OracleTest {
 	}
 
 	public static void doTest(Dao dao) {
-		TestUtils.testDao(dao, false);
+		TestUtils.testDao(dao);
 	}
 }

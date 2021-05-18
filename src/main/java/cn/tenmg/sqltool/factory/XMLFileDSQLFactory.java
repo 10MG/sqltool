@@ -104,7 +104,7 @@ public class XMLFileDSQLFactory extends AbstractDSQLFactory {
 							Sqltool sqltool;
 							if (file instanceof File) {
 								File f = (File) file;
-								fileName = basePath.concat(f.getName());
+								fileName = basePath.concat(File.separator).concat(f.getName());
 								log.info("Starting parse: ".concat(fileName));
 								sqltool = loader.load(f);
 							} else {

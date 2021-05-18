@@ -1,5 +1,6 @@
 package cn.tenmg.sqltool.sql.dialect;
 
+import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +105,7 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	public String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
+	public String pageSql(Connection con, String sql, List<Object> params, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
 		int selectIndex = sqlMetaData.getSelectIndex();
 		if (selectIndex < 0) {// 正常情况下selectIndex不可能<0，但如果用户的确写错了，这里直接返回错误的SQL
 			return sql;

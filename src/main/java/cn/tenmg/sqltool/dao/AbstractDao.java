@@ -1015,8 +1015,8 @@ public abstract class AbstractDao implements Dao {
 			page.setTotal(total);
 			if (total != null && total > 0) {
 				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
-				page.setRows(JdbcUtils.execute(con, id, dialect.pageSql(sql, pageSize, currentPage), params,
-						new SelectSQLExecuter<T>(type), showSql));
+				page.setRows(JdbcUtils.execute(con, id, dialect.pageSql(con, sql, params, pageSize, currentPage),
+						params, new SelectSQLExecuter<T>(type), showSql));
 			} else {
 				page.setTotalPage(0L);
 			}

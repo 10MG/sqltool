@@ -1,6 +1,9 @@
 package cn.tenmg.sqltool.sql;
 
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  * SQL方言
@@ -121,13 +124,18 @@ public interface SQLDialect extends Serializable {
 	/**
 	 * 根据SQL、页容量pageSize和当前页码currentPage生成特定数据库的分页查询SQL
 	 * 
+	 * @param con
+	 *            已开启的数据库连接
 	 * @param sql
 	 *            SQL
+	 * @param params
+	 *            查询参数集
 	 * @param pageSize
 	 *            页容量
 	 * @param currentPage
 	 *            当前页码
 	 * @return 返回分页查询SQL
+	 * @throws SQLException SQL异常
 	 */
-	String pageSql(String sql, int pageSize, long currentPage);
+	String pageSql(Connection con, String sql, List<Object> params, int pageSize, long currentPage) throws SQLException;
 }

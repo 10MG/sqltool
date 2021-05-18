@@ -1,5 +1,7 @@
 package cn.tenmg.sqltool.sql.dialect;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +37,8 @@ public class OracleDialect extends AbstractSQLDialect {
 	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = NVL(Y.${columnName}, X.${columnName})";
 
-	private static final String PAGE_WRAP_START = "SELECT * FROM (SELECT SQLTOOL.*, ROWNUM SQLTOOL_RN FROM (\n",
-			PAGE_WRAP_END = "\n) SQLTOOL WHERE ROWNUM <= %d) WHERE SQLTOOL_RN > %d";
+	private static final String PAGE_WRAP_START = "SELECT %s FROM (SELECT ROWNUM RN__, SQLTOOL.* FROM (\n",
+			PAGE_WRAP_END = "\n) SQLTOOL WHERE ROWNUM <= %d) WHERE RN__ > %d";
 
 	private static final OracleDialect INSTANCE = new OracleDialect();
 
@@ -105,11 +107,40 @@ public class OracleDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
-		return PAGE_WRAP_START.concat(sql).concat(pageWrapEnd(pageSize, currentPage));
+	String pageSql(Connection con, String sql, List<Object> params, SQLMetaData sqlMetaData, int pageSize,
+			long currentPage) throws SQLException {
+		int selectIndex = sqlMetaData.getSelectIndex();
+		if (selectIndex < 0) {// 正常情况下selectIndex不可能<0，但如果用户的确写错了，这里直接返回错误的SQL
+			return sql;
+		} else {
+			String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params));
+			int length = sqlMetaData.getLength(), embedStartIndex = sqlMetaData.getEmbedStartIndex(),
+					embedEndIndex = sqlMetaData.getEmbedEndIndex();
+			if (embedStartIndex > 0) {
+				if (embedEndIndex < length) {
+					return sql.substring(0, embedStartIndex).concat(pageStart)
+							.concat(sql.substring(embedStartIndex, embedEndIndex))
+							.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
+				} else {
+					return sql.substring(0, embedStartIndex).concat(pageStart).concat(sql.substring(embedStartIndex))
+							.concat(pageEnd(pageSize, currentPage));
+				}
+			} else {
+				if (embedEndIndex < length) {
+					return pageStart.concat(sql.substring(0, embedEndIndex)).concat(pageEnd(pageSize, currentPage))
+							.concat(sql.substring(embedEndIndex));
+				} else {
+					return pageStart.concat(sql).concat(pageEnd(pageSize, currentPage));
+				}
+			}
+		}
 	}
 
-	private static String pageWrapEnd(int pageSize, long currentPage) {
+	private static String pageStart(String[] columnLabels) {
+		return String.format(PAGE_WRAP_START, String.join(", ", columnLabels));
+	}
+
+	private static String pageEnd(int pageSize, long currentPage) {
 		return String.format(PAGE_WRAP_END, currentPage * pageSize, (currentPage - 1) * pageSize);
 	}
 

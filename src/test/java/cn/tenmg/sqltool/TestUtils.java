@@ -25,7 +25,7 @@ public abstract class TestUtils {
 
 	private static DecimalFormat df = new DecimalFormat("0000000000");
 
-	public static void testDao(Dao dao, boolean testLimit) {
+	public static void testDao(Dao dao) {
 		// 测试插入数据
 		insert(dao);
 		// 测试批量插入数据
@@ -51,7 +51,7 @@ public abstract class TestUtils {
 		// 测试多条记录查询
 		select(dao);
 		// 测试分页查询
-		page(dao, testLimit);
+		page(dao);
 		// 测试执行语句
 		execute(dao);
 		// 测试执行更新语句
@@ -714,7 +714,7 @@ public abstract class TestUtils {
 		Assert.assertEquals("June", staffInfos.get(1).getStaffName());
 	}
 
-	private static void page(Dao dao, boolean testLimit) {
+	private static void page(Dao dao) {
 		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
 
 		// 初始化数据
@@ -764,7 +764,7 @@ public abstract class TestUtils {
 		Assert.assertEquals(pageSize, page.getPageSize());
 		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
 
-		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like", currentPage, pageSize, "staffName", "1");
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_with", currentPage, pageSize, "staffName", "1");
 		Assert.assertEquals(currentPage, page.getCurrentPage());
 		Assert.assertEquals(pageSize, page.getPageSize());
 		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
@@ -789,22 +789,6 @@ public abstract class TestUtils {
 		Assert.assertEquals(pageSize, page.getPageSize());
 		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
 		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
-
-		if (testLimit) {
-			params.put("limit", pageSize);
-			page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_limit", currentPage, pageSize, params);
-			Assert.assertEquals(currentPage, page.getCurrentPage());
-			Assert.assertEquals(pageSize, page.getPageSize());
-			Assert.assertTrue(pageSize >= page.getTotal().intValue());
-
-			params.put("limit", pageSize);
-			page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_limit", currentPage, pageSize,
-					"staffName", "1", "limit", pageSize);
-			Assert.assertEquals(currentPage, page.getCurrentPage());
-			Assert.assertEquals(pageSize, page.getPageSize());
-			Assert.assertTrue(pageSize >= page.getTotal().intValue());
-		}
-
 	}
 
 	private static void execute(Dao dao) {

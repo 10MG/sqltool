@@ -8,18 +8,7 @@ public class SqltoolTest {
 	 */
 	@Test
 	public void testMySQL() {
-
 		(new MySQLTest()).doTest();
-
-		/**
-		 * 测试Oracle
-		 */
-		(new OracleTest()).doTest();
-
-		/**
-		 * 测试PostgresSQL
-		 */
-		(new PostgresSQLTest()).doTest();
 	}
 
 	/**

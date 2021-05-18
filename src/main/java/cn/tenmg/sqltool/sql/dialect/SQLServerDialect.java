@@ -1,5 +1,7 @@
 package cn.tenmg.sqltool.sql.dialect;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +31,9 @@ public class SQLServerDialect extends AbstractSQLDialect {
 	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = ISNULL(Y.${columnName}, X.${columnName})";
 
-	private static final String SQLTOOL_COLUMN = " 1 SQLTOOL_COLUMN, ",
-			SUBQUERY_START = "SELECT" + SQLTOOL_COLUMN + "SQLTOOL.* FROM (\n", SUBQUERY_END = ") SQLTOOL",
-			ORDER_BY = "\nORDER BY SQLTOOL_COLUMN", PAGE_WRAP_END = " OFFSET %d ROW FETCH NEXT %d ROW ONLY";
+	private static final String SQLTOOL_RN = " 1 RN__, ", PAGE_WRAP_START = "SELECT %s FROM ( ",
+			SUBQUERY_START = "SELECT" + SQLTOOL_RN + "SQLTOOL.* FROM (\n", SUBQUERY_END = ") SQLTOOL",
+			ORDER_BY = "\nORDER BY RN__", PAGE_WRAP_END = " OFFSET %d ROW FETCH NEXT %d ROW ONLY";
 
 	private static final SQLServerDialect INSTANCE = new SQLServerDialect();
 
@@ -96,39 +98,40 @@ public class SQLServerDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage) {
+	String pageSql(Connection con, String sql, List<Object> params, SQLMetaData sqlMetaData, int pageSize,
+			long currentPage) throws SQLException {
 		int selectIndex = sqlMetaData.getSelectIndex();
 		if (selectIndex < 0) {// 正常情况下selectIndex不可能<0，但如果用户的确写错了，这里直接返回错误的SQL
 			return sql;
 		} else {
 			int offsetIndex = sqlMetaData.getOffsetIndex(), length = sqlMetaData.getLength(),
-					embedEndIndex = sqlMetaData.getEmbedEndIndex();
+					embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex();
 			if (offsetIndex > 0) {// 有OFFSET子句，直接包装子查询并追加行数限制条件
-				int embedStartIndex = sqlMetaData.getEmbedStartIndex();
+				String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params));
 				if (embedStartIndex > 0) {
 					if (embedEndIndex < length) {
-						return sql.substring(0, embedStartIndex).concat(SUBQUERY_START)
+						return sql.substring(0, embedStartIndex).concat(pageStart).concat(SUBQUERY_START)
 								.concat(sql.substring(embedStartIndex, embedEndIndex)).concat(SUBQUERY_END)
-								.concat(ORDER_BY).concat(pageEnd(pageSize, currentPage))
+								.concat(ORDER_BY).concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END)
 								.concat(sql.substring(embedEndIndex));
 					} else {
-						return sql.substring(0, embedStartIndex).concat(SUBQUERY_START)
+						return sql.substring(0, embedStartIndex).concat(pageStart).concat(SUBQUERY_START)
 								.concat(sql.substring(embedStartIndex)).concat(SUBQUERY_END).concat(ORDER_BY)
-								.concat(pageEnd(pageSize, currentPage));
+								.concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END);
 					}
 				} else {
 					if (embedEndIndex < length) {
-						return SUBQUERY_START.concat(sql.substring(0, embedEndIndex)).concat(SUBQUERY_END)
-								.concat(ORDER_BY).concat(pageEnd(pageSize, currentPage))
-								.concat(sql.substring(embedEndIndex));
+						return pageStart.concat(SUBQUERY_START).concat(sql.substring(0, embedEndIndex))
+								.concat(SUBQUERY_END).concat(ORDER_BY).concat(pageEnd(pageSize, currentPage))
+								.concat(SUBQUERY_END).concat(sql.substring(embedEndIndex));
 					} else {
-						return SUBQUERY_START.concat(sql).concat(SUBQUERY_END).concat(ORDER_BY)
-								.concat(pageEnd(pageSize, currentPage));
+						return pageStart.concat(SUBQUERY_START).concat(sql).concat(SUBQUERY_END).concat(ORDER_BY)
+								.concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END);
 					}
 				}
-			} else {
+			} else {// 没有OFFSET子句
 				int orderByIndex = sqlMetaData.getOrderByIndex();
-				if (orderByIndex > 0) {// 没有OFFSET子句但有ORDER BY子句，直接末尾追加行数限制条件
+				if (orderByIndex > 0) {// 没有OFFSET子句但有ORDER BY子句，直接在末尾追加行数限制条件
 					if (embedEndIndex > 0 && embedEndIndex < length) {
 						return sql.substring(0, embedEndIndex).concat(pageEnd(pageSize, currentPage))
 								.concat(sql.substring(embedEndIndex));
@@ -136,19 +139,42 @@ public class SQLServerDialect extends AbstractSQLDialect {
 						return sql.concat(pageEnd(pageSize, currentPage));
 					}
 				} else {// 没有OFFSET子句也没有ORDER BY子句，增加一常量列并按此列排序，再追加行数限制条件
+					String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params));
 					int selectEndIndex = selectIndex + embedEndIndex;
-					if (embedEndIndex > 0 && embedEndIndex < length) {
-						return sql.substring(0, selectEndIndex).concat(SQLTOOL_COLUMN)
-								.concat(sql.substring(selectEndIndex, embedEndIndex)).concat(ORDER_BY)
-								.concat(pageEnd(pageSize, currentPage)).concat(sql.substring(embedEndIndex));
+					if (embedStartIndex > 0) {
+						if (embedEndIndex > 0 && embedEndIndex < length) {
+							return sql.substring(0, embedStartIndex).concat(pageStart)
+									.concat(sql.substring(embedStartIndex, selectIndex))
+									.concat(sql.substring(selectIndex, selectEndIndex)).concat(SQLTOOL_RN)
+									.concat(sql.substring(selectEndIndex, embedEndIndex)).concat(ORDER_BY)
+									.concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END)
+									.concat(sql.substring(embedEndIndex));
+						} else {
+							return sql.substring(0, embedStartIndex).concat(pageStart)
+									.concat(sql.substring(embedStartIndex, selectIndex))
+									.concat(sql.substring(selectIndex, selectEndIndex)).concat(SQLTOOL_RN)
+									.concat(sql.substring(selectEndIndex)).concat(ORDER_BY)
+									.concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END);
+						}
 					} else {
-						return sql.substring(0, selectEndIndex).concat(SQLTOOL_COLUMN)
-								.concat(sql.substring(selectEndIndex)).concat(ORDER_BY)
-								.concat(pageEnd(pageSize, currentPage));
+						if (embedEndIndex > 0 && embedEndIndex < length) {
+							return pageStart.concat(sql.substring(0, selectEndIndex)).concat(SQLTOOL_RN)
+									.concat(sql.substring(selectEndIndex, embedEndIndex)).concat(ORDER_BY)
+									.concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END)
+									.concat(sql.substring(embedEndIndex));
+						} else {
+							return pageStart.concat(sql.substring(0, selectEndIndex)).concat(SQLTOOL_RN)
+									.concat(sql.substring(selectEndIndex)).concat(ORDER_BY)
+									.concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END);
+						}
 					}
 				}
 			}
 		}
+	}
+
+	private static String pageStart(String[] columnLabels) {
+		return String.format(PAGE_WRAP_START, String.join(", ", columnLabels));
 	}
 
 	private static String pageEnd(int pageSize, long currentPage) {

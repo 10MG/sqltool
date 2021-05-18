@@ -34,14 +34,15 @@ public abstract class SQLUtils {
 	/**
 	 * 最小标准SQL长度
 	 */
-	private static final int MIN_SQL_LEN = MIN_SQL.length(),
+	private static final int MIN_SQL_LEN = MIN_SQL.length(), WITH_LEN = WITH.length(), SELECT_LEN = SELECT.length(),
+			FROM_LEN = FROM.length(),
 
 			/**
 			 * 含有GROUP BY、ORDER BY、LIMIT子句的标准SQL最小可能长度
 			 */
 			MIN_LEN = MIN_SQL.concat(" LIMIT 1").length();
 
-	private static final char BLANK_SPACE = '\u0020', LEFT_BRACKET = '\u0028', RIGHT_BRACKET = '\u0029',
+	private static final char BLANK_SPACE = '\u0020', LEFT_BRACKET = '\u0028', RIGHT_BRACKET = '\u0029', COMMA = ',',
 			SINGLE_QUOTATION_MARK = '\'', LINE_SEPARATOR[] = { '\r', '\n' };
 
 	private static final class DMLCacheHolder {
@@ -234,7 +235,10 @@ public abstract class SQLUtils {
 						sba.setLength(0);
 						sba.setLength(0);
 					} else if (deep == 0) {// 深度为0，表示主查询
-						if (c <= BLANK_SPACE) {// 遇到空白字符
+						if (c == COMMA) {// 逗号
+							sba.setLength(0);
+							sba.setLength(0);
+						} else if (c <= BLANK_SPACE) {// 遇到空白字符
 							String sa = sba.toString(), sb = sbb.toString();
 							if (i >= MIN_SQL_LEN) {
 								if (BY_REVERSE.equalsIgnoreCase(sa)) {
@@ -248,13 +252,19 @@ public abstract class SQLUtils {
 									sqlMetaData.setLimitIndex(i + 1);
 								} else if (OFFSET_REVERSE.equalsIgnoreCase(sb)) {
 									sqlMetaData.setOffsetIndex(i + 1);
-								} else if (WHERE_REVERSE.equalsIgnoreCase(sb) || ON_REVERSE.equalsIgnoreCase(sb)) {
+								} else if (WHERE_REVERSE.equalsIgnoreCase(sb)) {
+									sqlMetaData.setWhereIndex(i + 1);
+									break;
+								} else if (ON_REVERSE.equalsIgnoreCase(sb)) {
 									break;
 								} else if (FROM_REVERSE.equalsIgnoreCase(sb)) {
 									sqlMetaData.setFromIndex(i + 1);
 									break;
 								}
-							} else if (WHERE_REVERSE.equalsIgnoreCase(sb) || ON_REVERSE.equalsIgnoreCase(sb)) {
+							} else if (WHERE_REVERSE.equalsIgnoreCase(sb)) {
+								sqlMetaData.setWhereIndex(i + 1);
+								break;
+							} else if (ON_REVERSE.equalsIgnoreCase(sb)) {
 								break;
 							} else if (FROM_REVERSE.equalsIgnoreCase(sb)) {
 								sqlMetaData.setFromIndex(i + 1);
@@ -283,8 +293,11 @@ public abstract class SQLUtils {
 	 *            SQL相关数据对象
 	 */
 	private static void leftAnalysis(String sql, int len, SQLMetaData sqlMetaData) {
-		int i = 0, deep = 0, max = len, fromIndex = sqlMetaData.getFromIndex();
-		if (fromIndex > 0 && max > fromIndex) {
+		int i = 0, deep = 0, max = len, fromIndex = sqlMetaData.getFromIndex(),
+				whereIndex = sqlMetaData.getWhereIndex();
+		if (whereIndex > 0) {// 含有WHERE子句，只需扫描到WHERE之前即可
+			max = whereIndex;
+		} else if (fromIndex > 0) {// 没有WHERE子句，但有FROM子句，只需扫描到FROM之前即可
 			max = fromIndex;
 		}
 		int[] lineSplitorIndexs = { -1, -1 };
@@ -318,7 +331,7 @@ public abstract class SQLUtils {
 								decideLineSplitorIndex(lineSplitorIndexs, c, i);
 								String s = sb.toString();
 								if (SELECT.equalsIgnoreCase(s)) {
-									sqlMetaData.setSelectIndex(i - SELECT.length());
+									sqlMetaData.setSelectIndex(i - SELECT_LEN);
 									isWith = false;
 								}
 							}
@@ -353,14 +366,11 @@ public abstract class SQLUtils {
 							decideLineSplitorIndex(lineSplitorIndexs, c, i);
 							String s = sb.toString();
 							if (SELECT.equalsIgnoreCase(s)) {
-								sqlMetaData.setSelectIndex(i - SELECT.length());
-								if (fromIndex > 0) {
-									break;
-								}
+								sqlMetaData.setSelectIndex(i - SELECT_LEN);
 							} else if (FROM.equalsIgnoreCase(s)) {
-								sqlMetaData.setFromIndex(i - FROM.length());
-								break;
+								sqlMetaData.setFromIndex(i - FROM_LEN);
 							} else if (WITH.equalsIgnoreCase(s)) {
+								sqlMetaData.setWithIndex(i - WITH_LEN);
 								isWith = true;
 							}
 						}
@@ -421,16 +431,18 @@ public abstract class SQLUtils {
 	 *            /n的索引
 	 */
 	private static void setEmbedStartIndex(SQLMetaData sqlMetaData, int r, int n) {
-		int selectIndex = sqlMetaData.getSelectIndex();
-		if (r < n) {
-			if (n <= selectIndex) {
-				sqlMetaData.setEmbedStartIndex(n + 1);
-				return;
-			}
-		} else if (r > n) {
-			if (r <= selectIndex) {
-				sqlMetaData.setEmbedStartIndex(r + 1);
-				return;
+		int withIndex = sqlMetaData.getWithIndex(), selectIndex = sqlMetaData.getSelectIndex();
+		if (withIndex < 0) {
+			if (r < n) {
+				if (n <= selectIndex) {
+					sqlMetaData.setEmbedStartIndex(n + 1);
+					return;
+				}
+			} else if (r > n) {
+				if (r <= selectIndex) {
+					sqlMetaData.setEmbedStartIndex(r + 1);
+					return;
+				}
 			}
 		}
 		sqlMetaData.setEmbedStartIndex(selectIndex);

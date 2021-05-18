@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -526,6 +527,44 @@ public abstract class JdbcUtils {
 	public static final <T> void addBatch(PreparedStatement ps, T obj, List<Field> fields) throws SQLException {
 		setParams(ps, obj, fields);
 		ps.addBatch();
+	}
+
+	private static final String SELECT_ALL = "SELECT * FROM (", ALIAS = ") SQLTOOL", WHERE_IMPOSSIBLE = " WHERE 1=0";
+
+	/**
+	 * 获取SQL字段名列表
+	 * 
+	 * @param con
+	 *            已打开的数据库连接
+	 * @param sql
+	 *            SQL
+	 * @param params
+	 *            查询参数集
+	 * @return 返回SQL字段名列表
+	 * @throws SQLException
+	 *             SQL异常
+	 */
+	public static final String[] getColumnLabels(Connection con, String sql, List<Object> params) throws SQLException {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String[] columnLabels = null;
+		try {
+			ps = con.prepareStatement(SELECT_ALL.concat(sql).concat(ALIAS).concat(WHERE_IMPOSSIBLE));
+			setParams(ps, params);
+			rs = ps.executeQuery();
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			columnLabels = new String[columnCount];
+			for (int i = 1; i <= columnCount; i++) {
+				columnLabels[i - 1] = rsmd.getColumnLabel(i);
+			}
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			JdbcUtils.close(rs);
+			JdbcUtils.close(ps);
+		}
+		return columnLabels;
 	}
 
 	/**

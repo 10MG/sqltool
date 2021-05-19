@@ -113,7 +113,7 @@ public class OracleDialect extends AbstractSQLDialect {
 		if (selectIndex < 0) {// 正常情况下selectIndex不可能<0，但如果用户的确写错了，这里直接返回错误的SQL
 			return sql;
 		} else {
-			String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params));
+			String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params, sqlMetaData));
 			int length = sqlMetaData.getLength(), embedStartIndex = sqlMetaData.getEmbedStartIndex(),
 					embedEndIndex = sqlMetaData.getEmbedEndIndex();
 			if (embedStartIndex > 0) {

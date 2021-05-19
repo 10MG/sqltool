@@ -31,8 +31,8 @@ public class SQLServerDialect extends AbstractSQLDialect {
 	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = ISNULL(Y.${columnName}, X.${columnName})";
 
-	private static final String SQLTOOL_RN = " 1 RN__, ", PAGE_WRAP_START = "SELECT %s FROM ( ",
-			SUBQUERY_START = "SELECT" + SQLTOOL_RN + "SQLTOOL.* FROM (\n", SUBQUERY_END = ") SQLTOOL",
+	private static final String SQLTOOL_RN = " 1 RN__,", PAGE_WRAP_START = "SELECT %s FROM (\n",
+			SUBQUERY_START = "SELECT" + SQLTOOL_RN + "SQLTOOL.* FROM (\n", SUBQUERY_END = "\n) SQLTOOL",
 			ORDER_BY = "\nORDER BY RN__", PAGE_WRAP_END = " OFFSET %d ROW FETCH NEXT %d ROW ONLY";
 
 	private static final SQLServerDialect INSTANCE = new SQLServerDialect();
@@ -107,7 +107,7 @@ public class SQLServerDialect extends AbstractSQLDialect {
 			int offsetIndex = sqlMetaData.getOffsetIndex(), length = sqlMetaData.getLength(),
 					embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex();
 			if (offsetIndex > 0) {// 有OFFSET子句，直接包装子查询并追加行数限制条件
-				String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params));
+				String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params, sqlMetaData));
 				if (embedStartIndex > 0) {
 					if (embedEndIndex < length) {
 						return sql.substring(0, embedStartIndex).concat(pageStart).concat(SUBQUERY_START)
@@ -139,8 +139,8 @@ public class SQLServerDialect extends AbstractSQLDialect {
 						return sql.concat(pageEnd(pageSize, currentPage));
 					}
 				} else {// 没有OFFSET子句也没有ORDER BY子句，增加一常量列并按此列排序，再追加行数限制条件
-					String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params));
-					int selectEndIndex = selectIndex + embedEndIndex;
+					String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params, sqlMetaData));
+					int selectEndIndex = selectIndex + SELECT_LEN;
 					if (embedStartIndex > 0) {
 						if (embedEndIndex > 0 && embedEndIndex < length) {
 							return sql.substring(0, embedStartIndex).concat(pageStart)

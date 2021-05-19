@@ -21,6 +21,7 @@ import cn.tenmg.sqltool.sql.DMLParser;
 import cn.tenmg.sqltool.sql.MergeSQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.SQLExecuter;
+import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
@@ -529,7 +530,7 @@ public abstract class JdbcUtils {
 		ps.addBatch();
 	}
 
-	private static final String SELECT_ALL = "SELECT * FROM (", ALIAS = ") SQLTOOL", WHERE_IMPOSSIBLE = " WHERE 1=0";
+	private static final String SELECT_ALL = "SELECT * FROM (\n", ALIAS = "\n) SQLTOOL", WHERE_IMPOSSIBLE = "\nWHERE 1=0";
 
 	/**
 	 * 获取SQL字段名列表
@@ -540,16 +541,39 @@ public abstract class JdbcUtils {
 	 *            SQL
 	 * @param params
 	 *            查询参数集
+	 * @param sqlMetaData
+	 *            SQL相关数据对象
 	 * @return 返回SQL字段名列表
 	 * @throws SQLException
 	 *             SQL异常
 	 */
-	public static final String[] getColumnLabels(Connection con, String sql, List<Object> params) throws SQLException {
+	public static final String[] getColumnLabels(Connection con, String sql, List<Object> params,
+			SQLMetaData sqlMetaData) throws SQLException {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String[] columnLabels = null;
+		String script, columnLabels[] = null;
 		try {
-			ps = con.prepareStatement(SELECT_ALL.concat(sql).concat(ALIAS).concat(WHERE_IMPOSSIBLE));
+			int length = sqlMetaData.getLength(), embedStartIndex = sqlMetaData.getEmbedStartIndex(),
+					embedEndIndex = sqlMetaData.getEmbedEndIndex();
+			if (embedStartIndex > 0) {
+				if (embedEndIndex < length) {
+					script = sql.substring(0, embedStartIndex).concat(SELECT_ALL)
+							.concat(sql.substring(embedStartIndex, embedEndIndex)).concat(ALIAS)
+							.concat(WHERE_IMPOSSIBLE).concat(sql.substring(embedEndIndex));
+				} else {
+					script = sql.substring(0, embedStartIndex).concat(SELECT_ALL).concat(sql.substring(embedStartIndex))
+							.concat(ALIAS).concat(WHERE_IMPOSSIBLE);
+				}
+			} else {
+				if (embedEndIndex < length) {
+					script = SELECT_ALL.concat(sql.substring(0, embedEndIndex)).concat(ALIAS).concat(WHERE_IMPOSSIBLE)
+							.concat(sql.substring(embedEndIndex));
+				} else {
+					script = SELECT_ALL.concat(sql).concat(ALIAS).concat(WHERE_IMPOSSIBLE);
+				}
+			}
+System.out.println(script);
+			ps = con.prepareStatement(script);
 			setParams(ps, params);
 			rs = ps.executeQuery();
 			ResultSetMetaData rsmd = rs.getMetaData();

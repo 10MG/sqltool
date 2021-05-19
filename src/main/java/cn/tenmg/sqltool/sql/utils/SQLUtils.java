@@ -26,21 +26,9 @@ public abstract class SQLUtils {
 	private static final String WITH = "WITH", SELECT = "SELECT", FROM = "FROM", FROM_REVERSE = "MORF",
 			ON_REVERSE = "NO", WHERE_REVERSE = "EREHW", GROUP_REVERSE = "PUORG", ORDER_REVERSE = "REDRO",
 			BY_REVERSE = "YB", LIMIT_REVERSE = "TIMIL", OFFSET_REVERSE = "TESFFO",
-			/**
-			 * 最小标准SQL
-			 */
-			MIN_SQL = "SELECT * FROM T", SELECT_SQL_TPL = "SELECT %s FROM %s%s", SPACE_WHERE_SPACE = " WHERE ";
+			SELECT_SQL_TPL = "SELECT %s FROM %s%s", SPACE_WHERE_SPACE = " WHERE ";
 
-	/**
-	 * 最小标准SQL长度
-	 */
-	private static final int MIN_SQL_LEN = MIN_SQL.length(), WITH_LEN = WITH.length(), SELECT_LEN = SELECT.length(),
-			FROM_LEN = FROM.length(),
-
-			/**
-			 * 含有GROUP BY、ORDER BY、LIMIT子句的标准SQL最小可能长度
-			 */
-			MIN_LEN = MIN_SQL.concat(" LIMIT 1").length();
+	private static final int WITH_LEN = WITH.length(), SELECT_LEN = SELECT.length(), FROM_LEN = FROM.length();
 
 	private static final char BLANK_SPACE = '\u0020', LEFT_BRACKET = '\u0028', RIGHT_BRACKET = '\u0029', COMMA = ',',
 			SINGLE_QUOTATION_MARK = '\'', LINE_SEPARATOR[] = { '\r', '\n' };
@@ -161,15 +149,9 @@ public abstract class SQLUtils {
 	 */
 	public static SQLMetaData getSqlMetaData(String sql) {
 		SQLMetaData sqlMetaData = new SQLMetaData();
-		int len = sql.length();
-		sqlMetaData.setLength(len);
-		if (len <= MIN_SQL_LEN) {
-			return sqlMetaData;
-		}
-		if (len >= MIN_LEN) {
-			rightAnalysis(sql, len, sqlMetaData);
-		}
-		leftAnalysis(sql, len, sqlMetaData);
+		sqlMetaData.setLength(sql.length());
+		rightAnalysis(sql, sqlMetaData);
+		leftAnalysis(sql, sqlMetaData);
 		return sqlMetaData;
 	}
 
@@ -194,16 +176,14 @@ public abstract class SQLUtils {
 	 * 
 	 * @param sql
 	 *            SQL
-	 * @param len
-	 *            SQL长度
 	 * @param sqlMetaData
 	 *            SQL相关数据对象
 	 */
-	private static void rightAnalysis(String sql, int len, SQLMetaData sqlMetaData) {
-		int i = len - 1;
+	private static void rightAnalysis(String sql, SQLMetaData sqlMetaData) {
+		int length = sqlMetaData.getLength(), i = length - 1;
 		char c = sql.charAt(i);
 		boolean isString = false;
-		int deep = 0, lineSplitorIndexs[] = { len, len };
+		int deep = 0, lineSplitorIndexs[] = { length, length };
 		StringBuilder sba = new StringBuilder(), sbb = new StringBuilder();
 		while (i > 0 && c <= BLANK_SPACE) {// 跳过空白字符
 			decideLineSplitorIndex(lineSplitorIndexs, c, i);
@@ -240,27 +220,17 @@ public abstract class SQLUtils {
 							sba.setLength(0);
 						} else if (c <= BLANK_SPACE) {// 遇到空白字符
 							String sa = sba.toString(), sb = sbb.toString();
-							if (i >= MIN_SQL_LEN) {
-								if (BY_REVERSE.equalsIgnoreCase(sa)) {
-									if (GROUP_REVERSE.equalsIgnoreCase(sb)) {
-										sqlMetaData.setGroupByIndex(i + 1);
-										break;
-									} else if (ORDER_REVERSE.equalsIgnoreCase(sb)) {
-										sqlMetaData.setOrderByIndex(i + 1);
-									}
-								} else if (LIMIT_REVERSE.equalsIgnoreCase(sb)) {
-									sqlMetaData.setLimitIndex(i + 1);
-								} else if (OFFSET_REVERSE.equalsIgnoreCase(sb)) {
-									sqlMetaData.setOffsetIndex(i + 1);
-								} else if (WHERE_REVERSE.equalsIgnoreCase(sb)) {
-									sqlMetaData.setWhereIndex(i + 1);
+							if (BY_REVERSE.equalsIgnoreCase(sa)) {
+								if (GROUP_REVERSE.equalsIgnoreCase(sb)) {
+									sqlMetaData.setGroupByIndex(i + 1);
 									break;
-								} else if (ON_REVERSE.equalsIgnoreCase(sb)) {
-									break;
-								} else if (FROM_REVERSE.equalsIgnoreCase(sb)) {
-									sqlMetaData.setFromIndex(i + 1);
-									break;
+								} else if (ORDER_REVERSE.equalsIgnoreCase(sb)) {
+									sqlMetaData.setOrderByIndex(i + 1);
 								}
+							} else if (LIMIT_REVERSE.equalsIgnoreCase(sb)) {
+								sqlMetaData.setLimitIndex(i + 1);
+							} else if (OFFSET_REVERSE.equalsIgnoreCase(sb)) {
+								sqlMetaData.setOffsetIndex(i + 1);
 							} else if (WHERE_REVERSE.equalsIgnoreCase(sb)) {
 								sqlMetaData.setWhereIndex(i + 1);
 								break;
@@ -287,20 +257,18 @@ public abstract class SQLUtils {
 	 * 
 	 * @param sql
 	 *            SQL
-	 * @param len
-	 *            SQL长度
 	 * @param sqlMetaData
 	 *            SQL相关数据对象
 	 */
-	private static void leftAnalysis(String sql, int len, SQLMetaData sqlMetaData) {
-		int i = 0, deep = 0, max = len, fromIndex = sqlMetaData.getFromIndex(),
+	private static void leftAnalysis(String sql, SQLMetaData sqlMetaData) {
+		int i = 0, deep = 0, max = sqlMetaData.getLength(), fromIndex = sqlMetaData.getFromIndex(),
 				whereIndex = sqlMetaData.getWhereIndex();
 		if (whereIndex > 0) {// 含有WHERE子句，只需扫描到WHERE之前即可
 			max = whereIndex;
 		} else if (fromIndex > 0) {// 没有WHERE子句，但有FROM子句，只需扫描到FROM之前即可
 			max = fromIndex;
 		}
-		int[] lineSplitorIndexs = { -1, -1 };
+		int[] lineSplitorIndexs = { 0, 0 };
 		char[] charsBefore = { BLANK_SPACE, BLANK_SPACE };
 		boolean isString = false, isWith = false;// 是否子字符串区域，是否在WITH子句区域
 		StringBuilder sb = new StringBuilder();
@@ -319,13 +287,10 @@ public abstract class SQLUtils {
 					} else {
 						if (c == LEFT_BRACKET) {// 左括号
 							deep++;
+							sb.setLength(0);
 						} else if (c == RIGHT_BRACKET) {// 右括号
 							deep--;
-							if (deep == 0) {
-								sb.setLength(0);
-							} else if (deep < 0) {
-								break;
-							}
+							sb.setLength(0);
 						} else if (c <= BLANK_SPACE) {// 遇到空白字符
 							if (deep == 0) {
 								decideLineSplitorIndex(lineSplitorIndexs, c, i);
@@ -354,16 +319,15 @@ public abstract class SQLUtils {
 				} else {
 					if (c == LEFT_BRACKET) {// 左括号
 						deep++;
+						sb.setLength(0);
 					} else if (c == RIGHT_BRACKET) {// 右括号
 						deep--;
-						if (deep == 0) {
-							sb.setLength(0);
-						} else if (deep < 0) {
-							break;
-						}
+						sb.setLength(0);
 					} else if (c <= BLANK_SPACE) {// 遇到空白字符
 						if (deep == 0) {
-							decideLineSplitorIndex(lineSplitorIndexs, c, i);
+							if (sqlMetaData.getSelectIndex() < 0) {
+								decideLineSplitorIndex(lineSplitorIndexs, c, i);
+							}
 							String s = sb.toString();
 							if (SELECT.equalsIgnoreCase(s)) {
 								sqlMetaData.setSelectIndex(i - SELECT_LEN);
@@ -431,21 +395,18 @@ public abstract class SQLUtils {
 	 *            /n的索引
 	 */
 	private static void setEmbedStartIndex(SQLMetaData sqlMetaData, int r, int n) {
-		int withIndex = sqlMetaData.getWithIndex(), selectIndex = sqlMetaData.getSelectIndex();
-		if (withIndex < 0) {
-			if (r < n) {
-				if (n <= selectIndex) {
-					sqlMetaData.setEmbedStartIndex(n + 1);
-					return;
-				}
-			} else if (r > n) {
-				if (r <= selectIndex) {
-					sqlMetaData.setEmbedStartIndex(r + 1);
-					return;
-				}
+		if (r < n) {
+			sqlMetaData.setEmbedStartIndex(n + 1);
+		} else if (r > n) {
+			sqlMetaData.setEmbedStartIndex(r + 1);
+		} else {
+			int selectIndex = sqlMetaData.getSelectIndex();
+			if (selectIndex > 0) {
+				sqlMetaData.setEmbedStartIndex(selectIndex);
+			} else {
+				sqlMetaData.setEmbedStartIndex(0);
 			}
 		}
-		sqlMetaData.setEmbedStartIndex(selectIndex);
 	}
 
 	/**
@@ -459,19 +420,13 @@ public abstract class SQLUtils {
 	 *            /n的索引
 	 */
 	private static void setEmbedEndIndex(SQLMetaData sqlMetaData, int r, int n) {
-		int len = sqlMetaData.getLength();
 		if (r < n) {
-			if (r <= len) {
-				sqlMetaData.setEmbedEndIndex(r);
-				return;
-			}
+			sqlMetaData.setEmbedEndIndex(r);
 		} else if (r > n) {
-			if (n <= len) {
-				sqlMetaData.setEmbedEndIndex(n);
-				return;
-			}
+			sqlMetaData.setEmbedEndIndex(n);
+		} else {
+			sqlMetaData.setEmbedEndIndex(sqlMetaData.getLength());
 		}
-		sqlMetaData.setEmbedEndIndex(len);
 	}
 
 }

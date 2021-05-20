@@ -54,6 +54,11 @@ public class SQLMetaData {
 	private int offsetIndex = -1;
 
 	/**
+	 * 主查询FETCH子句索引
+	 */
+	private int fetchIndex = -1;
+
+	/**
 	 * 可嵌套查询的结束位置
 	 */
 	private int embedEndIndex = -1;
@@ -133,6 +138,14 @@ public class SQLMetaData {
 
 	public void setOffsetIndex(int offsetIndex) {
 		this.offsetIndex = offsetIndex;
+	}
+
+	public int getFetchIndex() {
+		return fetchIndex;
+	}
+
+	public void setFetchIndex(int fetchIndex) {
+		this.fetchIndex = fetchIndex;
 	}
 
 	public int getEmbedStartIndex() {

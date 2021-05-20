@@ -572,7 +572,6 @@ public abstract class JdbcUtils {
 					script = SELECT_ALL.concat(sql).concat(ALIAS).concat(WHERE_IMPOSSIBLE);
 				}
 			}
-System.out.println(script);
 			ps = con.prepareStatement(script);
 			setParams(ps, params);
 			rs = ps.executeQuery();

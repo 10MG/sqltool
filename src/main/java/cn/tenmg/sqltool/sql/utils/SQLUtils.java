@@ -25,7 +25,7 @@ public abstract class SQLUtils {
 
 	private static final String WITH = "WITH", SELECT = "SELECT", FROM = "FROM", FROM_REVERSE = "MORF",
 			ON_REVERSE = "NO", WHERE_REVERSE = "EREHW", GROUP_REVERSE = "PUORG", ORDER_REVERSE = "REDRO",
-			BY_REVERSE = "YB", LIMIT_REVERSE = "TIMIL", OFFSET_REVERSE = "TESFFO",
+			BY_REVERSE = "YB", LIMIT_REVERSE = "TIMIL", OFFSET_REVERSE = "TESFFO", FETCH_REVERSE = "HCTEF",
 			SELECT_SQL_TPL = "SELECT %s FROM %s%s", SPACE_WHERE_SPACE = " WHERE ";
 
 	private static final int WITH_LEN = WITH.length(), SELECT_LEN = SELECT.length(), FROM_LEN = FROM.length();
@@ -229,6 +229,8 @@ public abstract class SQLUtils {
 								}
 							} else if (LIMIT_REVERSE.equalsIgnoreCase(sb)) {
 								sqlMetaData.setLimitIndex(i + 1);
+							} else if (FETCH_REVERSE.equalsIgnoreCase(sb)) {
+								sqlMetaData.setFetchIndex(i + 1);
 							} else if (OFFSET_REVERSE.equalsIgnoreCase(sb)) {
 								sqlMetaData.setOffsetIndex(i + 1);
 							} else if (WHERE_REVERSE.equalsIgnoreCase(sb)) {
@@ -395,17 +397,17 @@ public abstract class SQLUtils {
 	 *            /n的索引
 	 */
 	private static void setEmbedStartIndex(SQLMetaData sqlMetaData, int r, int n) {
-		if (r < n) {
-			sqlMetaData.setEmbedStartIndex(n + 1);
-		} else if (r > n) {
-			sqlMetaData.setEmbedStartIndex(r + 1);
-		} else {
-			int selectIndex = sqlMetaData.getSelectIndex();
-			if (selectIndex > 0) {
-				sqlMetaData.setEmbedStartIndex(selectIndex);
+		int selectIndex = sqlMetaData.getSelectIndex();
+		if (selectIndex > 0) {
+			if (r < n && n < selectIndex) {
+				sqlMetaData.setEmbedStartIndex(n + 1);
+			} else if (r > n && r < selectIndex) {
+				sqlMetaData.setEmbedStartIndex(r + 1);
 			} else {
-				sqlMetaData.setEmbedStartIndex(0);
+				sqlMetaData.setEmbedStartIndex(selectIndex);
 			}
+		} else {
+			sqlMetaData.setEmbedStartIndex(0);
 		}
 	}
 

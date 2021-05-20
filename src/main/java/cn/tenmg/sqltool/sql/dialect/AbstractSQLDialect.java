@@ -1279,7 +1279,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						.concat(COUNT_END);
 			}
 		} else {
-			if (embedEndIndex > 0 && embedEndIndex < length) {
+			if (embedEndIndex < length) {
 				sql = COUNT_START.concat(sql.substring(0, embedEndIndex)).concat(COUNT_END)
 						.concat(sql.substring(embedEndIndex));
 			} else {
@@ -1305,7 +1305,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		}
 		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex();
 		int orderByIndex = sqlMetaData.getOrderByIndex(), groupByIndex = sqlMetaData.getGroupByIndex();
-		if (selectIndex >= 0 && fromIndex > selectIndex) {// 正确拼写了SELECT、FROM子句
+		if (selectIndex >= 0 && fromIndex > selectIndex && sqlMetaData.getOffsetIndex() < 0
+				&& sqlMetaData.getFetchIndex() < 0) {// 正确拼写了SELECT、FROM子句、且不包含OFFSET、FETCH子句
 			if (orderByIndex > 0) {// 含ORDER BY子句
 				if (groupByIndex < 0) {// 不含GROUP BY子句
 					if (selectIndex > 0) {

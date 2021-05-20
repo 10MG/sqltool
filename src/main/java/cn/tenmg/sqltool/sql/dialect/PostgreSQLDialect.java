@@ -131,7 +131,7 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 					}
 				}
 			} else {
-				if (embedEndIndex > 0 && embedEndIndex < length) {
+				if (embedEndIndex < length) {
 					return sql.substring(0, embedEndIndex).concat(generateLimit(pageSize, currentPage))
 							.concat(sql.substring(embedEndIndex));
 				} else {

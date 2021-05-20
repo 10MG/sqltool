@@ -132,7 +132,7 @@ public class SQLServerDialect extends AbstractSQLDialect {
 			} else {// 没有OFFSET子句
 				int orderByIndex = sqlMetaData.getOrderByIndex();
 				if (orderByIndex > 0) {// 没有OFFSET子句但有ORDER BY子句，直接在末尾追加行数限制条件
-					if (embedEndIndex > 0 && embedEndIndex < length) {
+					if (embedEndIndex < length) {
 						return sql.substring(0, embedEndIndex).concat(pageEnd(pageSize, currentPage))
 								.concat(sql.substring(embedEndIndex));
 					} else {
@@ -142,7 +142,7 @@ public class SQLServerDialect extends AbstractSQLDialect {
 					String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params, sqlMetaData));
 					int selectEndIndex = selectIndex + SELECT_LEN;
 					if (embedStartIndex > 0) {
-						if (embedEndIndex > 0 && embedEndIndex < length) {
+						if (embedEndIndex < length) {
 							return sql.substring(0, embedStartIndex).concat(pageStart)
 									.concat(sql.substring(embedStartIndex, selectIndex))
 									.concat(sql.substring(selectIndex, selectEndIndex)).concat(SQLTOOL_RN)
@@ -157,7 +157,7 @@ public class SQLServerDialect extends AbstractSQLDialect {
 									.concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END);
 						}
 					} else {
-						if (embedEndIndex > 0 && embedEndIndex < length) {
+						if (embedEndIndex < length) {
 							return pageStart.concat(sql.substring(0, selectEndIndex)).concat(SQLTOOL_RN)
 									.concat(sql.substring(selectEndIndex, embedEndIndex)).concat(ORDER_BY)
 									.concat(pageEnd(pageSize, currentPage)).concat(SUBQUERY_END)

@@ -2,14 +2,17 @@ package cn.tenmg.sqltool.sql.utils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
+import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.exception.PkNotFoundException;
 import cn.tenmg.sqltool.sql.DML;
@@ -17,6 +20,7 @@ import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
+import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.EntityUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
@@ -30,7 +34,7 @@ public abstract class SQLUtils {
 
 	private static final int WITH_LEN = WITH.length(), SELECT_LEN = SELECT.length(), FROM_LEN = FROM.length();
 
-	private static final char BLANK_SPACE = '\u0020', LEFT_BRACKET = '\u0028', RIGHT_BRACKET = '\u0029', COMMA = ',',
+	public static final char BLANK_SPACE = '\u0020', LEFT_BRACKET = '\u0028', RIGHT_BRACKET = '\u0029', COMMA = ',',
 			SINGLE_QUOTATION_MARK = '\'', LINE_SEPARATOR[] = { '\r', '\n' };
 
 	private static final class DMLCacheHolder {
@@ -141,6 +145,68 @@ public abstract class SQLUtils {
 	}
 
 	/**
+	 * 将指定的含有命名参数的源SQL及查询参数转换为JDBC可执行的SQL对象，该对象内含SQL脚本及对应的参数列表
+	 * 
+	 * @param source
+	 *            源SQL脚本
+	 * @param params
+	 *            查询参数列表
+	 * @return 返回JDBC可执行的SQL对象，含SQL脚本及对应的参数列表
+	 */
+	public static SQL toSQL(String source, Map<String, Object> params) {
+		if (params == null) {
+			params = new HashMap<String, Object>();
+		}
+		List<Object> paramList = new ArrayList<Object>();
+		if (StringUtils.isBlank(source)) {
+			return new SQL(source, paramList);
+		}
+		int len = source.length(), i = 0;
+		char a = ' ', b = ' ';
+		boolean isString = false;// 是否在字符串区域
+		boolean isParam = false;// 是否在参数区域
+		StringBuilder sql = new StringBuilder(), paramName = new StringBuilder();
+		while (i < len) {
+			char c = source.charAt(i);
+			if (isString) {
+				if (DSQLUtils.isStringEnd(a, b, c)) {// 字符串区域结束
+					isString = false;
+				}
+				sql.append(c);
+			} else {
+				if (c == SINGLE_QUOTATION_MARK) {// 字符串区域开始
+					isString = true;
+					sql.append(c);
+				} else if (isParam) {// 处于参数区域
+					if (DSQLUtils.isParamChar(c)) {
+						paramName.append(c);
+					} else {
+						isParam = false;// 参数区域结束
+						paramEnd(params, sql, paramName, paramList);
+						sql.append(c);
+					}
+				} else {
+					if (DSQLUtils.isParamBegin(b, c)) {
+						isParam = true;// 参数区域开始
+						paramName.setLength(0);
+						paramName.append(c);
+						sql.setCharAt(sql.length() - 1, '?');// “:”替换为“?”
+					} else {
+						sql.append(c);
+					}
+				}
+			}
+			a = b;
+			b = c;
+			i++;
+		}
+		if (isParam) {
+			paramEnd(params, sql, paramName, paramList);
+		}
+		return new SQL(sql.toString(), paramList);
+	}
+
+	/**
 	 * 获取SQL相关数据（不对SQL做null校验）
 	 * 
 	 * @param sql
@@ -169,6 +235,46 @@ public abstract class SQLUtils {
 	public static boolean isStringEnd(char a, char b, char c) {
 		return (a == SINGLE_QUOTATION_MARK || (a != SINGLE_QUOTATION_MARK && b != SINGLE_QUOTATION_MARK))
 				&& c == SINGLE_QUOTATION_MARK;
+	}
+
+	private static void paramEnd(Map<String, Object> params, StringBuilder sql, StringBuilder paramName,
+			List<Object> paramList) {
+		String name = paramName.toString();
+		Object value = params.get(name);
+		if (value != null) {
+			if (value instanceof Collection<?>) {
+				Collection<?> collection = (Collection<?>) value;
+				if (CollectionUtils.isEmpty(collection)) {
+					paramList.add(null);
+				} else {
+					boolean flag = false;
+					for (Iterator<?> it = collection.iterator(); it.hasNext();) {
+						if (flag) {
+							sql.append(", ?");
+						} else {
+							flag = true;
+						}
+						paramList.add(it.next());
+					}
+				}
+			} else if (value instanceof Object[]) {
+				Object[] objects = (Object[]) value;
+				if (objects.length == 0) {
+					paramList.add(null);
+				} else {
+					for (int j = 0; j < objects.length; j++) {
+						if (j > 0) {
+							sql.append(", ?");
+						}
+						paramList.add(objects[j]);
+					}
+				}
+			} else {
+				paramList.add(value);
+			}
+		} else {
+			paramList.add(value);
+		}
 	}
 
 	/**

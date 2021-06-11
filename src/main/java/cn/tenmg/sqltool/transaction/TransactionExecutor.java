@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 
 import cn.tenmg.sqltool.DSQLFactory;
 import cn.tenmg.sqltool.dsql.NamedSQL;
-import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
@@ -23,6 +22,7 @@ import cn.tenmg.sqltool.sql.parser.DeleteDMLParser;
 import cn.tenmg.sqltool.sql.parser.GetDMLParser;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
+import cn.tenmg.sqltool.sql.utils.SQLUtils;
 import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.JSONUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
@@ -491,7 +491,7 @@ public class TransactionExecutor implements Serializable {
 	}
 
 	private boolean execute(NamedSQL namedSQL) throws SQLException {
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		PreparedStatement ps = null;
 		boolean rs = false;
 		Connection con = CurrentConnectionHolder.get();
@@ -525,7 +525,7 @@ public class TransactionExecutor implements Serializable {
 	}
 
 	private int executeUpdate(NamedSQL namedSQL) throws SQLException {
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		PreparedStatement ps = null;
 		int count = 0;
 		Connection con = CurrentConnectionHolder.get();
@@ -559,13 +559,13 @@ public class TransactionExecutor implements Serializable {
 	}
 
 	private <T extends Serializable> T get(NamedSQL namedSQL, Class<T> type) throws SQLException {
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		return JdbcUtils.execute(CurrentConnectionHolder.get(), namedSQL.getId(), sql.getScript(), sql.getParams(),
 				new GetSQLExecuter<T>(type), showSql);
 	}
 
 	private <T extends Serializable> List<T> select(NamedSQL namedSQL, Class<T> type) throws SQLException {
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		return JdbcUtils.execute(CurrentConnectionHolder.get(), namedSQL.getId(), sql.getScript(), sql.getParams(),
 				new SelectSQLExecuter<T>(type), showSql);
 	}

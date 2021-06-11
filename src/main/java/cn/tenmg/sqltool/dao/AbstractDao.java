@@ -18,7 +18,6 @@ import cn.tenmg.sqltool.Dao;
 import cn.tenmg.sqltool.Transaction;
 import cn.tenmg.sqltool.data.Page;
 import cn.tenmg.sqltool.dsql.NamedSQL;
-import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 import cn.tenmg.sqltool.exception.DetermineSQLDialectException;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.exception.TransactionException;
@@ -962,7 +961,7 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	private <T> T execute(DataSource dataSource, NamedSQL namedSQL, SQLExecuter<T> sqlExecuter) {
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		return execute(dataSource, namedSQL.getId(), sql.getScript(), sql.getParams(), sqlExecuter);
 	}
 
@@ -981,7 +980,7 @@ public abstract class AbstractDao implements Dao {
 	private <T extends Serializable> Page<T> page(DataSource dataSource, NamedSQL namedSQL, long currentPage,
 			int pageSize, Class<T> type) {
 		SQLDialect dialect = getSQLDialect(dataSource);
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		String script = sql.getScript();
 		List<Object> params = sql.getParams();
 		return page(dataSource, dialect, namedSQL.getId(), script, dialect.countSql(script), params, params,
@@ -991,8 +990,8 @@ public abstract class AbstractDao implements Dao {
 	private <T extends Serializable> Page<T> page(DataSource dataSource, NamedSQL namedSQL, NamedSQL countNamedSQL,
 			long currentPage, int pageSize, Class<T> type) {
 		SQLDialect dialect = getSQLDialect(dataSource);
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
-		SQL countSql = DSQLUtils.toSQL(countNamedSQL.getScript(), countNamedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL countSql = SQLUtils.toSQL(countNamedSQL.getScript(), countNamedSQL.getParams());
 		String script = sql.getScript();
 		return page(dataSource, dialect, namedSQL.getId(), script, dialect.countSql(script), sql.getParams(),
 				countSql.getParams(), currentPage, pageSize, type);

@@ -1,17 +1,11 @@
 package cn.tenmg.sqltool.dsql.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import cn.tenmg.sqltool.dsql.NamedSQL;
-import cn.tenmg.sqltool.sql.SQL;
-import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.StringUtils;
 
@@ -230,67 +224,7 @@ public abstract class DSQLUtils {
 		return parse(source, paramsMap);
 	}
 
-	/**
-	 * 将指定的（含有命名参数的）源SQL及查询参数转换为JDBC可执行的对象（内含SQL及对应的参数列表）
-	 * 
-	 * @param source
-	 *            源SQL脚本
-	 * @param params
-	 *            查询参数列表
-	 * @return 返回JDBC可执行的SQL对象（含脚本及对应参数）
-	 */
-	public static SQL toSQL(String source, Map<String, Object> params) {
-		if (params == null) {
-			params = new HashMap<String, Object>();
-		}
-		List<Object> paramList = new ArrayList<Object>();
-		if (StringUtils.isBlank(source)) {
-			return new SQL(source, paramList);
-		}
-		int len = source.length(), i = 0;
-		char a = ' ', b = ' ';
-		boolean isString = false;// 是否在字符串区域
-		boolean isParam = false;// 是否在参数区域
-		StringBuilder sql = new StringBuilder(), paramName = new StringBuilder();
-		while (i < len) {
-			char c = source.charAt(i);
-			if (isString) {
-				if (isStringEnd(a, b, c)) {// 字符串区域结束
-					isString = false;
-				}
-				sql.append(c);
-			} else {
-				if (c == JdbcUtils.SINGLE_QUOTATION_MARK) {// 字符串区域开始
-					isString = true;
-					sql.append(c);
-				} else if (isParam) {// 处于参数区域
-					if (isParamChar(c)) {
-						paramName.append(c);
-					} else {
-						isParam = false;// 参数区域结束
-						paramEnd(params, sql, paramName, paramList);
-						sql.append(c);
-					}
-				} else {
-					if (isParamBegin(b, c)) {
-						isParam = true;// 参数区域开始
-						paramName.setLength(0);
-						paramName.append(c);
-						sql.setCharAt(sql.length() - 1, '?');// “:”替换为“?”
-					} else {
-						sql.append(c);
-					}
-				}
-			}
-			a = b;
-			b = c;
-			i++;
-		}
-		if (isParam) {
-			paramEnd(params, sql, paramName, paramList);
-		}
-		return new SQL(sql.toString(), paramList);
-	}
+
 
 	/**
 	 * 根据指定的两个前后相邻字符b和c，判断其是否为SQL参数的开始位置
@@ -310,7 +244,7 @@ public abstract class DSQLUtils {
 	 * 
 	 * @param c
 	 *            指定字符
-	 * @return 如果字符c为26个字母（大小写均可）、0-9数字、_或者-，返回true，否则返回false
+	 * @return 如果字符c为26个字母（大小写均可）、“0-9”、“_”或者“-”，返回true，否则返回false
 	 */
 	public static boolean isParamChar(char c) {
 		return is26LettersIgnoreCase(c) || (c >= '0' && c <= '9') || c == '_' || c == '-';
@@ -418,46 +352,6 @@ public abstract class DSQLUtils {
 				target.delete(i + 1, length);
 				break;
 			}
-		}
-	}
-
-	private static void paramEnd(Map<String, Object> params, StringBuilder sql, StringBuilder paramName,
-			List<Object> paramList) {
-		String name = paramName.toString();
-		Object value = params.get(name);
-		if (value != null) {
-			if (value instanceof Collection<?>) {
-				Collection<?> collection = (Collection<?>) value;
-				if (CollectionUtils.isEmpty(collection)) {
-					paramList.add(null);
-				} else {
-					boolean flag = false;
-					for (Iterator<?> it = collection.iterator(); it.hasNext();) {
-						if (flag) {
-							sql.append(", ?");
-						} else {
-							flag = true;
-						}
-						paramList.add(it.next());
-					}
-				}
-			} else if (value instanceof Object[]) {
-				Object[] objects = (Object[]) value;
-				if (objects.length == 0) {
-					paramList.add(null);
-				} else {
-					for (int j = 0; j < objects.length; j++) {
-						if (j > 0) {
-							sql.append(", ?");
-						}
-						paramList.add(objects[j]);
-					}
-				}
-			} else {
-				paramList.add(value);
-			}
-		} else {
-			paramList.add(value);
 		}
 	}
 

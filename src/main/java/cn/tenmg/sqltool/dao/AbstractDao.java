@@ -27,6 +27,7 @@ import cn.tenmg.sqltool.sql.MergeSQL;
 import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.SQLExecuter;
+import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.executer.ExecuteSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.ExecuteUpdateSQLExecuter;
@@ -983,8 +984,7 @@ public abstract class AbstractDao implements Dao {
 		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		String script = sql.getScript();
 		List<Object> params = sql.getParams();
-		return page(dataSource, dialect, namedSQL.getId(), script, dialect.countSql(script), params, params,
-				currentPage, pageSize, type);
+		return page(dataSource, dialect, namedSQL.getId(), script, params, params, currentPage, pageSize, type);
 	}
 
 	private <T extends Serializable> Page<T> page(DataSource dataSource, NamedSQL namedSQL, NamedSQL countNamedSQL,
@@ -993,13 +993,12 @@ public abstract class AbstractDao implements Dao {
 		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		SQL countSql = SQLUtils.toSQL(countNamedSQL.getScript(), countNamedSQL.getParams());
 		String script = sql.getScript();
-		return page(dataSource, dialect, namedSQL.getId(), script, dialect.countSql(script), sql.getParams(),
-				countSql.getParams(), currentPage, pageSize, type);
+		return page(dataSource, dialect, namedSQL.getId(), script, sql.getParams(), countSql.getParams(), currentPage,
+				pageSize, type);
 	}
 
 	private <T extends Serializable> Page<T> page(DataSource dataSource, SQLDialect dialect, String id, String sql,
-			String countSql, List<Object> params, List<Object> countParams, long currentPage, int pageSize,
-			Class<T> type) {
+			List<Object> params, List<Object> countParams, long currentPage, int pageSize, Class<T> type) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
 		page.setCurrentPage(currentPage);
@@ -1009,13 +1008,15 @@ public abstract class AbstractDao implements Dao {
 			con.setAutoCommit(true);
 			con.setReadOnly(true);
 			boolean showSql = isShowSql();
-			Long total = JdbcUtils.execute(con, id, countSql, countParams, LongResultSQLExecuter.getInstance(),
-					showSql);
+			SQLMetaData sqlMetaData = SQLUtils.getSQLMetaData(sql);
+			Long total = JdbcUtils.execute(con, id, dialect.countSql(sql, sqlMetaData), countParams,
+					LongResultSQLExecuter.getInstance(), showSql);
 			page.setTotal(total);
 			if (total != null && total > 0) {
 				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
-				page.setRows(JdbcUtils.execute(con, id, dialect.pageSql(con, sql, params, pageSize, currentPage),
-						params, new SelectSQLExecuter<T>(type), showSql));
+				page.setRows(JdbcUtils.execute(con, id,
+						dialect.pageSql(con, sql, params, sqlMetaData, pageSize, currentPage), params,
+						new SelectSQLExecuter<T>(type), showSql));
 			} else {
 				page.setTotalPage(0L);
 			}

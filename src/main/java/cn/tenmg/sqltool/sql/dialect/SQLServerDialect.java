@@ -98,7 +98,7 @@ public class SQLServerDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	String pageSql(Connection con, String sql, List<Object> params, SQLMetaData sqlMetaData, int pageSize,
+	public String pageSql(Connection con, String sql, List<Object> params, SQLMetaData sqlMetaData, int pageSize,
 			long currentPage) throws SQLException {
 		int selectIndex = sqlMetaData.getSelectIndex();
 		if (selectIndex < 0) {// 正常情况下selectIndex不可能<0，但如果用户的确写错了，这里直接返回错误的SQL

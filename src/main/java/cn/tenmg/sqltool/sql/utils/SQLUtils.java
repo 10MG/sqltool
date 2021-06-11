@@ -169,7 +169,7 @@ public abstract class SQLUtils {
 		while (i < len) {
 			char c = source.charAt(i);
 			if (isString) {
-				if (DSQLUtils.isStringEnd(a, b, c)) {// 字符串区域结束
+				if (isStringEnd(a, b, c)) {// 字符串区域结束
 					isString = false;
 				}
 				sql.append(c);
@@ -213,7 +213,7 @@ public abstract class SQLUtils {
 	 *            SQL
 	 * @return 返回SQL相关数据对象
 	 */
-	public static SQLMetaData getSqlMetaData(String sql) {
+	public static SQLMetaData getSQLMetaData(String sql) {
 		SQLMetaData sqlMetaData = new SQLMetaData();
 		sqlMetaData.setLength(sql.length());
 		rightAnalysis(sql, sqlMetaData);
@@ -287,7 +287,7 @@ public abstract class SQLUtils {
 	 */
 	private static void rightAnalysis(String sql, SQLMetaData sqlMetaData) {
 		int length = sqlMetaData.getLength(), i = length - 1;
-		char c = sql.charAt(i);
+		char c = sql.charAt(i), b = BLANK_SPACE;
 		boolean isString = false;
 		int deep = 0, lineSplitorIndexs[] = { length, length };
 		StringBuilder sba = new StringBuilder(), sbb = new StringBuilder();
@@ -299,7 +299,7 @@ public abstract class SQLUtils {
 		while (i > 0) {
 			if (isString) {
 				if (i > 2) {
-					char b = sql.charAt(--i);
+					b = sql.charAt(--i);
 					if (i > 0 && isStringEnd(sql.charAt(i - 1), b, c)) {// 字符串区域结束
 						isString = false;
 					}
@@ -350,10 +350,18 @@ public abstract class SQLUtils {
 							}
 							sba = sbb;
 							sbb = new StringBuilder();
+						} else if (c == JdbcUtils.PARAM_MARK || DSQLUtils.isParamBegin(c, b)) {
+							if (sqlMetaData.getOrderByIndex() < 0) {
+								sqlMetaData.setHasParamsAfterOrderBy(true);
+							}
+							sbb.setLength(0);
+							sba = sbb;
+							sbb = new StringBuilder();
 						} else {
 							sbb.append(c);// 拼接单词
 						}
 					}
+					b = c;
 					c = sql.charAt(--i);
 				}
 			}

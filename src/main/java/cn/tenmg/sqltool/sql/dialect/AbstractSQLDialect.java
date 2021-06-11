@@ -1,8 +1,6 @@
 package cn.tenmg.sqltool.sql.dialect;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +21,6 @@ import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
-import cn.tenmg.sqltool.sql.utils.SQLUtils;
 import cn.tenmg.sqltool.utils.EntityUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.PlaceHolderUtils;
@@ -126,28 +123,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	 * @return 返回非空时SET子句模板
 	 */
 	abstract String getSetIfNotNullTemplate();
-
-	/**
-	 * 根据SQL、预先分析好的SQL相关数据对象、页容量pageSize和当前页码currentPage生成特定数据库的分页查询SQL
-	 * 
-	 * @param con
-	 *            已开启的数据库连接
-	 * @param sql
-	 *            SQL
-	 * @param params
-	 *            查询参数集
-	 * @param sqlMetaData
-	 *            预先分析好的SQL相关数据对象
-	 * @param pageSize
-	 *            页容量
-	 * @param currentPage
-	 *            当前页码
-	 * @return 返回分页查询SQL
-	 * @throws SQLException
-	 *             SQL异常
-	 */
-	abstract String pageSql(Connection con, String sql, List<Object> params, SQLMetaData sqlMetaData, int pageSize,
-			long currentPage) throws SQLException;
 
 	@Override
 	public <T> UpdateSQL update(Class<T> type) {
@@ -1245,14 +1220,52 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
-	public String countSql(String sql) {
-		return countSql(sql, SQLUtils.getSqlMetaData(sql));
-	}
-
-	@Override
-	public String pageSql(Connection con, String sql, List<Object> params, int pageSize, long currentPage)
-			throws SQLException {
-		return pageSql(con, sql, params, SQLUtils.getSqlMetaData(sql), pageSize, currentPage);
+	public String countSql(String sql, SQLMetaData sqlMetaData) {
+		int embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex(),
+				length = sqlMetaData.getLength();
+		if (sqlMetaData.getLimitIndex() > 0 || sqlMetaData.getOffsetIndex() > 0) {// 含有LIMIT或OFFSET子句
+			return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
+		}
+		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex();
+		int orderByIndex = sqlMetaData.getOrderByIndex(), groupByIndex = sqlMetaData.getGroupByIndex();
+		if (selectIndex >= 0 && fromIndex > selectIndex && sqlMetaData.getOffsetIndex() < 0
+				&& sqlMetaData.getFetchIndex() < 0) {// 正确拼写了SELECT、FROM子句、且不包含OFFSET、FETCH子句
+			if (orderByIndex > 0) {// 含ORDER BY子句
+				if (groupByIndex < 0) {// 不含GROUP BY子句
+					if (selectIndex > 0) {
+						if (sqlMetaData.isHasParamsAfterOrderBy()) {
+							return sql.substring(0, selectIndex)
+									.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
+									.concat(sql.substring(fromIndex));
+						} else {
+							return sql.substring(0, selectIndex)
+									.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
+									.concat(sql.substring(fromIndex, orderByIndex));
+						}
+					} else {
+						if (sqlMetaData.isHasParamsAfterOrderBy()) {
+							return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
+									.concat(sql.substring(fromIndex));
+						} else {
+							return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
+									.concat(sql.substring(fromIndex, orderByIndex));
+						}
+					}
+				}
+			} else {// 不含ORDER BY子句
+				if (groupByIndex < 0) {// 不含GROUP BY子句
+					if (selectIndex > 0) {
+						return sql.substring(0, selectIndex)
+								.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
+								.concat(sql.substring(fromIndex));
+					} else {
+						return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
+								.concat(sql.substring(fromIndex));
+					}
+				}
+			}
+		}
+		return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
 	}
 
 	/**
@@ -1287,51 +1300,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			}
 		}
 		return sql;
-	}
-
-	/**
-	 * * 包装查询SQL为查询总记录数的SQL
-	 * 
-	 * @param sql
-	 *            查询SQL
-	 * @param sqlMetaData
-	 * @return 返回查询总记录数的SQL
-	 */
-	private String countSql(String sql, SQLMetaData sqlMetaData) {
-		int embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex(),
-				length = sqlMetaData.getLength();
-		if (sqlMetaData.getLimitIndex() > 0 || sqlMetaData.getOffsetIndex() > 0) {// 含有LIMIT或OFFSET子句
-			return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
-		}
-		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex();
-		int orderByIndex = sqlMetaData.getOrderByIndex(), groupByIndex = sqlMetaData.getGroupByIndex();
-		if (selectIndex >= 0 && fromIndex > selectIndex && sqlMetaData.getOffsetIndex() < 0
-				&& sqlMetaData.getFetchIndex() < 0) {// 正确拼写了SELECT、FROM子句、且不包含OFFSET、FETCH子句
-			if (orderByIndex > 0) {// 含ORDER BY子句
-				if (groupByIndex < 0) {// 不含GROUP BY子句
-					if (selectIndex > 0) {
-						return sql.substring(0, selectIndex)
-								.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
-								.concat(sql.substring(fromIndex, orderByIndex));
-					} else {
-						return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
-								.concat(sql.substring(fromIndex, orderByIndex));
-					}
-				}
-			} else {// 不含ORDER BY子句
-				if (groupByIndex < 0) {// 不含GROUP BY子句
-					if (selectIndex > 0) {
-						return sql.substring(0, selectIndex)
-								.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
-								.concat(sql.substring(fromIndex));
-					} else {
-						return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
-								.concat(sql.substring(fromIndex));
-					}
-				}
-			}
-		}
-		return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
 	}
 
 }

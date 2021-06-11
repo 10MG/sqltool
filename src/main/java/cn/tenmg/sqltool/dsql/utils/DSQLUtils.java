@@ -89,10 +89,10 @@ public abstract class DSQLUtils {
 							}
 						}
 						if (inValidMap.get(deep) == null) {// 不含无效参数
-							processDsql(params, sql, dsqlMap, usedParams, inValidMap, validMap, contexts, deep, false);
+							processDSQL(params, sql, dsqlMap, usedParams, inValidMap, validMap, contexts, deep, false);
 							deep--;
 						} else if (deep > 0) {
-							processDsql(params, sql, dsqlMap, usedParams, inValidMap, validMap, contexts, deep, true);
+							processDSQL(params, sql, dsqlMap, usedParams, inValidMap, validMap, contexts, deep, true);
 							deep--;
 						}
 						if (deep < 1) {// 已离开动态SQL区域
@@ -224,8 +224,6 @@ public abstract class DSQLUtils {
 		return parse(source, paramsMap);
 	}
 
-
-
 	/**
 	 * 根据指定的两个前后相邻字符b和c，判断其是否为SQL参数的开始位置
 	 * 
@@ -289,7 +287,7 @@ public abstract class DSQLUtils {
 	 * @param emptyWhenNoMacro
 	 *            DSQL片段没有宏时目标SQL为空白字符串
 	 */
-	private static final void processDsql(Map<String, Object> params, StringBuilder sql,
+	private static final void processDSQL(Map<String, Object> params, StringBuilder sql,
 			HashMap<Integer, StringBuilder> dsqlMap, Map<String, Object> usedParams,
 			HashMap<Integer, Boolean> inValidMap, HashMap<Integer, Set<String>> validMap,
 			HashMap<Integer, Map<String, Object>> contexts, int deep, boolean emptyWhenNoMacro) {

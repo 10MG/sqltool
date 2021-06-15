@@ -27,4 +27,12 @@ public class SqltoolTest {
 		(new PostgresSQLTest()).doTest();
 	}
 
+	/**
+	 * 测试SQLServer
+	 */
+	@Test
+	public void testSQLServer() {
+		(new SQLServerTest()).doTest();
+	}
+
 }

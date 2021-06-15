@@ -3,7 +3,7 @@ package cn.tenmg.sqltool.sql;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Map;
 
 /**
  * SQL方言
@@ -142,6 +142,6 @@ public interface SQLDialect extends Serializable {
 	 * @throws SQLException
 	 *             SQL异常
 	 */
-	String pageSql(Connection con, String sql, List<Object> params, SQLMetaData sqlMetaData, int pageSize,
+	String pageSql(Connection con, String sql, Map<String, ?> params, SQLMetaData sqlMetaData, int pageSize,
 			long currentPage) throws SQLException;
 }

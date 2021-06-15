@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.tenmg.sqltool.sql.SQLMetaData;
+import cn.tenmg.sqltool.sql.utils.SQLUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 
 public class SQLServerDialect extends AbstractSQLDialect {
@@ -19,9 +20,9 @@ public class SQLServerDialect extends AbstractSQLDialect {
 	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
 			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = ISNULL(?, ${columnName})";
 
-	private static final String INSERT_IF_NOT_EXISTS = "MERGE INTO ${tableName} X USING (SELECT ${fields}) Y ON (${condition}) WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})";
+	private static final String INSERT_IF_NOT_EXISTS = "MERGE INTO ${tableName} X USING (SELECT ${fields}) Y ON (${condition}) WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values});";
 
-	private static final String SAVE = "MERGE INTO ${tableName} X USING (SELECT ${fields}) Y ON (${condition}) WHEN MATCHED THEN UPDATE SET ${sets} WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})";
+	private static final String SAVE = "MERGE INTO ${tableName} X USING (SELECT ${fields}) Y ON (${condition}) WHEN MATCHED THEN UPDATE SET ${sets} WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values});";
 
 	private static final String FIELDS = "fields", CONDITION = "condition", SPACE = " ";
 
@@ -98,7 +99,7 @@ public class SQLServerDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	public String pageSql(Connection con, String sql, List<Object> params, SQLMetaData sqlMetaData, int pageSize,
+	public String pageSql(Connection con, String sql, Map<String, ?> params, SQLMetaData sqlMetaData, int pageSize,
 			long currentPage) throws SQLException {
 		int selectIndex = sqlMetaData.getSelectIndex();
 		if (selectIndex < 0) {// 正常情况下selectIndex不可能<0，但如果用户的确写错了，这里直接返回错误的SQL
@@ -107,7 +108,7 @@ public class SQLServerDialect extends AbstractSQLDialect {
 			int offsetIndex = sqlMetaData.getOffsetIndex(), length = sqlMetaData.getLength(),
 					embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex();
 			if (offsetIndex > 0) {// 有OFFSET子句，直接包装子查询并追加行数限制条件
-				String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params, sqlMetaData));
+				String pageStart = pageStart(SQLUtils.getColumnLabels(con, sql, params, sqlMetaData));
 				if (embedStartIndex > 0) {
 					if (embedEndIndex < length) {
 						return sql.substring(0, embedStartIndex).concat(pageStart).concat(SUBQUERY_START)
@@ -139,7 +140,7 @@ public class SQLServerDialect extends AbstractSQLDialect {
 						return sql.concat(pageEnd(pageSize, currentPage));
 					}
 				} else {// 没有OFFSET子句也没有ORDER BY子句，增加一常量列并按此列排序，再追加行数限制条件
-					String pageStart = pageStart(JdbcUtils.getColumnLabels(con, sql, params, sqlMetaData));
+					String pageStart = pageStart(SQLUtils.getColumnLabels(con, sql, params, sqlMetaData));
 					int selectEndIndex = selectIndex + SELECT_LEN;
 					if (embedStartIndex > 0) {
 						if (embedEndIndex < length) {

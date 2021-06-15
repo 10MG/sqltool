@@ -1,6 +1,11 @@
 package cn.tenmg.sqltool.sql.utils;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -153,7 +158,7 @@ public abstract class SQLUtils {
 	 *            查询参数列表
 	 * @return 返回JDBC可执行的SQL对象，含SQL脚本及对应的参数列表
 	 */
-	public static SQL toSQL(String source, Map<String, Object> params) {
+	public static SQL toSQL(String source, Map<String, ?> params) {
 		if (params == null) {
 			params = new HashMap<String, Object>();
 		}
@@ -237,7 +242,69 @@ public abstract class SQLUtils {
 				&& c == SINGLE_QUOTATION_MARK;
 	}
 
-	private static void paramEnd(Map<String, Object> params, StringBuilder sql, StringBuilder paramName,
+	private static final String SELECT_ALL = "SELECT * FROM (\n", ALIAS = "\n) SQLTOOL",
+			WHERE_IMPOSSIBLE = "\nWHERE 1=0";
+
+	/**
+	 * 获取SQL字段名列表
+	 * 
+	 * @param con
+	 *            已打开的数据库连接
+	 * @param sql
+	 *            SQL
+	 * @param params
+	 *            查询参数集
+	 * @param sqlMetaData
+	 *            SQL相关数据对象
+	 * @return 返回SQL字段名列表
+	 * @throws SQLException
+	 *             SQL异常
+	 */
+	public static final String[] getColumnLabels(Connection con, String sql, Map<String, ?> params,
+			SQLMetaData sqlMetaData) throws SQLException {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String script, columnLabels[] = null;
+		try {
+			int length = sqlMetaData.getLength(), embedStartIndex = sqlMetaData.getEmbedStartIndex(),
+					embedEndIndex = sqlMetaData.getEmbedEndIndex();
+			if (embedStartIndex > 0) {
+				if (embedEndIndex < length) {
+					script = sql.substring(0, embedStartIndex).concat(SELECT_ALL)
+							.concat(sql.substring(embedStartIndex, embedEndIndex)).concat(ALIAS)
+							.concat(WHERE_IMPOSSIBLE).concat(sql.substring(embedEndIndex));
+				} else {
+					script = sql.substring(0, embedStartIndex).concat(SELECT_ALL).concat(sql.substring(embedStartIndex))
+							.concat(ALIAS).concat(WHERE_IMPOSSIBLE);
+				}
+			} else {
+				if (embedEndIndex < length) {
+					script = SELECT_ALL.concat(sql.substring(0, embedEndIndex)).concat(ALIAS).concat(WHERE_IMPOSSIBLE)
+							.concat(sql.substring(embedEndIndex));
+				} else {
+					script = SELECT_ALL.concat(sql).concat(ALIAS).concat(WHERE_IMPOSSIBLE);
+				}
+			}
+			SQL SQL = toSQL(script, params);
+			ps = con.prepareStatement(SQL.getScript());
+			JdbcUtils.setParams(ps, SQL.getParams());
+			rs = ps.executeQuery();
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			columnLabels = new String[columnCount];
+			for (int i = 1; i <= columnCount; i++) {
+				columnLabels[i - 1] = rsmd.getColumnLabel(i);
+			}
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			JdbcUtils.close(rs);
+			JdbcUtils.close(ps);
+		}
+		return columnLabels;
+	}
+
+	private static void paramEnd(Map<String, ?> params, StringBuilder sql, StringBuilder paramName,
 			List<Object> paramList) {
 		String name = paramName.toString();
 		Object value = params.get(name);
@@ -287,7 +354,7 @@ public abstract class SQLUtils {
 	 */
 	private static void rightAnalysis(String sql, SQLMetaData sqlMetaData) {
 		int length = sqlMetaData.getLength(), i = length - 1;
-		char c = sql.charAt(i), b = BLANK_SPACE;
+		char c = sql.charAt(i);
 		boolean isString = false;
 		int deep = 0, lineSplitorIndexs[] = { length, length };
 		StringBuilder sba = new StringBuilder(), sbb = new StringBuilder();
@@ -299,7 +366,7 @@ public abstract class SQLUtils {
 		while (i > 0) {
 			if (isString) {
 				if (i > 2) {
-					b = sql.charAt(--i);
+					char b = sql.charAt(--i);
 					if (i > 0 && isStringEnd(sql.charAt(i - 1), b, c)) {// 字符串区域结束
 						isString = false;
 					}
@@ -350,18 +417,10 @@ public abstract class SQLUtils {
 							}
 							sba = sbb;
 							sbb = new StringBuilder();
-						} else if (c == JdbcUtils.PARAM_MARK || DSQLUtils.isParamBegin(c, b)) {
-							if (sqlMetaData.getOrderByIndex() < 0) {
-								sqlMetaData.setHasParamsAfterOrderBy(true);
-							}
-							sbb.setLength(0);
-							sba = sbb;
-							sbb = new StringBuilder();
 						} else {
 							sbb.append(c);// 拼接单词
 						}
 					}
-					b = c;
 					c = sql.charAt(--i);
 				}
 			}
@@ -511,14 +570,18 @@ public abstract class SQLUtils {
 	 *            /n的索引
 	 */
 	private static void setEmbedStartIndex(SQLMetaData sqlMetaData, int r, int n) {
-		int selectIndex = sqlMetaData.getSelectIndex();
+		int withIndex = sqlMetaData.getWithIndex(), selectIndex = sqlMetaData.getSelectIndex();
 		if (selectIndex > 0) {
-			if (r < n && n < selectIndex) {
-				sqlMetaData.setEmbedStartIndex(n + 1);
-			} else if (r > n && r < selectIndex) {
-				sqlMetaData.setEmbedStartIndex(r + 1);
-			} else {
+			if (withIndex >= 0 && selectIndex > withIndex) {
 				sqlMetaData.setEmbedStartIndex(selectIndex);
+			} else {
+				if (r < n && n < selectIndex) {
+					sqlMetaData.setEmbedStartIndex(n + 1);
+				} else if (r > n && r < selectIndex) {
+					sqlMetaData.setEmbedStartIndex(r + 1);
+				} else {
+					sqlMetaData.setEmbedStartIndex(selectIndex);
+				}
 			}
 		} else {
 			sqlMetaData.setEmbedStartIndex(0);

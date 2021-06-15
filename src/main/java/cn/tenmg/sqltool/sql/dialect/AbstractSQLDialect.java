@@ -1223,46 +1223,24 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	public String countSql(String sql, SQLMetaData sqlMetaData) {
 		int embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex(),
 				length = sqlMetaData.getLength();
-		if (sqlMetaData.getLimitIndex() > 0 || sqlMetaData.getOffsetIndex() > 0) {// 含有LIMIT或OFFSET子句
+		if (sqlMetaData.getLimitIndex() > 0 || sqlMetaData.getOffsetIndex() > 0 || sqlMetaData.getFetchIndex() > 0
+				|| sqlMetaData.getGroupByIndex() > 0) {// 含有LIMIT、OFFSET、FETCH或GROUP BY子句
 			return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
 		}
-		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex();
-		int orderByIndex = sqlMetaData.getOrderByIndex(), groupByIndex = sqlMetaData.getGroupByIndex();
-		if (selectIndex >= 0 && fromIndex > selectIndex && sqlMetaData.getOffsetIndex() < 0
-				&& sqlMetaData.getFetchIndex() < 0) {// 正确拼写了SELECT、FROM子句、且不包含OFFSET、FETCH子句
+		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex(),
+				orderByIndex = sqlMetaData.getOrderByIndex();
+		if (selectIndex >= 0 && fromIndex > selectIndex) {// 正确拼写了SELECT、FROM子句、且不包含LIMIT、OFFSET、FETCH或GROUP BY子句
 			if (orderByIndex > 0) {// 含ORDER BY子句
-				if (groupByIndex < 0) {// 不含GROUP BY子句
-					if (selectIndex > 0) {
-						if (sqlMetaData.isHasParamsAfterOrderBy()) {
-							return sql.substring(0, selectIndex)
-									.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
-									.concat(sql.substring(fromIndex));
-						} else {
-							return sql.substring(0, selectIndex)
-									.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
-									.concat(sql.substring(fromIndex, orderByIndex));
-						}
-					} else {
-						if (sqlMetaData.isHasParamsAfterOrderBy()) {
-							return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
-									.concat(sql.substring(fromIndex));
-						} else {
-							return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
-									.concat(sql.substring(fromIndex, orderByIndex));
-						}
-					}
+				if (selectIndex > 0) {
+					return sql.substring(0, selectIndex).concat(sql.substring(selectIndex, selectIndex + SELECT_LEN))
+							.concat(COUNT).concat(sql.substring(fromIndex, orderByIndex));
+				} else {
+					return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
+							.concat(sql.substring(fromIndex, orderByIndex));
 				}
-			} else {// 不含ORDER BY子句
-				if (groupByIndex < 0) {// 不含GROUP BY子句
-					if (selectIndex > 0) {
-						return sql.substring(0, selectIndex)
-								.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
-								.concat(sql.substring(fromIndex));
-					} else {
-						return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
-								.concat(sql.substring(fromIndex));
-					}
-				}
+			} else {
+				return sql.substring(0, selectIndex).concat(sql.substring(selectIndex, selectIndex + SELECT_LEN))
+						.concat(COUNT).concat(sql.substring(fromIndex));
 			}
 		}
 		return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);

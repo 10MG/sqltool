@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import cn.tenmg.sqltool.sql.DMLParser;
 import cn.tenmg.sqltool.sql.MergeSQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.SQLExecuter;
-import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
@@ -528,66 +526,6 @@ public abstract class JdbcUtils {
 	public static final <T> void addBatch(PreparedStatement ps, T obj, List<Field> fields) throws SQLException {
 		setParams(ps, obj, fields);
 		ps.addBatch();
-	}
-
-	private static final String SELECT_ALL = "SELECT * FROM (\n", ALIAS = "\n) SQLTOOL", WHERE_IMPOSSIBLE = "\nWHERE 1=0";
-
-	/**
-	 * 获取SQL字段名列表
-	 * 
-	 * @param con
-	 *            已打开的数据库连接
-	 * @param sql
-	 *            SQL
-	 * @param params
-	 *            查询参数集
-	 * @param sqlMetaData
-	 *            SQL相关数据对象
-	 * @return 返回SQL字段名列表
-	 * @throws SQLException
-	 *             SQL异常
-	 */
-	public static final String[] getColumnLabels(Connection con, String sql, List<Object> params,
-			SQLMetaData sqlMetaData) throws SQLException {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String script, columnLabels[] = null;
-		try {
-			int length = sqlMetaData.getLength(), embedStartIndex = sqlMetaData.getEmbedStartIndex(),
-					embedEndIndex = sqlMetaData.getEmbedEndIndex();
-			if (embedStartIndex > 0) {
-				if (embedEndIndex < length) {
-					script = sql.substring(0, embedStartIndex).concat(SELECT_ALL)
-							.concat(sql.substring(embedStartIndex, embedEndIndex)).concat(ALIAS)
-							.concat(WHERE_IMPOSSIBLE).concat(sql.substring(embedEndIndex));
-				} else {
-					script = sql.substring(0, embedStartIndex).concat(SELECT_ALL).concat(sql.substring(embedStartIndex))
-							.concat(ALIAS).concat(WHERE_IMPOSSIBLE);
-				}
-			} else {
-				if (embedEndIndex < length) {
-					script = SELECT_ALL.concat(sql.substring(0, embedEndIndex)).concat(ALIAS).concat(WHERE_IMPOSSIBLE)
-							.concat(sql.substring(embedEndIndex));
-				} else {
-					script = SELECT_ALL.concat(sql).concat(ALIAS).concat(WHERE_IMPOSSIBLE);
-				}
-			}
-			ps = con.prepareStatement(script);
-			setParams(ps, params);
-			rs = ps.executeQuery();
-			ResultSetMetaData rsmd = rs.getMetaData();
-			int columnCount = rsmd.getColumnCount();
-			columnLabels = new String[columnCount];
-			for (int i = 1; i <= columnCount; i++) {
-				columnLabels[i - 1] = rsmd.getColumnLabel(i);
-			}
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			JdbcUtils.close(rs);
-			JdbcUtils.close(ps);
-		}
-		return columnLabels;
 	}
 
 	/**

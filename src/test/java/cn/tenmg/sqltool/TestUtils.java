@@ -769,6 +769,13 @@ public abstract class TestUtils {
 		Assert.assertEquals(pageSize, page.getPageSize());
 		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
 
+		params.put("defualtPosition", "Salesperson");
+		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_has_param", currentPage, pageSize, params);
+		Assert.assertEquals(currentPage, page.getCurrentPage());
+		Assert.assertEquals(pageSize, page.getPageSize());
+		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
 				"find_staff_info_staff_name_like", currentPage, pageSize, params);
 		Assert.assertEquals(currentPage, page.getCurrentPage());

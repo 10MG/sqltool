@@ -75,6 +75,17 @@
 		</script>
 	</dsql>
 
+	<dsql id="find_staff_info_staff_name_like_order_by_has_param">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY CASE WHEN POSITION IS NULL THEN :defualtPosition ELSE POSITION END, STAFF_NAME
+			]]>
+		</script>
+	</dsql>
+
 	<dsql id="find_staff_info_staff_name_like_limit">
 		<converter>
 			<wrap-string params="staffName" formatter="%${value}%" />

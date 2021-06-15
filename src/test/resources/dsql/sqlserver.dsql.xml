@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sqltool xmlns="http://www.10mg.cn/schema/sqltool"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.10mg.cn/schema/sqltool http://www.10mg.cn/schema/sqltool.xsd">
+	<dsql id="sqlserver_offset_fetch">	
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				SELECT
+				  staff_id,
+				  staff_name
+				FROM STAFF_INFO
+				WHERE STAFF_NAME LIKE :staffName
+				ORDER BY STAFF_NAME
+				OFFSET 0 ROW FETCH NEXT :offset ROW ONLY
+			]]>
+		</script>
+	</dsql>
+	
+	<dsql id="sqlserver_offset">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				SELECT
+				  staff_id,
+				  staff_name
+				FROM STAFF_INFO
+				WHERE STAFF_NAME LIKE :staffName
+				ORDER BY STAFF_NAME
+				OFFSET 10 ROW
+			]]>
+		</script>
+	</dsql>
+</sqltool>

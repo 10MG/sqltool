@@ -64,11 +64,6 @@ public class SQLMetaData {
 	private int embedEndIndex = -1;
 
 	/**
-	 * ORDER BY子句之后是否有参数
-	 */
-	private boolean hasParamsAfterOrderBy = false;
-
-	/**
 	 * SQL的长度
 	 */
 	private int length = 0;
@@ -159,14 +154,6 @@ public class SQLMetaData {
 
 	public void setEmbedStartIndex(int embedStartIndex) {
 		this.embedStartIndex = embedStartIndex;
-	}
-
-	public boolean isHasParamsAfterOrderBy() {
-		return hasParamsAfterOrderBy;
-	}
-
-	public void setHasParamsAfterOrderBy(boolean hasParamsAfterOrderBy) {
-		this.hasParamsAfterOrderBy = hasParamsAfterOrderBy;
 	}
 
 	public int getLength() {

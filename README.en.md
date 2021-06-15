@@ -139,7 +139,7 @@ Here is a simple example to help you to get started.
 
 ## ORM
 Object relational mapping is a very important technology in Java language. Sqltool certainly supports simple but sufficient object relationship mapping technology to deal with many situations. For example, the query data is automatically converted into objects, and records are saved to the database through objects.
-## It provides almost all kinds of structured database interaction methods you can imagine
+## Almost all kinds of database interactive interfaces
 
 1.  Single value query
 

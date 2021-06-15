@@ -6,6 +6,22 @@
 ## About
 Sqltool is a framework provides Dynamic Structured Query Language(DSQL) Parsing for distributed environment, such as spark, spring cloud, Dubbo and so on... Sqltool can help programmers manage and execute large scale and complex Dynamic Structured Query Language (DSQL), and make programmers free from manual splicing of complicated SQL work; Sqltool can also bring good news to programmers who use Spark SQL, because Dynamic Structured Query Language (DSQL) can be directly submitted to spark for execution and solve the problem of transferring Spark SQL parameters.
 
+## ORM
+Object relational mapping is a very important technology in Java language. Sqltool certainly supports simple but sufficient object relationship mapping technology to deal with many situations. For example, the query data is automatically converted into objects, and records are saved to the database through objects.
+
+## Almost all kinds of database interactive interfaces
+Sqltool provides database interaction interfaces that can cope with most business scenarios. It eliminates almost all of the JDBC code and manual setting of parameters and retrieval of results.
+1.  Single value query
+
+2.  Single entity object query
+
+3.  Entity object list query
+
+4.  Intelligent paging query
+
+5.  Entity objects insert, update, merge witch is update if exists insert if none, or delete
+
+6.  Entity objects soft update or merge witch is update if exists insert if none
 
 ## What is Dynamic Structured Query Language？
 
@@ -137,18 +153,3 @@ Here is a simple example to help you to get started.
 	june.setStaffName("Happy June");
 	dao.save(june);
 
-## ORM
-Object relational mapping is a very important technology in Java language. Sqltool certainly supports simple but sufficient object relationship mapping technology to deal with many situations. For example, the query data is automatically converted into objects, and records are saved to the database through objects.
-## Almost all kinds of database interactive interfaces
-
-1.  Single value query
-
-2.  Single entity object query
-
-3.  Entity object list query
-
-4.  Intelligent paging query
-
-5.  Entity objects insert, update, merge witch is update if exists insert if none, or delete
-
-6.  Entity objects soft update or merge witch is update if exists insert if none

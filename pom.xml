@@ -11,7 +11,7 @@ A framework provides Dynamic Structured Query Language(DSQL) Parsing for distrib
 	<artifactId>sqltool</artifactId>
 	<version>1.2.4</version>
 	<packaging>jar</packaging>
-	<url>https://github.com/10MG/sqltool</url>
+	<url>https://gitee.com/tenmg/sqltool</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -101,9 +101,9 @@ A framework provides Dynamic Structured Query Language(DSQL) Parsing for distrib
 	</developers>
 
 	<scm>
-		<connection>scm:git:git@github.com/10MG/sqltool.git</connection>
-		<url>git@github.com/10MG/sqltool.git</url>
-		<developerConnection>https://github.com/10MG</developerConnection>
+		<connection>scm:git:git@gitee.com:tenmg/sqltool.git</connection>
+		<url>git@gitee.com:tenmg/sqltool.git</url>
+		<developerConnection>https://gitee.com/tenmg</developerConnection>
 	</scm>
 
 	<distributionManagement>

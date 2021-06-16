@@ -87,6 +87,11 @@ A framework provides Dynamic Structured Query Language(DSQL) Parsing for distrib
 		</license>
 	</licenses>
 
+	<organization>
+		<name>10MG</name>
+		<url>http://www.10mg.cn</url>
+	</organization>
+
 	<developers>
 		<developer>
 			<name>zhaoweijun</name>

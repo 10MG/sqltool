@@ -103,7 +103,7 @@ A framework provides Dynamic Structured Query Language(DSQL) Parsing for distrib
 	<scm>
 		<connection>scm:git:git@gitee.com:tenmg/sqltool.git</connection>
 		<url>git@gitee.com:tenmg/sqltool.git</url>
-		<developerConnection>https://gitee.com/tenmg</developerConnection>
+		<developerConnection>scm:git:https://gitee.com/tenmg</developerConnection>
 	</scm>
 
 	<distributionManagement>

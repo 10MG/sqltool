@@ -21,7 +21,6 @@ import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
-import cn.tenmg.sqltool.sql.utils.SQLUtils;
 import cn.tenmg.sqltool.utils.EntityUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
 import cn.tenmg.sqltool.utils.PlaceHolderUtils;
@@ -45,20 +44,20 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	protected static final String TABLE_NAME = "tableName", COLUMNS = "columns", VALUES = "values", SETS = "sets",
 			LEFT_COLUMN_NAME = "columnName", RIGHT_COLUMN_NAME = "columnName";
 
-	private static final int SELECT_LEN = "SELECT".length();
+	protected static final int SELECT_LEN = "SELECT".length();
 
 	private static final String COUNT = " COUNT(*) ", COUNT_START = "SELECT COUNT(*) FROM (\n",
 			COUNT_END = "\n) SQLTOOL";
 
 	/**
-	 * 获取更新语句的SET字句模板。例如Mysql数据库为<code>${columnName}=?</code>
+	 * 获取更新语句的SET子句模板。例如Mysql数据库为<code>${columnName}=?</code>
 	 */
 	abstract String getUpdateSetTemplate();
 
 	/**
-	 * 获取更新语句非空时SET字句模板。例如Mysql数据库为<code>${columnName}=IFNULL(${columnName}, ?)</code>
+	 * 获取更新语句非空时SET子句模板。例如Mysql数据库为<code>${columnName}=IFNULL(${columnName}, ?)</code>
 	 * 
-	 * @return 返回非空时SET字句模板
+	 * @return 返回非空时SET子句模板
 	 */
 	abstract String getUpdateSetIfNotNullTemplate();
 
@@ -112,33 +111,18 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			boolean notFirst);
 
 	/**
-	 * 获取SET字句模板。例如Mysql数据库为<code>${columnName}=VALUES(${columnName})</code>
+	 * 获取SET子句模板。例如Mysql数据库为<code>${columnName}=VALUES(${columnName})</code>
 	 * 
-	 * @return 返回SET字句模板
+	 * @return 返回SET子句模板
 	 */
 	abstract String getSetTemplate();
 
 	/**
-	 * 获取非空时SET字句模板。例如Mysql数据库为<code>${columnName}=IFNULL(VALUES(${columnName}), ${columnName})</code>
+	 * 获取非空时SET子句模板。例如Mysql数据库为<code>${columnName}=IFNULL(VALUES(${columnName}), ${columnName})</code>
 	 * 
-	 * @return 返回非空时SET字句模板
+	 * @return 返回非空时SET子句模板
 	 */
 	abstract String getSetIfNotNullTemplate();
-
-	/**
-	 * 根据SQL、预先分析好的SQL相关数据对象、页容量pageSize和当前页码currentPage生成特定数据库的分页查询SQL
-	 * 
-	 * @param sql
-	 *            SQL
-	 * @param sqlMetaData
-	 *            预先分析好的SQL相关数据对象
-	 * @param pageSize
-	 *            页容量
-	 * @param currentPage
-	 *            当前页码
-	 * @return 返回分页查询SQL
-	 */
-	abstract String pageSql(String sql, SQLMetaData sqlMetaData, int pageSize, long currentPage);
 
 	@Override
 	public <T> UpdateSQL update(Class<T> type) {
@@ -1236,13 +1220,30 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	}
 
 	@Override
-	public String countSql(String sql) {
-		return countSql(sql, SQLUtils.getSqlMetaData(sql));
-	}
-
-	@Override
-	public String pageSql(String sql, int pageSize, long currentPage) {
-		return pageSql(sql, SQLUtils.getSqlMetaData(sql), pageSize, currentPage);
+	public String countSql(String sql, SQLMetaData sqlMetaData) {
+		int embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex(),
+				length = sqlMetaData.getLength();
+		if (sqlMetaData.getLimitIndex() > 0 || sqlMetaData.getOffsetIndex() > 0 || sqlMetaData.getFetchIndex() > 0
+				|| sqlMetaData.getGroupByIndex() > 0) {// 含有LIMIT、OFFSET、FETCH或GROUP BY子句
+			return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
+		}
+		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex(),
+				orderByIndex = sqlMetaData.getOrderByIndex();
+		if (selectIndex >= 0 && fromIndex > selectIndex) {// 正确拼写了SELECT、FROM子句、且不包含LIMIT、OFFSET、FETCH或GROUP BY子句
+			if (orderByIndex > 0) {// 含ORDER BY子句
+				if (selectIndex > 0) {
+					return sql.substring(0, selectIndex).concat(sql.substring(selectIndex, selectIndex + SELECT_LEN))
+							.concat(COUNT).concat(sql.substring(fromIndex, orderByIndex));
+				} else {
+					return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
+							.concat(sql.substring(fromIndex, orderByIndex));
+				}
+			} else {
+				return sql.substring(0, selectIndex).concat(sql.substring(selectIndex, selectIndex + SELECT_LEN))
+						.concat(COUNT).concat(sql.substring(fromIndex));
+			}
+		}
+		return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
 	}
 
 	/**
@@ -1269,7 +1270,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						.concat(COUNT_END);
 			}
 		} else {
-			if (embedEndIndex > 0 && embedEndIndex < length) {
+			if (embedEndIndex < length) {
 				sql = COUNT_START.concat(sql.substring(0, embedEndIndex)).concat(COUNT_END)
 						.concat(sql.substring(embedEndIndex));
 			} else {
@@ -1277,50 +1278,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			}
 		}
 		return sql;
-	}
-
-	/**
-	 * * 包装查询SQL为查询总记录数的SQL
-	 * 
-	 * @param sql
-	 *            查询SQL
-	 * @param sqlMetaData
-	 * @return 返回查询总记录数的SQL
-	 */
-	private String countSql(String sql, SQLMetaData sqlMetaData) {
-		int embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex(),
-				length = sqlMetaData.getLength();
-		if (sqlMetaData.getLimitIndex() > 0) {
-			return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
-		}
-		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex();
-		int orderByIndex = sqlMetaData.getOrderByIndex(), groupByIndex = sqlMetaData.getGroupByIndex();
-		if (selectIndex >= 0 && fromIndex > selectIndex) {// 正确拼写了SELECT、FROM子句
-			if (orderByIndex > 0) {// 含ORDER BY子句
-				if (groupByIndex < 0) {// 不含GROUP BY子句
-					if (selectIndex > 0) {
-						return sql.substring(0, selectIndex)
-								.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
-								.concat(sql.substring(fromIndex, orderByIndex));
-					} else {
-						return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
-								.concat(sql.substring(fromIndex, orderByIndex));
-					}
-				}
-			} else {// 不含ORDER BY子句
-				if (groupByIndex < 0) {// 不含GROUP BY子句
-					if (selectIndex > 0) {
-						return sql.substring(0, selectIndex)
-								.concat(sql.substring(selectIndex, selectIndex + SELECT_LEN)).concat(COUNT)
-								.concat(sql.substring(fromIndex));
-					} else {
-						return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
-								.concat(sql.substring(fromIndex));
-					}
-				}
-			}
-		}
-		return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
 	}
 
 }

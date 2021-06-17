@@ -9,14 +9,14 @@ package cn.tenmg.sqltool.sql;
 public class SQLMetaData {
 
 	/**
+	 * WITH子句的位置
+	 */
+	private int withIndex = -1;
+
+	/**
 	 * 可嵌套查询的开始位置
 	 */
 	private int embedStartIndex = -1;
-
-	/**
-	 * 可嵌套查询的结束位置
-	 */
-	private int embedEndIndex = -1;
 
 	/**
 	 * SELECT子句的位置
@@ -27,6 +27,11 @@ public class SQLMetaData {
 	 * FROM子句的位置
 	 */
 	private int fromIndex = -1;
+
+	/**
+	 * WHER子句的位置
+	 */
+	private int whereIndex = -1;
 
 	/**
 	 * 主查询GROUP BY子句索引
@@ -44,16 +49,31 @@ public class SQLMetaData {
 	private int limitIndex = -1;
 
 	/**
+	 * 主查询OFFSET子句索引
+	 */
+	private int offsetIndex = -1;
+
+	/**
+	 * 主查询FETCH子句索引
+	 */
+	private int fetchIndex = -1;
+
+	/**
+	 * 可嵌套查询的结束位置
+	 */
+	private int embedEndIndex = -1;
+
+	/**
 	 * SQL的长度
 	 */
 	private int length = 0;
 
-	public int getEmbedStartIndex() {
-		return embedStartIndex;
+	public int getWithIndex() {
+		return withIndex;
 	}
 
-	public void setEmbedStartIndex(int embedStartIndex) {
-		this.embedStartIndex = embedStartIndex;
+	public void setWithIndex(int withIndex) {
+		this.withIndex = withIndex;
 	}
 
 	public int getEmbedEndIndex() {
@@ -80,6 +100,14 @@ public class SQLMetaData {
 		this.fromIndex = fromIndex;
 	}
 
+	public int getWhereIndex() {
+		return whereIndex;
+	}
+
+	public void setWhereIndex(int whereIndex) {
+		this.whereIndex = whereIndex;
+	}
+
 	public int getGroupByIndex() {
 		return groupByIndex;
 	}
@@ -102,6 +130,30 @@ public class SQLMetaData {
 
 	public void setLimitIndex(int limitIndex) {
 		this.limitIndex = limitIndex;
+	}
+
+	public int getOffsetIndex() {
+		return offsetIndex;
+	}
+
+	public void setOffsetIndex(int offsetIndex) {
+		this.offsetIndex = offsetIndex;
+	}
+
+	public int getFetchIndex() {
+		return fetchIndex;
+	}
+
+	public void setFetchIndex(int fetchIndex) {
+		this.fetchIndex = fetchIndex;
+	}
+
+	public int getEmbedStartIndex() {
+		return embedStartIndex;
+	}
+
+	public void setEmbedStartIndex(int embedStartIndex) {
+		this.embedStartIndex = embedStartIndex;
 	}
 
 	public int getLength() {

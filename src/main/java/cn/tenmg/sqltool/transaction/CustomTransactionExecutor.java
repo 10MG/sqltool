@@ -13,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 
 import cn.tenmg.sqltool.DSQLFactory;
 import cn.tenmg.sqltool.dsql.NamedSQL;
-import cn.tenmg.sqltool.dsql.utils.DSQLUtils;
 import cn.tenmg.sqltool.exception.IllegalCallException;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.sql.DML;
@@ -26,6 +25,7 @@ import cn.tenmg.sqltool.sql.executer.SelectSQLExecuter;
 import cn.tenmg.sqltool.sql.parser.DeleteDMLParser;
 import cn.tenmg.sqltool.sql.parser.GetDMLParser;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
+import cn.tenmg.sqltool.sql.utils.SQLUtils;
 import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.JSONUtils;
 import cn.tenmg.sqltool.utils.JdbcUtils;
@@ -456,7 +456,7 @@ public class CustomTransactionExecutor implements Serializable {
 
 	private boolean execute(NamedSQL namedSQL) {
 		Connection con = getCurrentConnection();
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		PreparedStatement ps = null;
 		boolean rs = false;
 		try {
@@ -492,7 +492,7 @@ public class CustomTransactionExecutor implements Serializable {
 
 	private int executeUpdate(NamedSQL namedSQL) {
 		Connection con = getCurrentConnection();
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		PreparedStatement ps = null;
 		int count = 0;
 		try {
@@ -528,7 +528,7 @@ public class CustomTransactionExecutor implements Serializable {
 	}
 
 	private <T> T execute(Connection con, NamedSQL namedSQL, SQLExecuter<T> sqlExecuter) throws SQLException {
-		SQL sql = DSQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
+		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
 		return JdbcUtils.execute(con, namedSQL.getId(), sql.getScript(), sql.getParams(), sqlExecuter, showSql);
 	}
 

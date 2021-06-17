@@ -3,14 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<name>sqltool</name>
-	<description>
-	一个给分布式环境提供动态结构化查询语言（DSQL）解析的框架，如Spark、Spring Cloud、Dubbo等等
-	A framework provides Dynamic Structured Query Language(DSQL) Parsing for distributed environment, such as spark, spring cloud, Dubbo and so on
-	</description>
+	<description>一个给分布式环境提供动态结构化查询语言（DSQL）解析的框架，如Spark等</description>
 	<groupId>cn.tenmg</groupId>
 	<artifactId>sqltool</artifactId>
-	<version>1.2.3</version>
-	<url>https://github.com/10MG/sqltool</url>
+	<version>1.2.4</version>
+	<packaging>jar</packaging>
+	<url>https://gitee.com/tenmg/sqltool</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -68,6 +66,13 @@
 			<version>${postgresql.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>mssql-jdbc</artifactId>
+			<version>9.2.1.jre8</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<licenses>
@@ -79,6 +84,11 @@
 		</license>
 	</licenses>
 
+	<organization>
+		<name>10MG</name>
+		<url>http://www.10mg.cn</url>
+	</organization>
+
 	<developers>
 		<developer>
 			<name>zhaoweijun</name>
@@ -88,9 +98,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git@github.com/10MG/sqltool.git</connection>
-		<url>git@github.com/10MG/sqltool.git</url>
-		<developerConnection>https://github.com/10MG</developerConnection>
+		<connection>scm:git:git@gitee.com:tenmg/sqltool.git</connection>
+		<url>git@gitee.com:tenmg/sqltool.git</url>
+		<developerConnection>scm:git:https://gitee.com/tenmg</developerConnection>
 	</scm>
 
 	<distributionManagement>

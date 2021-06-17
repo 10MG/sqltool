@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public abstract class PlaceHolderUtils {
 
-	private static final Pattern paramPattern = Pattern.compile("\\$\\{\\w+\\}"),
+	private static final Pattern paramPattern = Pattern.compile("\\$\\{[^}]+\\}"),
 			arrayPattern = Pattern.compile("\\[[^\\]]+\\]");
 
 	/**

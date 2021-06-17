@@ -52,7 +52,18 @@
 			]]>
 		</script>
 	</dsql>
-	
+
+	<dsql id="find_staff_info_staff_name_like_with">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				WITH T AS (SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName) SELECT * FROM T
+			]]>
+		</script>
+	</dsql>
+
 	<dsql id="find_staff_info_staff_name_like_order_by_staff_name">
 		<converter>
 			<wrap-string params="staffName" formatter="%${value}%" />
@@ -63,7 +74,18 @@
 			]]>
 		</script>
 	</dsql>
-	
+
+	<dsql id="find_staff_info_staff_name_like_order_by_has_param">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY CASE WHEN POSITION IS NULL THEN :defualtPosition ELSE POSITION END, STAFF_NAME
+			]]>
+		</script>
+	</dsql>
+
 	<dsql id="find_staff_info_staff_name_like_limit">
 		<converter>
 			<wrap-string params="staffName" formatter="%${value}%" />

@@ -19,7 +19,7 @@ public interface DSQLFactory extends Serializable {
 	 * 
 	 * @param id
 	 *            指定编号
-	 * @return SQL脚本
+	 * @return DSQL对象
 	 */
 	Dsql getDsql(String id);
 
@@ -28,7 +28,7 @@ public interface DSQLFactory extends Serializable {
 	 * 
 	 * @param id
 	 *            指定编号
-	 * @return SQL脚本
+	 * @return DSQL脚本
 	 */
 	String getScript(String id);
 

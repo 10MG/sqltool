@@ -8,7 +8,8 @@ import cn.tenmg.sqltool.transaction.TransactionExecutor;
  * 事务
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.0.0
  */
 public interface Transaction extends Serializable {
 

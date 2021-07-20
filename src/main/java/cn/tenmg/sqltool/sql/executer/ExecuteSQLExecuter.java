@@ -8,16 +8,19 @@ import java.sql.SQLException;
  * 执行SQL的执行器
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.1.1
  */
 public class ExecuteSQLExecuter extends AbstractExecuteSQLExecuter<Boolean> {
 
-	private static class InstanceHolder {
-		private static final ExecuteSQLExecuter INSTANCE = new ExecuteSQLExecuter();
+	private static final ExecuteSQLExecuter INSTANCE = new ExecuteSQLExecuter();
+
+	private ExecuteSQLExecuter() {
+		super();
 	}
 
 	public static final ExecuteSQLExecuter getInstance() {
-		return InstanceHolder.INSTANCE;
+		return INSTANCE;
 	}
 
 	@Override

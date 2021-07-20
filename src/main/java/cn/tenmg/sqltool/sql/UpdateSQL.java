@@ -9,6 +9,7 @@ import java.util.List;
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  *
+ * @since 1.1.1
  */
 public class UpdateSQL implements Serializable {
 

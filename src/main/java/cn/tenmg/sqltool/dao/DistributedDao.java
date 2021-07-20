@@ -9,13 +9,13 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import cn.tenmg.sqltool.DSQLFactory;
+import cn.tenmg.dsql.DSQLFactory;
+import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
+import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sqltool.datasource.DataSourceFactory;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.exception.InitializeDataSourceException;
-import cn.tenmg.sqltool.factory.XMLFileDSQLFactory;
 import cn.tenmg.sqltool.sql.SQLDialect;
-import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
 /**
@@ -111,6 +111,9 @@ public class DistributedDao extends AbstractDao implements Serializable {
 	 * 初始化
 	 */
 	private static synchronized void initialized(Properties properties) {
+		if (uninitialized) {
+			return;
+		}
 		Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
 		String key, name, param, firstName = null;
 		Object value;

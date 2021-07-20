@@ -100,9 +100,9 @@ Here is a simple example to help you to get started.
 
 ### staff-info.dsql.xml
 	<?xml version="1.0" encoding="utf-8"?>
-	<sqltool xmlns="http://www.10mg.cn/schema/sqltool"
+	<dsqls xmlns="http://www.10mg.cn/schema/dsql"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://www.10mg.cn/schema/sqltool http://www.10mg.cn/schema/sqltool.xsd">
+		xsi:schemaLocation="http://www.10mg.cn/schema/dsql http://www.10mg.cn/schema/dsql.xsd">
 		<dsql id="find_staff_by_id">
 			<script>
 				<![CDATA[
@@ -110,7 +110,7 @@ Here is a simple example to help you to get started.
 				]]>
 			</script>
 		</dsql>
-	</sqltool>
+	</dsqls>
 
 ### Java
 

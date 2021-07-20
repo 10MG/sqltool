@@ -10,7 +10,8 @@ import cn.tenmg.sqltool.exception.IllegalConfigException;
  * 数据源工厂
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.2.0
  */
 public final class DataSourceFactory {
 

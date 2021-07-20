@@ -6,32 +6,36 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cn.tenmg.dsl.utils.StringUtils;
+import cn.tenmg.sql.paging.utils.SQLUtils;
 import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
 import cn.tenmg.sqltool.exception.ColumnNotFoundException;
 import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
-import cn.tenmg.sqltool.utils.EntityUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
-import cn.tenmg.sqltool.utils.StringUtils;
+import cn.tenmg.sqltool.sql.utils.EntityUtils;
+import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
 
 /**
  * 插入数据操纵语言解析器
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.0.0
  */
 public class InsertDMLParser extends AbstractDMLParser {
 
 	private static final String INSERT = "INSERT INTO %s(%s) VALUES (%s)";
 
-	private static class InstanceHolder {
-		private static final InsertDMLParser INSTANCE = new InsertDMLParser();
+	private static final InsertDMLParser INSTANCE = new InsertDMLParser();
+	
+	private InsertDMLParser() {
+		super();
 	}
 
 	public static final InsertDMLParser getInstance() {
-		return InstanceHolder.INSTANCE;
+		return INSTANCE;
 	}
 
 	@Override
@@ -66,13 +70,13 @@ public class InsertDMLParser extends AbstractDMLParser {
 								fieldMeta.setId(true);
 							}
 							if (flag) {
-								columns.append(JdbcUtils.COMMA_SPACE);
-								values.append(JdbcUtils.COMMA_SPACE);
+								columns.append(JDBCExecuteUtils.COMMA_SPACE);
+								values.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								flag = true;
 							}
 							columns.append(columnName);
-							values.append(JdbcUtils.PARAM_MARK);
+							values.append(SQLUtils.PARAM_MARK);
 							fieldMetas.add(fieldMeta);
 						}
 					}
@@ -87,13 +91,13 @@ public class InsertDMLParser extends AbstractDMLParser {
 				fieldMeta = fieldMetas.get(i);
 				fields.add(fieldMeta.getField());
 				if (flag) {
-					columns.append(JdbcUtils.COMMA_SPACE);
-					values.append(JdbcUtils.COMMA_SPACE);
+					columns.append(JDBCExecuteUtils.COMMA_SPACE);
+					values.append(JDBCExecuteUtils.COMMA_SPACE);
 				} else {
 					flag = true;
 				}
 				columns.append(fieldMeta.getColumnName());
-				values.append(JdbcUtils.PARAM_MARK);
+				values.append(SQLUtils.PARAM_MARK);
 			}
 		}
 		if (flag) {

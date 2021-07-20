@@ -15,6 +15,7 @@ import cn.tenmg.sqltool.sql.dialect.SQLServerDialect;
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  *
+ * @since 1.1.0
  */
 public class SQLDialectUtils {
 

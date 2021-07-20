@@ -10,6 +10,7 @@ import java.util.List;
  *
  * @param <T>
  *            行数据类型
+ * @since 1.2.0
  */
 public class Page<T extends Serializable> implements Serializable {
 

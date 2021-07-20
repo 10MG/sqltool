@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import cn.tenmg.dsql.utils.ClassUtils;
+
 /**
  * 配置加载工具类
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  *
+ * @since 1.2.0
  */
 public abstract class PropertiesLoaderUtils {
 

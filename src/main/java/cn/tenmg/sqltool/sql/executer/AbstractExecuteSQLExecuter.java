@@ -13,6 +13,8 @@ import cn.tenmg.sqltool.sql.SQLExecuter;
  *
  * @param <T>
  *            返回结果类型
+ *             
+ * @since 1.1.1
  */
 public abstract class AbstractExecuteSQLExecuter<T> implements SQLExecuter<T> {
 

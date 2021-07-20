@@ -6,6 +6,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * 实体类对应数据库表注解
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ * 
+ * @since 1.0.0
+ */
 @Target(TYPE)
 @Retention(RUNTIME)
 public @interface Table {

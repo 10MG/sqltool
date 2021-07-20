@@ -9,15 +9,18 @@ import java.sql.SQLException;
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  *
+ * @since 1.1.1
  */
 public class ExecuteUpdateSQLExecuter extends AbstractExecuteSQLExecuter<Integer> {
 
-	private static class InstanceHolder {
-		private static final ExecuteUpdateSQLExecuter INSTANCE = new ExecuteUpdateSQLExecuter();
+	private static final ExecuteUpdateSQLExecuter INSTANCE = new ExecuteUpdateSQLExecuter();
+
+	private ExecuteUpdateSQLExecuter() {
+		super();
 	}
 
 	public static final ExecuteUpdateSQLExecuter getInstance() {
-		return InstanceHolder.INSTANCE;
+		return INSTANCE;
 	}
 
 	@Override

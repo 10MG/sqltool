@@ -2,18 +2,16 @@ package cn.tenmg.sqltool.utils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cn.tenmg.sql.paging.utils.JDBCUtils;
 import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.DMLParser;
@@ -25,204 +23,17 @@ import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
 
 /**
- * JDBC工具类
+ * JDBC执行工具类
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.3.0
  */
-public abstract class JdbcUtils {
+public abstract class JDBCExecuteUtils {
 
-	private static final Logger log = LogManager.getLogger(JdbcUtils.class);
+	private static final Logger log = LogManager.getLogger(JDBCExecuteUtils.class);
 
-	public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n"), COMMA_SPACE = ", ",
-			SPACE_AND_SPACE = " AND ", SPACE_EQ_SPACE = " = ";
-
-	public static final char PARAM_MARK = '?', SINGLE_QUOTATION_MARK = '\'';
-
-	private JdbcUtils() {
-	}
-
-	/**
-	 * 关闭连接
-	 * 
-	 * @param conn
-	 */
-	public static void close(Connection conn) {
-		if (conn != null) {
-			try {
-				conn.close();
-			} catch (SQLException ex) {
-				log.error("Could not close JDBC Connection", ex);
-				ex.printStackTrace();
-			} catch (Throwable ex) {
-				log.error("Unexpected exception on closing JDBC Connection", ex);
-				ex.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * 关闭声明
-	 * 
-	 * @param stm
-	 *            声明
-	 */
-	public static void close(Statement stm) {
-		if (stm != null) {
-			try {
-				stm.close();
-			} catch (SQLException ex) {
-				log.error("Could not close JDBC Statement", ex);
-				ex.printStackTrace();
-			} catch (Throwable ex) {
-				log.error("Unexpected exception on closing JDBC Statement", ex);
-				ex.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * 关闭结果集
-	 * 
-	 * @param rs
-	 *            结果集
-	 */
-	public static void close(ResultSet rs) {
-		if (rs != null) {
-			try {
-				rs.close();
-			} catch (SQLException ex) {
-				log.error("Could not close JDBC ResultSet", ex);
-			} catch (Throwable ex) {
-				log.error("Unexpected exception on closing JDBC ResultSet", ex);
-			}
-		}
-	}
-
-	/**
-	 * 从实体对象中获取属性参数集
-	 * 
-	 * @param obj
-	 *            实体对象
-	 * @param fields
-	 *            参数属性集
-	 * @return 返回参数集
-	 */
-	public static <T> List<Object> getParams(T obj, List<Field> fields) {
-		List<Object> params = new ArrayList<Object>();
-		for (int i = 0, size = fields.size(); i < size; i++) {
-			try {
-				params.add(fields.get(i).get(obj));
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				throw new DataAccessException(e);
-			}
-		}
-		return params;
-	}
-
-	/**
-	 * 设置参数
-	 * 
-	 * @param ps
-	 *            SQL声明对象
-	 * @param params
-	 *            查询参数
-	 * @throws SQLException
-	 */
-	public static void setParams(PreparedStatement ps, List<Object> params) throws SQLException {
-		if (!CollectionUtils.isEmpty(params)) {
-			for (int i = 0, size = params.size(); i < size; i++) {
-				ps.setObject(i + 1, params.get(i));
-			}
-		}
-	}
-
-	/**
-	 * 设置参数
-	 * 
-	 * @param ps
-	 *            SQL声明对象
-	 * @param obj
-	 *            实体对象
-	 * @param fields
-	 *            参数属性集
-	 * @throws SQLException
-	 *             SQL异常
-	 */
-	public static <T> void setParams(PreparedStatement ps, T obj, List<Field> fields) throws SQLException {
-		for (int i = 0, size = fields.size(); i < size; i++) {
-			try {
-				ps.setObject(i + 1, fields.get(i).get(obj));
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				throw new DataAccessException(e);
-			}
-		}
-	}
-
-	/**
-	 * 设置参数
-	 * 
-	 * @param ps
-	 *            SQL声明对象
-	 * @param fieldMetas
-	 *            参数属性集
-	 * @param obj
-	 *            实体对象
-	 * @throws SQLException
-	 *             SQL异常
-	 */
-	public static <T> void setParams(PreparedStatement ps, List<FieldMeta> fieldMetas, T obj) throws SQLException {
-		for (int i = 0, size = fieldMetas.size(); i < size; i++) {
-			try {
-				ps.setObject(i + 1, fieldMetas.get(i).getField().get(obj));
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				throw new DataAccessException(e);
-			}
-		}
-	}
-
-	/**
-	 * 获取结果当前行集指定列的值
-	 * 
-	 * @param rs
-	 *            结果集
-	 * @param columnIndex
-	 *            指定列索引
-	 * @param type
-	 *            值的类型
-	 * @return 返回当前行集指定列的值
-	 * @throws SQLException
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T getValue(ResultSet rs, int columnIndex, Class<T> type) throws SQLException {
-		if (BigDecimal.class.isAssignableFrom(type)) {
-			return (T) rs.getBigDecimal(columnIndex);
-		} else if (Number.class.isAssignableFrom(type)) {
-			Object obj = rs.getObject(columnIndex);
-			if (obj == null) {
-				return null;
-			}
-			if (obj instanceof Number) {
-				if (Double.class.isAssignableFrom(type)) {
-					obj = ((Number) obj).doubleValue();
-				} else if (Float.class.isAssignableFrom(type)) {
-					obj = ((Number) obj).floatValue();
-				} else if (Integer.class.isAssignableFrom(type)) {
-					obj = ((Number) obj).intValue();
-				} else if (Long.class.isAssignableFrom(type)) {
-					obj = ((Number) obj).longValue();
-				} else if (Short.class.isAssignableFrom(type)) {
-					obj = ((Number) obj).shortValue();
-				} else if (Byte.class.isAssignableFrom(type)) {
-					obj = ((Number) obj).byteValue();
-				}
-			}
-			return (T) obj;
-		} else if (String.class.isAssignableFrom(type)) {
-			return (T) rs.getString(columnIndex);
-		}
-		return (T) rs.getObject(columnIndex);
-	}
+	public static final String COMMA_SPACE = ", ", SPACE_AND_SPACE = " AND ", SPACE_EQ_SPACE = " = ";
 
 	/**
 	 * 执行一个SQL语句
@@ -247,7 +58,7 @@ public abstract class JdbcUtils {
 		ResultSet rs = null;
 		try {
 			ps = con.prepareStatement(sql);
-			setParams(ps, params);
+			JDBCUtils.setParams(ps, params);
 			if (showSql && log.isInfoEnabled()) {
 				StringBuilder sb = new StringBuilder();
 				sb.append("Execute SQL: ").append(sql).append(COMMA_SPACE).append("parameters: ")
@@ -262,8 +73,8 @@ public abstract class JdbcUtils {
 		} catch (SQLException e) {
 			throw e;
 		} finally {
-			close(rs);
-			close(ps);
+			JDBCUtils.close(rs);
+			JDBCUtils.close(ps);
 		}
 	}
 
@@ -307,7 +118,7 @@ public abstract class JdbcUtils {
 					e.printStackTrace();
 				}
 			}
-			close(ps);
+			JDBCUtils.close(ps);
 		}
 	}
 
@@ -357,7 +168,7 @@ public abstract class JdbcUtils {
 					e.printStackTrace();
 				}
 			}
-			close(ps);
+			JDBCUtils.close(ps);
 		}
 	}
 
@@ -399,7 +210,7 @@ public abstract class JdbcUtils {
 					e.printStackTrace();
 				}
 			}
-			close(ps);
+			JDBCUtils.close(ps);
 		}
 	}
 
@@ -448,7 +259,7 @@ public abstract class JdbcUtils {
 					e.printStackTrace();
 				}
 			}
-			close(ps);
+			JDBCUtils.close(ps);
 		}
 	}
 
@@ -489,7 +300,7 @@ public abstract class JdbcUtils {
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-				close(ps);
+				JDBCUtils.close(ps);
 			}
 		}
 	}
@@ -507,7 +318,13 @@ public abstract class JdbcUtils {
 	 *             SQL异常
 	 */
 	public static final <T> void addBatch(PreparedStatement ps, List<FieldMeta> fieldMetas, T obj) throws SQLException {
-		setParams(ps, fieldMetas, obj);
+		for (int i = 0, size = fieldMetas.size(); i < size; i++) {
+			try {
+				ps.setObject(i + 1, fieldMetas.get(i).getField().get(obj));
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				throw new DataAccessException(e);
+			}
+		}
 		ps.addBatch();
 	}
 
@@ -524,7 +341,13 @@ public abstract class JdbcUtils {
 	 *             SQL异常
 	 */
 	public static final <T> void addBatch(PreparedStatement ps, T obj, List<Field> fields) throws SQLException {
-		setParams(ps, obj, fields);
+		for (int i = 0, size = fields.size(); i < size; i++) {
+			try {
+				ps.setObject(i + 1, fields.get(i).get(obj));
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				throw new DataAccessException(e);
+			}
+		}
 		ps.addBatch();
 	}
 

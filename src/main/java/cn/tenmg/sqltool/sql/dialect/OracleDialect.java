@@ -35,12 +35,12 @@ public class OracleDialect extends AbstractSQLDialect {
 
 	private static final OracleDialect INSTANCE = new OracleDialect();
 
-	public static final OracleDialect getInstance() {
-		return INSTANCE;
-	}
-
 	private OracleDialect() {
 		super();
+	}
+
+	public static final OracleDialect getInstance() {
+		return INSTANCE;
 	}
 
 	@Override
@@ -86,7 +86,8 @@ public class OracleDialect extends AbstractSQLDialect {
 		if (notFirst) {
 			condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 		}
-		condition.append("X.").append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append("Y.").append(columnName);
+		condition.append("X.").append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append("Y.")
+				.append(columnName);
 	}
 
 	@Override

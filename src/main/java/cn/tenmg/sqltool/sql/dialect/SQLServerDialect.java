@@ -13,7 +13,7 @@ import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
  * SQLServer方言
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *  
+ * 
  * @since 1.2.4
  */
 public class SQLServerDialect extends AbstractSQLDialect {
@@ -34,6 +34,10 @@ public class SQLServerDialect extends AbstractSQLDialect {
 			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = ISNULL(Y.${columnName}, X.${columnName})";
 
 	private static final SQLServerDialect INSTANCE = new SQLServerDialect();
+
+	private SQLServerDialect() {
+		super();
+	}
 
 	public static final SQLServerDialect getInstance() {
 		return INSTANCE;
@@ -82,7 +86,8 @@ public class SQLServerDialect extends AbstractSQLDialect {
 		if (notFirst) {
 			condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 		}
-		condition.append("X.").append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append("Y.").append(columnName);
+		condition.append("X.").append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append("Y.")
+				.append(columnName);
 	}
 
 	@Override

@@ -35,12 +35,12 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 
 	private static final PostgreSQLDialect INSTANCE = new PostgreSQLDialect();
 
-	public static final PostgreSQLDialect getInstance() {
-		return INSTANCE;
-	}
-
 	private PostgreSQLDialect() {
 		super();
+	}
+
+	public static final PostgreSQLDialect getInstance() {
+		return INSTANCE;
 	}
 
 	@Override

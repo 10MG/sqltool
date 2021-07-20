@@ -28,12 +28,14 @@ public class GetDMLParser extends AbstractDMLParser {
 
 	private static final String GET = "SELECT %s FROM %s WHERE %s";
 
-	private static class InstanceHolder {
-		private static final GetDMLParser INSTANCE = new GetDMLParser();
+	private static final GetDMLParser INSTANCE = new GetDMLParser();
+
+	private GetDMLParser() {
+		super();
 	}
 
 	public static final GetDMLParser getInstance() {
-		return InstanceHolder.INSTANCE;
+		return INSTANCE;
 	}
 
 	@Override

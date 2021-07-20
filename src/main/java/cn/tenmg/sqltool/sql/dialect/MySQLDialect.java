@@ -31,12 +31,12 @@ public class MySQLDialect extends AbstractSQLDialect {
 
 	private static final MySQLDialect INSTANCE = new MySQLDialect();
 
-	public static final MySQLDialect getInstance() {
-		return INSTANCE;
-	}
-
 	private MySQLDialect() {
 		super();
+	}
+
+	public static final MySQLDialect getInstance() {
+		return INSTANCE;
 	}
 
 	@Override

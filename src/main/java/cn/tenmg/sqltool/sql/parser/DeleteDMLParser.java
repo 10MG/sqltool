@@ -28,12 +28,14 @@ public class DeleteDMLParser extends AbstractDMLParser {
 
 	private static final String DELETE = "DELETE FROM %s WHERE %s";
 
-	private static class InstanceHolder {
-		private static final DeleteDMLParser INSTANCE = new DeleteDMLParser();
+	private static final DeleteDMLParser INSTANCE = new DeleteDMLParser();
+
+	private DeleteDMLParser() {
+		super();
 	}
 
 	public static final DeleteDMLParser getInstance() {
-		return InstanceHolder.INSTANCE;
+		return INSTANCE;
 	}
 
 	@Override

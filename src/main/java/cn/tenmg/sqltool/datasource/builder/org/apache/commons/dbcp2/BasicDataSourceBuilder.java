@@ -8,6 +8,14 @@ import org.apache.commons.dbcp2.BasicDataSourceFactory;
 
 import cn.tenmg.sqltool.datasource.DatasourceBuilder;
 
+/**
+ * DBCP2数据源构建器
+ * 
+ * @author 赵伟均 wjzhao@aliyun.com
+ * 
+ * @since 1.2.0
+ *
+ */
 public class BasicDataSourceBuilder implements DatasourceBuilder {
 
 	@Override

@@ -6,21 +6,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cn.tenmg.dsl.utils.StringUtils;
+import cn.tenmg.sql.paging.utils.SQLUtils;
 import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
 import cn.tenmg.sqltool.exception.PkNotFoundException;
 import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
-import cn.tenmg.sqltool.utils.EntityUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
-import cn.tenmg.sqltool.utils.StringUtils;
+import cn.tenmg.sqltool.sql.utils.EntityUtils;
+import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
 
 /**
  * 删除数据数据库操纵语言解析器
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.2.3
  */
 public class DeleteDMLParser extends AbstractDMLParser {
 
@@ -67,12 +69,12 @@ public class DeleteDMLParser extends AbstractDMLParser {
 								fieldMeta.setId(true);
 								idFields.add(field);
 								if (criteriaFlag) {
-									criteria.append(JdbcUtils.SPACE_AND_SPACE);
+									criteria.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 								} else {
 									criteriaFlag = true;
 								}
-								criteria.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
-										.append(JdbcUtils.PARAM_MARK);
+								criteria.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+										.append(SQLUtils.PARAM_MARK);
 							}
 							fieldMetas.add(fieldMeta);
 						}
@@ -90,11 +92,11 @@ public class DeleteDMLParser extends AbstractDMLParser {
 				if (fieldMeta.isId()) {
 					idFields.add(fieldMeta.getField());
 					if (criteriaFlag) {
-						criteria.append(JdbcUtils.SPACE_AND_SPACE);
+						criteria.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 					} else {
 						criteriaFlag = true;
 					}
-					criteria.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+					criteria.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
 				}
 			}
 		}

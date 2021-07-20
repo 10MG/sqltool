@@ -6,32 +6,36 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cn.tenmg.dsl.utils.StringUtils;
+import cn.tenmg.sql.paging.utils.SQLUtils;
 import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
 import cn.tenmg.sqltool.exception.PkNotFoundException;
 import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
-import cn.tenmg.sqltool.utils.EntityUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
-import cn.tenmg.sqltool.utils.StringUtils;
+import cn.tenmg.sqltool.sql.utils.EntityUtils;
+import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
 
 /**
  * 更新数据操纵语言解析器
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.0.0
  */
 public class UpdateDMLParser extends AbstractDMLParser {
 
 	private static final String UPDATE = "UPDATE %s SET %s WHERE %s";
 
-	private static class InstanceHolder {
-		private static final UpdateDMLParser INSTANCE = new UpdateDMLParser();
+	private static final UpdateDMLParser INSTANCE = new UpdateDMLParser();
+
+	private UpdateDMLParser() {
+		super();
 	}
 
 	public static final UpdateDMLParser getInstance() {
-		return InstanceHolder.INSTANCE;
+		return INSTANCE;
 	}
 
 	@Override
@@ -60,20 +64,20 @@ public class UpdateDMLParser extends AbstractDMLParser {
 							if (field.getAnnotation(Id.class) == null) {
 								generalFields.add(field);
 								if (setFlag) {
-									set.append(JdbcUtils.COMMA_SPACE);
+									set.append(JDBCExecuteUtils.COMMA_SPACE);
 								} else {
 									setFlag = true;
 								}
-								set.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+								set.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
 							} else {
 								idfields.add(field);
 								if (criteriaFlag) {
-									criteria.append(JdbcUtils.SPACE_AND_SPACE);
+									criteria.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 								} else {
 									criteriaFlag = true;
 								}
-								criteria.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
-										.append(JdbcUtils.COMMA_SPACE);
+								criteria.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+										.append(JDBCExecuteUtils.COMMA_SPACE);
 							}
 						}
 					}
@@ -91,19 +95,19 @@ public class UpdateDMLParser extends AbstractDMLParser {
 				if (fieldMeta.isId()) {
 					idfields.add(field);
 					if (criteriaFlag) {
-						criteria.append(JdbcUtils.SPACE_AND_SPACE);
+						criteria.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 					} else {
 						criteriaFlag = true;
 					}
-					criteria.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.COMMA_SPACE);
+					criteria.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(JDBCExecuteUtils.COMMA_SPACE);
 				} else {
 					generalFields.add(field);
 					if (setFlag) {
-						set.append(JdbcUtils.COMMA_SPACE);
+						set.append(JDBCExecuteUtils.COMMA_SPACE);
 					} else {
 						setFlag = true;
 					}
-					set.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+					set.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
 				}
 			}
 		}

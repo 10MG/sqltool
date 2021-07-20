@@ -11,10 +11,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.tenmg.dsl.utils.StringUtils;
 import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.sql.utils.FieldUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
-import cn.tenmg.sqltool.utils.StringUtils;
 
 /**
  * 查询单条记录的数据的SQL执行器
@@ -23,6 +22,8 @@ import cn.tenmg.sqltool.utils.StringUtils;
  *
  * @param <T>
  *            实体类
+ *
+ * @since 1.1.1
  */
 public class GetSQLExecuter<T> extends ReadOnlySQLExecuter<T> {
 
@@ -98,7 +99,7 @@ public class GetSQLExecuter<T> extends ReadOnlySQLExecuter<T> {
 					for (int i = 1; i <= columnCount; i++) {
 						Field field = fieldMap.get(i);
 						if (field != null) {
-							field.set(row, JdbcUtils.getValue(rs, i, field.getType()));
+							field.set(row, getValue(rs, i, field.getType()));
 						}
 					}
 				} catch (InstantiationException | IllegalAccessException e) {

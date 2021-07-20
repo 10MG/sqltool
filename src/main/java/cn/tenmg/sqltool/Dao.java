@@ -6,13 +6,15 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import cn.tenmg.dsql.DSQLFactory;
 import cn.tenmg.sqltool.data.Page;
 
 /**
  * 数据库访问对象
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.2.0
  */
 public interface Dao {
 
@@ -646,7 +648,7 @@ public interface Dao {
 	 *            批容量
 	 */
 	<T extends Serializable> void hardSaveBatch(DataSource dataSource, List<T> rows, int batchSize);
-	
+
 	/**
 	 * 删除操作
 	 * 

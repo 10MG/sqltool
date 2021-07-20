@@ -13,10 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.tenmg.dsl.utils.StringUtils;
 import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.sql.utils.FieldUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
-import cn.tenmg.sqltool.utils.StringUtils;
 
 /**
  * 查询记录列表的SQL执行器
@@ -25,6 +24,8 @@ import cn.tenmg.sqltool.utils.StringUtils;
  *
  * @param <T>
  *            实体类
+ *
+ * @since 1.1.1
  */
 public class SelectSQLExecuter<T> extends ReadOnlySQLExecuter<List<T>> {
 
@@ -103,7 +104,7 @@ public class SelectSQLExecuter<T> extends ReadOnlySQLExecuter<List<T>> {
 					for (int i = 1; i <= columnCount; i++) {
 						Field field = fieldMap.get(i);
 						if (field != null) {
-							field.set(row, JdbcUtils.getValue(rs, i, field.getType()));
+							field.set(row, getValue(rs, i, field.getType()));
 						}
 					}
 					rows.add(row);

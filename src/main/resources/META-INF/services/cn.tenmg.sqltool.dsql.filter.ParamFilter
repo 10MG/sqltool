@@ -1,6 +1,0 @@
-cn.tenmg.sqltool.dsql.filter.BlankParamFilter
-cn.tenmg.sqltool.dsql.filter.EqParamFilter
-cn.tenmg.sqltool.dsql.filter.GtParamFilter
-cn.tenmg.sqltool.dsql.filter.GteParamFilter
-cn.tenmg.sqltool.dsql.filter.LtParamFilter
-cn.tenmg.sqltool.dsql.filter.LteParamFilter

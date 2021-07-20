@@ -1,17 +1,16 @@
 package cn.tenmg.sqltool.sql;
 
-import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Map;
+import cn.tenmg.sql.paging.SQL;
+import cn.tenmg.sql.paging.SQLPagingDialect;
 
 /**
  * SQL方言
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.0.0
  */
-public interface SQLDialect extends Serializable {
+public interface SQLDialect extends SQLPagingDialect {
 
 	/**
 	 * 获取软更新的更新数据操作对象。软更新是只仅对属性值不为null的执行更新操作。
@@ -112,36 +111,4 @@ public interface SQLDialect extends Serializable {
 	 */
 	<T> SQL hardSave(T obj);
 
-	/**
-	 * 根据SQL生成特定数据库统计总记录数SQL
-	 * 
-	 * @param sql
-	 *            查询SQL
-	 * @param sqlMetaData
-	 *            SQL相关数据
-	 * @return 返回查询总记录数的SQL
-	 */
-	String countSql(String sql, SQLMetaData sqlMetaData);
-
-	/**
-	 * 根据SQL、页容量pageSize和当前页码currentPage生成特定数据库的分页查询SQL
-	 * 
-	 * @param con
-	 *            已开启的数据库连接
-	 * @param sql
-	 *            SQL
-	 * @param params
-	 *            查询参数集
-	 * @param sqlMetaData
-	 *            SQL相关数据
-	 * @param pageSize
-	 *            页容量
-	 * @param currentPage
-	 *            当前页码
-	 * @return 返回分页查询SQL
-	 * @throws SQLException
-	 *             SQL异常
-	 */
-	String pageSql(Connection con, String sql, Map<String, ?> params, SQLMetaData sqlMetaData, int pageSize,
-			long currentPage) throws SQLException;
 }

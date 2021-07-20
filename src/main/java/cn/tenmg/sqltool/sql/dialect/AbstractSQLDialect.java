@@ -1,6 +1,8 @@
 package cn.tenmg.sqltool.sql.dialect;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cn.tenmg.dsl.utils.StringUtils;
+import cn.tenmg.dsql.utils.PlaceHolderUtils;
+import cn.tenmg.sql.paging.SQL;
+import cn.tenmg.sql.paging.SQLMetaData;
+import cn.tenmg.sql.paging.SQLPagingDialect;
+import cn.tenmg.sql.paging.dialect.AbstractSQLPagingDialect;
+import cn.tenmg.sql.paging.utils.SQLUtils;
 import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
 import cn.tenmg.sqltool.exception.ColumnNotFoundException;
@@ -15,29 +24,21 @@ import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.exception.NoColumnForUpdateException;
 import cn.tenmg.sqltool.exception.PkNotFoundException;
 import cn.tenmg.sqltool.sql.MergeSQL;
-import cn.tenmg.sqltool.sql.SQL;
 import cn.tenmg.sqltool.sql.SQLDialect;
-import cn.tenmg.sqltool.sql.SQLMetaData;
 import cn.tenmg.sqltool.sql.UpdateSQL;
 import cn.tenmg.sqltool.sql.meta.EntityMeta;
 import cn.tenmg.sqltool.sql.meta.FieldMeta;
-import cn.tenmg.sqltool.utils.EntityUtils;
-import cn.tenmg.sqltool.utils.JdbcUtils;
-import cn.tenmg.sqltool.utils.PlaceHolderUtils;
-import cn.tenmg.sqltool.utils.StringUtils;
+import cn.tenmg.sqltool.sql.utils.EntityUtils;
+import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
 
 /**
  * 抽象SQL方言。封装方言基本方法
  * 
  * @author 赵伟均 wjzhao@aliyun.com
  *
+ * @since 1.1.0
  */
-public abstract class AbstractSQLDialect implements SQLDialect {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5454570237300496297L;
+public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implements SQLDialect {
 
 	private static final String UPDATE = "UPDATE ${tableName} SET ${sets} WHERE ${condition}";
 
@@ -46,8 +47,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
 	protected static final int SELECT_LEN = "SELECT".length();
 
-	private static final String COUNT = " COUNT(*) ", COUNT_START = "SELECT COUNT(*) FROM (\n",
-			COUNT_END = "\n) SQLTOOL";
+	/**
+	 * 获取SQL分页查询方言
+	 * 
+	 * @return SQL分页查询方言
+	 */
+	abstract SQLPagingDialect getSQLPagingDialect();
 
 	/**
 	 * 获取更新语句的SET子句模板。例如Mysql数据库为<code>${columnName}=?</code>
@@ -154,7 +159,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 									fieldMeta.setId(false);
 									generalFields.add(field);
 									if (hasGeneralColumn) {
-										sets.append(JdbcUtils.COMMA_SPACE);
+										sets.append(JDBCExecuteUtils.COMMA_SPACE);
 									} else {
 										hasGeneralColumn = true;
 									}
@@ -164,12 +169,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 									fieldMeta.setId(true);
 									idFields.add(field);
 									if (hasId) {
-										condition.append(JdbcUtils.SPACE_AND_SPACE);
+										condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 									} else {
 										hasId = true;
 									}
-									condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
-											.append(JdbcUtils.PARAM_MARK);
+									condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+											.append(SQLUtils.PARAM_MARK);
 								}
 								fieldMetas.add(fieldMeta);
 							}
@@ -188,15 +193,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 					if (fieldMeta.isId()) {
 						idFields.add(field);
 						if (hasId) {
-							condition.append(JdbcUtils.SPACE_AND_SPACE);
+							condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 						} else {
 							hasId = true;
 						}
-						condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
 					} else {// 组织已存在时的更新子句
 						generalFields.add(field);
 						if (hasGeneralColumn) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCExecuteUtils.COMMA_SPACE);
 						} else {
 							hasGeneralColumn = true;
 						}
@@ -247,7 +252,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 									fieldMeta.setId(false);
 									generalFields.add(field);
 									if (hasGeneralColumn) {
-										sets.append(JdbcUtils.COMMA_SPACE);
+										sets.append(JDBCExecuteUtils.COMMA_SPACE);
 									} else {
 										hasGeneralColumn = true;
 									}
@@ -261,12 +266,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 									fieldMeta.setId(true);
 									idFields.add(field);
 									if (hasId) {
-										condition.append(JdbcUtils.SPACE_AND_SPACE);
+										condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 									} else {
 										hasId = true;
 									}
-									condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
-											.append(JdbcUtils.PARAM_MARK);
+									condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+											.append(SQLUtils.PARAM_MARK);
 								}
 								fieldMetas.add(fieldMeta);
 							}
@@ -285,15 +290,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 					if (fieldMeta.isId()) {
 						idFields.add(field);
 						if (hasId) {
-							condition.append(JdbcUtils.SPACE_AND_SPACE);
+							condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 						} else {
 							hasId = true;
 						}
-						condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
 					} else {// 组织已存在时的更新子句
 						generalFields.add(field);
 						if (hasGeneralColumn) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCExecuteUtils.COMMA_SPACE);
 						} else {
 							hasGeneralColumn = true;
 						}
@@ -341,7 +346,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 					} else {// 组织已存在时的更新子句
 						if (setsFlag) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCExecuteUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -393,7 +398,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 					} else {// 组织已存在时的更新子句
 						if (setsFlag) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCExecuteUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -444,7 +449,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 					} else {// 组织已存在时的更新子句
 						if (setsFlag) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCExecuteUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -496,7 +501,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 									if (param != null) {
 										values.add(param);
 										if (hasGeneralColumn) {
-											sets.append(JdbcUtils.COMMA_SPACE);
+											sets.append(JDBCExecuteUtils.COMMA_SPACE);
 										} else {
 											hasGeneralColumn = true;
 										}
@@ -507,12 +512,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 									fieldMeta.setId(true);
 									conditionValues.add(param);
 									if (hasId) {
-										condition.append(JdbcUtils.SPACE_AND_SPACE);
+										condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 									} else {
 										hasId = true;
 									}
-									condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
-											.append(JdbcUtils.PARAM_MARK);
+									condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+											.append(SQLUtils.PARAM_MARK);
 								}
 								fieldMetas.add(fieldMeta);
 							}
@@ -532,16 +537,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 					if (fieldMeta.isId()) {
 						conditionValues.add(param);
 						if (hasId) {
-							condition.append(JdbcUtils.SPACE_AND_SPACE);
+							condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 						} else {
 							hasId = true;
 						}
-						condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
 					} else {// 组织已存在时的更新子句
 						if (param != null) {
 							values.add(param);
 							if (hasGeneralColumn) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								hasGeneralColumn = true;
 							}
@@ -593,7 +598,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 									if (param != null || hardFieldSet.contains(field.getName())) {
 										values.add(param);
 										if (hasGeneralColumn) {
-											sets.append(JdbcUtils.COMMA_SPACE);
+											sets.append(JDBCExecuteUtils.COMMA_SPACE);
 										} else {
 											hasGeneralColumn = true;
 										}
@@ -604,12 +609,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 									fieldMeta.setId(true);
 									conditionValues.add(param);
 									if (hasId) {
-										condition.append(JdbcUtils.SPACE_AND_SPACE);
+										condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 									} else {
 										hasId = true;
 									}
-									condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE)
-											.append(JdbcUtils.PARAM_MARK);
+									condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+											.append(SQLUtils.PARAM_MARK);
 								}
 								fieldMetas.add(fieldMeta);
 							}
@@ -629,16 +634,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 					if (fieldMeta.isId()) {
 						conditionValues.add(param);
 						if (hasId) {
-							condition.append(JdbcUtils.SPACE_AND_SPACE);
+							condition.append(JDBCExecuteUtils.SPACE_AND_SPACE);
 						} else {
 							hasId = true;
 						}
-						condition.append(columnName).append(JdbcUtils.SPACE_EQ_SPACE).append(JdbcUtils.PARAM_MARK);
+						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
 					} else {// 组织已存在时的更新子句
 						if (param != null || hardFieldSet.contains(field.getName())) {
 							values.add(param);
 							if (hasGeneralColumn) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								hasGeneralColumn = true;
 							}
@@ -686,7 +691,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 						} else {// 组织已存在时的更新子句
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -745,7 +750,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 						} else {// 组织已存在时的更新子句
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -798,7 +803,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						handleIdColumnWhenSave(columnName, templateParams, setsFlag);
 					} else {// 组织已存在时的更新子句
 						if (setsFlag) {
-							sets.append(JdbcUtils.COMMA_SPACE);
+							sets.append(JDBCExecuteUtils.COMMA_SPACE);
 						} else {
 							setsFlag = true;
 						}
@@ -815,6 +820,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 			throw new ColumnNotFoundException(
 					String.format("Column not found in class %s, please use @Column to config fields", type.getName()));
 		}
+	}
+
+	@Override
+	public String pageSql(Connection con, String sql, Map<String, ?> params, SQLMetaData sqlMetaData, int pageSize,
+			long currentPage) throws SQLException {
+		return getSQLPagingDialect().pageSql(con, sql, params, sqlMetaData, pageSize, currentPage);
 	}
 
 	private <T> UpdateSQL updateSQL(Class<T> type, boolean hasId, boolean hasGeneralColumn, String tableName,
@@ -866,7 +877,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -915,7 +926,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							fieldMeta.setId(false);
 							sets = templateParams.get(SETS);
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -967,7 +978,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -1018,7 +1029,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 								fieldMeta.setId(false);
 								if (setsFlag) {
-									sets.append(JdbcUtils.COMMA_SPACE);
+									sets.append(JDBCExecuteUtils.COMMA_SPACE);
 								} else {
 									setsFlag = true;
 								}
@@ -1071,7 +1082,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 								fieldMeta.setId(false);
 								if (setsFlag) {
-									sets.append(JdbcUtils.COMMA_SPACE);
+									sets.append(JDBCExecuteUtils.COMMA_SPACE);
 								} else {
 									setsFlag = true;
 								}
@@ -1121,7 +1132,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 						if (field.getAnnotation(Id.class) == null) {// 组织已存在时的更新子句
 							fieldMeta.setId(false);
 							if (setsFlag) {
-								sets.append(JdbcUtils.COMMA_SPACE);
+								sets.append(JDBCExecuteUtils.COMMA_SPACE);
 							} else {
 								setsFlag = true;
 							}
@@ -1176,7 +1187,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	 */
 	private static final void appendComma(Map<String, StringBuilder> params, List<String> paramNames) {
 		for (int i = 0, size = paramNames.size(); i < size; i++) {
-			params.get(paramNames.get(i)).append(JdbcUtils.COMMA_SPACE);
+			params.get(paramNames.get(i)).append(JDBCExecuteUtils.COMMA_SPACE);
 		}
 	}
 
@@ -1217,67 +1228,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 		} else {
 			return new SQL(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams), params);
 		}
-	}
-
-	@Override
-	public String countSql(String sql, SQLMetaData sqlMetaData) {
-		int embedStartIndex = sqlMetaData.getEmbedStartIndex(), embedEndIndex = sqlMetaData.getEmbedEndIndex(),
-				length = sqlMetaData.getLength();
-		if (sqlMetaData.getLimitIndex() > 0 || sqlMetaData.getOffsetIndex() > 0 || sqlMetaData.getFetchIndex() > 0
-				|| sqlMetaData.getGroupByIndex() > 0) {// 含有LIMIT、OFFSET、FETCH或GROUP BY子句
-			return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
-		}
-		int selectIndex = sqlMetaData.getSelectIndex(), fromIndex = sqlMetaData.getFromIndex(),
-				orderByIndex = sqlMetaData.getOrderByIndex();
-		if (selectIndex >= 0 && fromIndex > selectIndex) {// 正确拼写了SELECT、FROM子句、且不包含LIMIT、OFFSET、FETCH或GROUP BY子句
-			if (orderByIndex > 0) {// 含ORDER BY子句
-				if (selectIndex > 0) {
-					return sql.substring(0, selectIndex).concat(sql.substring(selectIndex, selectIndex + SELECT_LEN))
-							.concat(COUNT).concat(sql.substring(fromIndex, orderByIndex));
-				} else {
-					return sql.substring(selectIndex, selectIndex + SELECT_LEN).concat(COUNT)
-							.concat(sql.substring(fromIndex, orderByIndex));
-				}
-			} else {
-				return sql.substring(0, selectIndex).concat(sql.substring(selectIndex, selectIndex + SELECT_LEN))
-						.concat(COUNT).concat(sql.substring(fromIndex));
-			}
-		}
-		return wrapCountSql(sql, embedStartIndex, embedEndIndex, length);
-	}
-
-	/**
-	 * 包装查询SQL为查询总记录数的SQL
-	 * 
-	 * @param sql
-	 *            查询SQL
-	 * @param embedStartIndex
-	 *            可嵌套查询的开始位置
-	 * @param embedEndIndex
-	 *            可嵌套查询的结束位置
-	 * @param length
-	 *            SQL的长度
-	 * @return 返回查询总记录数的SQL
-	 */
-	private static String wrapCountSql(String sql, int embedStartIndex, int embedEndIndex, int length) {
-		if (embedStartIndex > 0) {
-			if (embedEndIndex < length) {
-				sql = sql.substring(0, embedStartIndex).concat(COUNT_START)
-						.concat(sql.substring(embedStartIndex, embedEndIndex)).concat(COUNT_END)
-						.concat(sql.substring(embedEndIndex));
-			} else {
-				sql = sql.substring(0, embedStartIndex).concat(COUNT_START).concat(sql.substring(embedStartIndex))
-						.concat(COUNT_END);
-			}
-		} else {
-			if (embedEndIndex < length) {
-				sql = COUNT_START.concat(sql.substring(0, embedEndIndex)).concat(COUNT_END)
-						.concat(sql.substring(embedEndIndex));
-			} else {
-				sql = COUNT_START.concat(sql).concat(COUNT_END);
-			}
-		}
-		return sql;
 	}
 
 }

@@ -11,11 +11,12 @@ import java.sql.SQLException;
  *
  * @param <T>
  *            实体类
+ * @since 1.1.1
  */
 public interface SQLExecuter<T> {
 
 	boolean isReadOnly();
-	
+
 	ResultSet execute(PreparedStatement ps) throws SQLException;
 
 	T execute(PreparedStatement ps, ResultSet rs) throws SQLException;

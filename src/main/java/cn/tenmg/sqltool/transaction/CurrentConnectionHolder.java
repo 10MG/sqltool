@@ -6,7 +6,8 @@ import java.sql.Connection;
  * 当前连接持有者
  * 
  * @author 赵伟均 wjzhao@aliyun.com
- *
+ * 
+ * @since 1.2.0
  */
 public abstract class CurrentConnectionHolder {
 

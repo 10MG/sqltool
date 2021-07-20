@@ -8,12 +8,12 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import cn.tenmg.sqltool.DSQLFactory;
+import cn.tenmg.dsql.DSQLFactory;
+import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
+import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sqltool.datasource.DataSourceFactory;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.exception.InitializeDataSourceException;
-import cn.tenmg.sqltool.factory.XMLFileDSQLFactory;
-import cn.tenmg.sqltool.utils.CollectionUtils;
 import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
 /**
@@ -121,7 +121,7 @@ public class BasicDao extends AbstractDao {
 				int index = param.indexOf(".");
 				if (index > 0) {
 					name = param.substring(0, index);
-					param = param.substring(index);
+					param = param.substring(index + 1);
 				} else {
 					name = DEFAULT_NAME;
 				}

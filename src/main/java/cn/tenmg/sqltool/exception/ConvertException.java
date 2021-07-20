@@ -4,7 +4,8 @@ package cn.tenmg.sqltool.exception;
  * 转换异常
  * 
  * @author 赵伟均
- *
+ * 
+ * @since 1.2.0
  */
 public class ConvertException extends RuntimeException {
 

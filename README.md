@@ -99,9 +99,9 @@ sqltool提供足以应对绝大多数业务场景的数据库交互接口，免�
 
 ### staff-info.dsql.xml
 	<?xml version="1.0" encoding="utf-8"?>
-	<sqltool xmlns="http://www.10mg.cn/schema/sqltool"
+	<dsqls xmlns="http://www.10mg.cn/schema/dsql"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://www.10mg.cn/schema/sqltool http://www.10mg.cn/schema/sqltool.xsd">
+		xsi:schemaLocation="http://www.10mg.cn/schema/dsql http://www.10mg.cn/schema/dsql.xsd">
 		<dsql id="find_staff_by_id">
 			<script>
 				<![CDATA[
@@ -109,7 +109,7 @@ sqltool提供足以应对绝大多数业务场景的数据库交互接口，免�
 				]]>
 			</script>
 		</dsql>
-	</sqltool>
+	</dsqls>
 
 ### Java
 

@@ -40,7 +40,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private static DataSource defaultDataSource;
 
-	private static volatile boolean uninitialized = true;
+	private volatile boolean uninitialized = true;
 
 	private Properties properties;
 
@@ -110,7 +110,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 	/**
 	 * 初始化
 	 */
-	private static synchronized void initialized(Properties properties) {
+	private synchronized void initialized(Properties properties) {
 		if (uninitialized) {
 			Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
 			String key, name, param, firstName = null;

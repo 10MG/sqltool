@@ -18,8 +18,18 @@ public class OracleTest {
 	private static String position = "Software Engineer";
 
 	@Test
-	public void doTest() {
+	public void testBasicDao() {
 		doTest(SqltoolFactory.createDao("oracle.properties"));
+	}
+
+	@Test
+	public void testDistributedDao() {
+		doTest(SqltoolFactory.createDao("oracle2.properties"));
+	}
+
+	public void doTest() {
+		testBasicDao();
+		testDistributedDao();
 	}
 
 	public static void doTest(Dao dao) {

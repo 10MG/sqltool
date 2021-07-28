@@ -18,8 +18,18 @@ public class PostgresSQLTest {
 	private static String position = "Software Engineer";
 
 	@Test
-	public void doTest() {
+	public void testBasicDao() {
 		doTest(SqltoolFactory.createDao("postgresql.properties"));
+	}
+
+	@Test
+	public void testDistributedDao() {
+		doTest(SqltoolFactory.createDao("postgresql2.properties"));
+	}
+
+	public void doTest() {
+		testBasicDao();
+		testDistributedDao();
 	}
 
 	public static void doTest(Dao dao) {

@@ -111,9 +111,6 @@ public class DistributedDao extends AbstractDao implements Serializable {
 	 * 初始化
 	 */
 	private static synchronized void initialized(Properties properties) {
-		if (uninitialized) {
-			return;
-		}
 		Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
 		String key, name, param, firstName = null;
 		Object value;

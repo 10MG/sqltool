@@ -58,13 +58,13 @@ public abstract class AbstractDao implements Dao {
 
 	private static final Logger log = LogManager.getLogger(AbstractDao.class);
 
-	private static final Map<DataSource, SQLDialect> DIALECTS = new HashMap<DataSource, SQLDialect>();
+	private transient volatile Map<DataSource, SQLDialect> DIALECTS = new HashMap<DataSource, SQLDialect>();
 
 	abstract boolean isShowSql();
 
 	abstract int getDefaultBatchSize();
 
-	protected static synchronized void cacheSQLDialect(DataSource dataSource, SQLDialect dialect) {
+	protected synchronized void cacheSQLDialect(DataSource dataSource, SQLDialect dialect) {
 		DIALECTS.put(dataSource, dialect);
 	}
 

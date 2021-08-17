@@ -36,11 +36,11 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private static final int DATASOURCE_PREFIX_LEN = DATASOURCE_PREFIX.length();
 
-	private static final Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
+	private transient volatile boolean initialized;
 
-	private static DataSource defaultDataSource;
+	private transient volatile DataSource defaultDataSource;
 
-	private static volatile boolean uninitialized = true;
+	private transient volatile Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
 
 	private Properties properties;
 
@@ -75,25 +75,28 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	@Override
 	public DataSource getDefaultDataSource() {
-		if (uninitialized) {
-			initialized(properties);
+		if (initialized) {
+			return defaultDataSource;
 		}
+		initialized(properties);
 		return defaultDataSource;
 	}
 
 	@Override
 	public DataSource getDataSource(String name) {
-		if (uninitialized) {
-			initialized(properties);
+		if (initialized) {
+			return dataSources.get(name);
 		}
+		initialized(properties);
 		return dataSources.get(name);
 	}
 
 	@Override
 	protected SQLDialect getSQLDialect(DataSource dataSource) {
-		if (uninitialized) {
-			initialized(properties);
+		if (initialized) {
+			return super.getSQLDialect(dataSource);
 		}
+		initialized(properties);
 		return super.getSQLDialect(dataSource);
 	}
 
@@ -107,66 +110,66 @@ public class DistributedDao extends AbstractDao implements Serializable {
 		return defaultBatchSize;
 	}
 
-	/**
-	 * 初始化
-	 */
-	private static synchronized void initialized(Properties properties) {
-		Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
-		String key, name, param, firstName = null;
-		Object value;
-		Properties datasourceConfig;
-		for (Iterator<Entry<Object, Object>> it = properties.entrySet().iterator(); it.hasNext();) {
-			Entry<Object, Object> entry = it.next();
-			key = entry.getKey().toString();
-			value = entry.getValue();
-			if (key.matches(DATASOURCE_REGEX)) {
-				param = key.substring(DATASOURCE_PREFIX_LEN);
-				int index = param.indexOf(".");
-				if (index > 0) {
-					name = param.substring(0, index);
-					param = param.substring(index);
-				} else {
-					name = DEFAULT_NAME;
+	// 初始化
+	private synchronized void initialized(Properties properties) {
+		if (!initialized) {
+			Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
+			String key, name, param, firstName = null;
+			Object value;
+			Properties datasourceConfig;
+			for (Iterator<Entry<Object, Object>> it = properties.entrySet().iterator(); it.hasNext();) {
+				Entry<Object, Object> entry = it.next();
+				key = entry.getKey().toString();
+				value = entry.getValue();
+				if (key.matches(DATASOURCE_REGEX)) {
+					param = key.substring(DATASOURCE_PREFIX_LEN);
+					int index = param.indexOf(".");
+					if (index > 0) {
+						name = param.substring(0, index);
+						param = param.substring(index);
+					} else {
+						name = DEFAULT_NAME;
+					}
+					if (firstName == null) {
+						firstName = name;
+					}
+					datasourceConfig = datasourceConfigs.get(name);
+					if (datasourceConfig == null) {
+						datasourceConfig = new Properties();
+						datasourceConfigs.put(name, datasourceConfig);
+					}
+					datasourceConfig.put(param, value);
 				}
-				if (firstName == null) {
-					firstName = name;
-				}
-				datasourceConfig = datasourceConfigs.get(name);
-				if (datasourceConfig == null) {
-					datasourceConfig = new Properties();
-					datasourceConfigs.put(name, datasourceConfig);
-				}
-				datasourceConfig.put(param, value);
 			}
-		}
-		if (CollectionUtils.isEmpty(datasourceConfigs)) {
-			throw new IllegalConfigException("No datasource is configured, please check the configuration");
-		}
-		datasourceConfig = datasourceConfigs.get(DEFAULT_NAME);
-		if (datasourceConfig == null) {// 默认数据源不存在则将第一个数据源作为默认数据源
-			name = firstName;
-			datasourceConfig = datasourceConfigs.get(firstName);
-		} else {
-			name = DEFAULT_NAME;
-		}
-		try {
-			defaultDataSource = DataSourceFactory.createDataSource(datasourceConfig);
-			dataSources.put(name, defaultDataSource);
-			cacheSQLDialect(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
-			datasourceConfigs.remove(name);
-			DataSource dataSource;
-			for (Iterator<Entry<String, Properties>> it = datasourceConfigs.entrySet().iterator(); it.hasNext();) {
-				Entry<String, Properties> entry = it.next();
-				name = entry.getKey();
-				datasourceConfig = entry.getValue();
-				dataSource = DataSourceFactory.createDataSource(datasourceConfig);
-				dataSources.put(name, dataSource);
-				cacheSQLDialect(dataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
+			if (CollectionUtils.isEmpty(datasourceConfigs)) {
+				throw new IllegalConfigException("No datasource is configured, please check the configuration");
 			}
-		} catch (Exception e) {
-			throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);
+			datasourceConfig = datasourceConfigs.get(DEFAULT_NAME);
+			if (datasourceConfig == null) {// 默认数据源不存在则将第一个数据源作为默认数据源
+				name = firstName;
+				datasourceConfig = datasourceConfigs.get(firstName);
+			} else {
+				name = DEFAULT_NAME;
+			}
+			try {
+				defaultDataSource = DataSourceFactory.createDataSource(datasourceConfig);
+				dataSources.put(name, defaultDataSource);
+				cacheSQLDialect(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
+				datasourceConfigs.remove(name);
+				DataSource dataSource;
+				for (Iterator<Entry<String, Properties>> it = datasourceConfigs.entrySet().iterator(); it.hasNext();) {
+					Entry<String, Properties> entry = it.next();
+					name = entry.getKey();
+					datasourceConfig = entry.getValue();
+					dataSource = DataSourceFactory.createDataSource(datasourceConfig);
+					dataSources.put(name, dataSource);
+					cacheSQLDialect(dataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
+				}
+			} catch (Exception e) {
+				throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);
+			}
+			initialized = true;
 		}
-		uninitialized = false;
 	}
 
 }

@@ -36,11 +36,9 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private static final int DATASOURCE_PREFIX_LEN = DATASOURCE_PREFIX.length();
 
-	private transient volatile boolean initialized;
-
 	private transient volatile DataSource defaultDataSource;
 
-	private transient volatile Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
+	private transient volatile Map<String, DataSource> dataSources;
 
 	private Properties properties;
 
@@ -52,6 +50,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private DistributedDao(Properties properties) {
 		super();
+		this.dataSources = new HashMap<String, DataSource>();
 		this.properties = properties;
 		String basePackages = properties.getProperty("sqltool.basePackages"),
 				suffix = properties.getProperty("sqltool.suffix");
@@ -75,28 +74,25 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	@Override
 	public DataSource getDefaultDataSource() {
-		if (initialized) {
-			return defaultDataSource;
+		if (defaultDataSource == null) {
+			initialized(properties);
 		}
-		initialized(properties);
 		return defaultDataSource;
 	}
 
 	@Override
 	public DataSource getDataSource(String name) {
-		if (initialized) {
-			return dataSources.get(name);
+		if (defaultDataSource == null) {
+			initialized(properties);
 		}
-		initialized(properties);
 		return dataSources.get(name);
 	}
 
 	@Override
 	protected SQLDialect getSQLDialect(DataSource dataSource) {
-		if (initialized) {
-			return super.getSQLDialect(dataSource);
+		if (defaultDataSource == null) {
+			initialized(properties);
 		}
-		initialized(properties);
 		return super.getSQLDialect(dataSource);
 	}
 
@@ -112,7 +108,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	// 初始化
 	private synchronized void initialized(Properties properties) {
-		if (!initialized) {
+		if (defaultDataSource == null) {
 			Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
 			String key, name, param, firstName = null;
 			Object value;
@@ -153,6 +149,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 			}
 			try {
 				defaultDataSource = DataSourceFactory.createDataSource(datasourceConfig);
+				dataSources = new HashMap<String, DataSource>();
 				dataSources.put(name, defaultDataSource);
 				cacheSQLDialect(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
 				datasourceConfigs.remove(name);
@@ -168,7 +165,6 @@ public class DistributedDao extends AbstractDao implements Serializable {
 			} catch (Exception e) {
 				throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);
 			}
-			initialized = true;
 		}
 	}
 

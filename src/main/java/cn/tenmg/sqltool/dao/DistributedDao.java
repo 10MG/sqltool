@@ -36,9 +36,9 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private static final int DATASOURCE_PREFIX_LEN = DATASOURCE_PREFIX.length();
 
-	private transient volatile DataSource defaultDataSource;
+	private static final Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
 
-	private transient volatile Map<String, DataSource> dataSources;
+	private static volatile DataSource defaultDataSource;
 
 	private Properties properties;
 
@@ -50,7 +50,6 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private DistributedDao(Properties properties) {
 		super();
-		this.dataSources = new HashMap<String, DataSource>();
 		this.properties = properties;
 		String basePackages = properties.getProperty("sqltool.basePackages"),
 				suffix = properties.getProperty("sqltool.suffix");
@@ -106,8 +105,10 @@ public class DistributedDao extends AbstractDao implements Serializable {
 		return defaultBatchSize;
 	}
 
-	// 初始化
-	private synchronized void initialized(Properties properties) {
+	/**
+	 * 初始化
+	 */
+	private static synchronized void initialized(Properties properties) {
 		if (defaultDataSource == null) {
 			Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
 			String key, name, param, firstName = null;
@@ -149,7 +150,6 @@ public class DistributedDao extends AbstractDao implements Serializable {
 			}
 			try {
 				defaultDataSource = DataSourceFactory.createDataSource(datasourceConfig);
-				dataSources = new HashMap<String, DataSource>();
 				dataSources.put(name, defaultDataSource);
 				cacheSQLDialect(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
 				datasourceConfigs.remove(name);

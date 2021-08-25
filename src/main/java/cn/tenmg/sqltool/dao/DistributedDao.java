@@ -36,11 +36,9 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private static final int DATASOURCE_PREFIX_LEN = DATASOURCE_PREFIX.length();
 
-	private transient volatile boolean initialized;
+	private static final Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
 
-	private transient volatile DataSource defaultDataSource;
-
-	private transient volatile Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
+	private static volatile DataSource defaultDataSource;
 
 	private Properties properties;
 
@@ -75,28 +73,25 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	@Override
 	public DataSource getDefaultDataSource() {
-		if (initialized) {
-			return defaultDataSource;
+		if (defaultDataSource == null) {
+			initialized(properties);
 		}
-		initialized(properties);
 		return defaultDataSource;
 	}
 
 	@Override
 	public DataSource getDataSource(String name) {
-		if (initialized) {
-			return dataSources.get(name);
+		if (defaultDataSource == null) {
+			initialized(properties);
 		}
-		initialized(properties);
 		return dataSources.get(name);
 	}
 
 	@Override
 	protected SQLDialect getSQLDialect(DataSource dataSource) {
-		if (initialized) {
-			return super.getSQLDialect(dataSource);
+		if (defaultDataSource == null) {
+			initialized(properties);
 		}
-		initialized(properties);
 		return super.getSQLDialect(dataSource);
 	}
 
@@ -110,9 +105,11 @@ public class DistributedDao extends AbstractDao implements Serializable {
 		return defaultBatchSize;
 	}
 
-	// 初始化
-	private synchronized void initialized(Properties properties) {
-		if (!initialized) {
+	/**
+	 * 初始化
+	 */
+	private static synchronized void initialized(Properties properties) {
+		if (defaultDataSource == null) {
 			Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
 			String key, name, param, firstName = null;
 			Object value;
@@ -168,7 +165,6 @@ public class DistributedDao extends AbstractDao implements Serializable {
 			} catch (Exception e) {
 				throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);
 			}
-			initialized = true;
 		}
 	}
 

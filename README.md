@@ -100,6 +100,8 @@ DBCP2     | 1.2+
 
 ## 相关链接
 
+开发文档： https://gitee.com/tenmg/sqltool/wikis
+
 DSQL开源地址：https://gitee.com/tenmg/dsql
 
 DSL开源地址：https://gitee.com/tenmg/dsl

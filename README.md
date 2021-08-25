@@ -1,154 +1,107 @@
-# 文档
-<p>http://doc.10mg.cn/sqltool</p>
-<p>https://gitee.com/tenmg/sqltool/wikis</p>
-<p>https://github.com/10MG/sqltool/wiki</p>
+# Sqltool
 
-## 关于
-Sqltool是一个给分布式环境提供动态结构化查询语言（DSQL）解析和执行的框架，如Spark、Spring Cloud、Dubbo等等。Sqltool能帮助程序员管理和执行庞大而复杂的动态结构化查询语言（DSQL），并使程序员从手动拼接繁杂的SQL工作中解脱；Sqltool还能给使用Spark SQL的程序员带来福音，因为动态结构化查询语言（DSQL）可以直接提交给Spark执行，解决Spark SQL传参的难题。
+Sqltool是一个给分布式环境提供动态结构化查询语言（DSQL）解析和执行的框架，如Spark、Spring Cloud、Dubbo等等。Sqltool能帮助程序员管理和执行庞大而复杂的动态结构化查询语言（DSQL），并使程序员从手动拼接繁杂的SQL工作中解脱。
 
-## 对象关系映射（ORM）
-对象关系映射在java语言中是一种非常重要的技术，sqltool当然支持简单但足以应对很多情况的对象关系映射技术。比如，将查询的数据自动转换为对象，通过对象保存记录到数据库中。
+## DSQL
 
-## 完善的数据库交互接口
-sqltool提供足以应对绝大多数业务场景的数据库交互接口，免除了几乎所有的JDBC代码以及设置参数和获取结果集的工作。
+[DSQL](https://gitee.com/tenmg/dsql)的全称是动态结构化查询语言(Dynamic Structured Query Language)是一种使用特殊字符#[]标记动态片段的结构化查询语言(SQL)，当实际执行查询时，判断实际传入参数值是否为空（null）决定是否保留该片段，同时保留片段的特殊字符会被自动去除。以此来避免程序员手动拼接繁杂的SQL，使得程序员能从繁杂的业务逻辑中解脱出来。
 
-1.  单值查询
+### 例子
 
-2.  单个实体对象查询
+假设有如下动态查询语句：
 
-3.  实体对象列表查询
+```
+SELECT
+  *
+FROM STAFF_INFO S
+WHERE S.STATUS = 'VALID'
+#[AND S.STAFF_ID = :staffId]
+#[AND S.STAFF_NAME LIKE :staffName]
+```
 
-4.  智能分页查询
+参数staffId为空（null），而staffName为非空（非null）时，实际执行的语句为：
 
-5.  实体对象插入、更新、合并（有则更新、无则插入）、删除
+```
+SELECT
+   *
+ FROM STAFF_INFO S
+ WHERE S.STATUS = 'VALID'
+ AND S.STAFF_NAME LIKE :staffName
+```
 
-6.  实体对象软更新、合并（有则更新、无则插入）
+相反，参数staffName为空（null），而staffId为非空（非null）时，实际执行的语句为：
 
-## 什么是动态结构化查询语言？
-动态结构化查询语言(DSQL)是一种使用特殊字符#[]标记动态片段的结构化查询语言(SQL)，当实际执行查询时，判断实际传入参数值是否为空（null）决定是否保留该片段，同时保留片段的特殊字符会被自动去除。以此来避免程序员手动拼接繁杂的SQL，使得程序员能从繁杂的业务逻辑中解脱出来。
 
-## 例子
-	SELECT
-	  *
-	FROM STAFF_INFO S
-	WHERE S.STATUS = 'VALID'
-	#[AND S.STAFF_ID = :staffId]
-	#[AND S.STAFF_NAME LIKE :staffName]
-1. 参数staffId为空（null），而staffName为非空（非null）时，实际执行的语句为：
+```
+SELECT
+   *
+ FROM STAFF_INFO S
+ WHERE S.STATUS = 'VALID'
+ AND S.STAFF_ID = :staffId
+```
 
-		SELECT
-		  *
-		FROM STAFF_INFO S
-		WHERE S.STATUS = 'VALID'
-		AND S.STAFF_NAME LIKE :staffName
-2. 相反，参数staffName为空（null），而staffId为非空（非null）时，实际执行的语句为：
+或者，参数staffId、staffName均为空（null）时，实际执行的语句为：
 
-		SELECT
-		  *
-		FROM STAFF_INFO S
-		WHERE S.STATUS = 'VALID'
-		AND S.STAFF_ID = :staffId
-3. 或者，参数staffId、staffName均为空（null）时，实际执行的语句为：
+```
+SELECT
+   *
+ FROM STAFF_INFO S
+ WHERE S.STATUS = 'VALID'
+```
 
-		SELECT
-		  *
-		FROM STAFF_INFO S
-		WHERE S.STATUS = 'VALID'
-4. 最后，参数staffId、staffName均为非空（非null）时，实际执行的语句为：
+最后，参数staffId、staffName均为非空（非null）时，实际执行的语句为：
 
-		SELECT
-		  *
-		FROM STAFF_INFO S
-		WHERE S.STATUS = 'VALID'
-		AND S.STAFF_ID = :staffId
-		AND S.STAFF_NAME LIKE :staffName
-通过上面这个小例子，我们看到了动态结构化查询语言（DSQL）的魔力。这种魔力的来源是巧妙的运用了一个值：空(null)，因为该值往往在结构化查询语言(SQL)中很少用到，而且即使使用也是往往作为特殊的常量使用，比如：NVL(EMAIL,'无')，WHERE EMAIL IS NOT NULL等。
+```
+SELECT
+   *
+ FROM STAFF_INFO S
+ WHERE S.STATUS = 'VALID'
+ AND S.STAFF_ID = :staffId
+ AND S.STAFF_NAME LIKE :staffName
+```
 
-## 如何使用
-以下是一个简单的例子可以帮你您起步。
+通过上面这个小例子，我们看到了动态结构化查询语言（DSQL）的魔力。这种魔力的来源是巧妙的运用了一个值：空(null)，因为该值往往在结构化查询语言(SQL)中很少用到，而且即便使用也是往往作为特殊的常量使用，比如：
+```
+NVL(EMAIL,'无')
+```
+和
+```
+WHERE EMAIL IS NOT NULL
+```
+等等。
 
-### sqltool.properties
-	# Packages to scan DSQL configuration file
-	sqltool.basePackages=cn.tenmg.sqltool
-	# Suffix of DSQL configuration file
-	sqltool.suffix=.dsql.xml
-	# Show SQL when execute them
-	sqltool.showSql=true
-	# Type of Dao, default cn.tenmg.sqltool.dao.BasicDao
-	sqltool.dao=cn.tenmg.sqltool.dao.DistributedDao
-	# Use driud database connection pool(It's also default)
-	sqltool.datasource.type=com.alibaba.druid.pool.DruidDataSource
-	sqltool.datasource.driverClassName=com.mysql.cj.jdbc.Driver
-	sqltool.datasource.url=jdbc:mysql://127.0.0.1:3306/sqltool?useSSL=false&serverTimezone=Asia/Shanghai
-	sqltool.datasource.username=root
-	sqltool.datasource.password=
-	sqltool.datasource.maxWait=60000
-	sqltool.datasource.minIdle=5
-	sqltool.datasource.maxActive=10
-	sqltool.datasource.initialSize=5
-	sqltool.datasource.testOnBorrow=true
-	sqltool.datasource.testOnReturn=false
-	sqltool.datasource.testWhileIdle=true
-	sqltool.datasource.validationQuery=select 1
-	sqltool.datasource.validationQueryTimeout=30000
-	sqltool.datasource.timeBetweenEvictionRunsMillis=600000
-	sqltool.datasource.minEvictableIdleTimeMillis=300000
-	sqltool.datasource.maxEvictableIdleTimeMillis=3600000
-	sqltool.datasource.poolPreparedStatements=true
-	sqltool.datasource.maxOpenPreparedStatements=20
+## 数据库
 
-### staff-info.dsql.xml
-	<?xml version="1.0" encoding="utf-8"?>
-	<dsqls xmlns="http://www.10mg.cn/schema/dsql"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://www.10mg.cn/schema/dsql http://www.10mg.cn/schema/dsql.xsd">
-		<dsql id="find_staff_by_id">
-			<script>
-				<![CDATA[
-					SELECT * FROM STAFF_INFO WHERE STAFF_ID = :staffId
-				]]>
-			</script>
-		</dsql>
-	</dsqls>
+一些普通的查询、插入和全字段的硬更新API可以使用所有支持标准SQL的数据库，但部分ORM和分页查询等API需要依赖不同方言的实现类。
 
-### Java
+数据库     | 支持版本
+-----------|---------
+Mysql      | 1.0+
+Oracle     | 1.1+
+PostgreSQL | 1.1.1+
+SQLServer  | 1.2.4+
 
-	/**
-	 * 创建数据库访问对象
-	 */
-	Dao dao = SqltoolFactory.createDao("sqltool.properties");
+## 连接池
 
-	StaffInfo june = new StaffInfo("000001");
-	june.setStaffName("June");
+1.2.0以下版本不支持数据库连接池，且API大不相同；1.2.0开始支持两种常用数据库连接池Druid和DBCP2；1.2.2及以上版本全面支持分布式环境下使用数据库连接池；1.2.3及以上版本，可以通过使用BasicDao自主配置数据源来使用数据库连接池或者不使用连接池（例如，直接使用MySQL启动程序的MysqlDataSource也是可行的）。
 
-	/**
-	 * 
-	 * 插入实体对象
-	 */
-	dao.insert(june);
+产品    | 支持版本
+---|---
+Druid     | 1.2+
+DBCP2     | 1.2+
+其他      | 1.2.3+
 
-	/**
-	 * 使用员工编号加载员工信息
-	 */
-	StaffInfo params = new StaffInfo("000001");
-	june = dao.get(params);
+## 参与贡献
 
-	/**
-	 * 使用DSQL查询。可以使用参数名值对来指定参数
-	 */
-	june = dao.get(StaffInfo.class, "SELECT * FROM STAFF_INFO S WHERE 1=1 #[AND S.STAFF_ID = :staffId]", "staffId","000001");
+1.  Fork 本仓库
+2.  新建 Feat_xxx 分支
+3.  提交代码
+4.  新建 Pull Request
 
-	/**
-	 * 使用DSQL编号查询。同时，你还可以使用Map对象来更自由地组织查询参数
-	 */
-	Map<String, Object> paramaters = new HashMap<String, Object>();
-	paramaters.put("staffId", "000001");
-	june = dao.get(StaffInfo.class, "find_staff_by_id", paramaters);
+## 相关链接
 
-	/**
-	 * 
-	 * 保存（插入或更新）实体对象
-	 */
-	june.setStaffName("Happy June");
-	dao.save(june);
+开发文档： https://gitee.com/tenmg/sqltool/wikis
 
+DSQL开源地址：https://gitee.com/tenmg/dsql
+
+DSL开源地址：https://gitee.com/tenmg/dsl

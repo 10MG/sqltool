@@ -1,6 +1,6 @@
 # Sqltool
 
-Sqltool是一个给分布式环境提供动态结构化查询语言（DSQL）解析和执行的框架，如Spark、Spring Cloud、Dubbo等等。Sqltool能帮助程序员管理和执行庞大而复杂的动态结构化查询语言（DSQL），并使程序员从手动拼接繁杂的SQL工作中解脱。
+Sqltool是一个给分布式环境（如Spark、Flink等）提供动态结构化查询语言（DSQL）解析和执行的ORM框架。Sqltool能帮助程序员管理和执行庞大而复杂的动态结构化查询语言（DSQL），并使程序员从手动拼接繁杂的SQL工作中解脱。
 
 ## DSQL
 

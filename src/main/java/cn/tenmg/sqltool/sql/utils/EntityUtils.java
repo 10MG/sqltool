@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cn.tenmg.dsl.Script;
 import cn.tenmg.dsl.utils.StringUtils;
-import cn.tenmg.sql.paging.SQL;
 import cn.tenmg.sql.paging.utils.SQLUtils;
 import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
@@ -54,7 +54,7 @@ public abstract class EntityUtils {
 		return tableName;
 	}
 
-	public static <T> SQL parseSelect(T obj) {
+	public static <T> Script<List<Object>> parseSelect(T obj) {
 		StringBuilder columns = new StringBuilder(), criteria = new StringBuilder();
 		List<Object> params = new ArrayList<Object>();
 		boolean hasColumn = false, hasWhere = false;
@@ -142,7 +142,7 @@ public abstract class EntityUtils {
 			throw new DataAccessException(e);
 		}
 		if (hasColumn) {
-			return new SQL(String.format(SELECT_SQL_TPL, columns, EntityUtils.getTableName(type), criteria), params);
+			return new Script<List<Object>>(String.format(SELECT_SQL_TPL, columns, EntityUtils.getTableName(type), criteria), params);
 		} else {
 			throw new PkNotFoundException(
 					"Column not found in class ".concat(type.getName()).concat(", please use @Column to config"));

@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cn.tenmg.dsl.Script;
 import cn.tenmg.dsl.utils.StringUtils;
 import cn.tenmg.dsql.utils.PlaceHolderUtils;
-import cn.tenmg.sql.paging.SQL;
 import cn.tenmg.sql.paging.SQLMetaData;
 import cn.tenmg.sql.paging.SQLPagingDialect;
 import cn.tenmg.sql.paging.dialect.AbstractSQLPagingDialect;
@@ -469,7 +469,7 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 	}
 
 	@Override
-	public <T> SQL update(T obj) {
+	public <T> Script<List<Object>> update(T obj) {
 		Class<?> type = obj.getClass();
 		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
 		boolean hasId = false, hasGeneralColumn = false;
@@ -562,7 +562,7 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 	}
 
 	@Override
-	public <T> SQL update(T obj, String... hardFields) {
+	public <T> Script<List<Object>> update(T obj, String... hardFields) {
 		Set<String> hardFieldSet = new HashSet<String>();
 		for (int i = 0; i < hardFields.length; i++) {
 			hardFieldSet.add(hardFields[i]);
@@ -659,7 +659,7 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 	}
 
 	@Override
-	public <T> SQL save(T obj) {
+	public <T> Script<List<Object>> save(T obj) {
 		Class<?> type = obj.getClass();
 		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
 		boolean columnFound = false;
@@ -713,7 +713,7 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 	}
 
 	@Override
-	public <T> SQL save(T obj, String... hardFields) {
+	public <T> Script<List<Object>> save(T obj, String... hardFields) {
 		Set<String> hardFieldSet = new HashSet<String>();
 		for (int i = 0; i < hardFields.length; i++) {
 			hardFieldSet.add(hardFields[i]);
@@ -772,7 +772,7 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 	}
 
 	@Override
-	public <T> SQL hardSave(T obj) {
+	public <T> Script<List<Object>> hardSave(T obj) {
 		Class<?> type = obj.getClass();
 		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
 		boolean columnFound = false;
@@ -1202,12 +1202,12 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 		}
 	}
 
-	private <T> SQL sql(T obj, boolean hasId, boolean hasGeneralColumn, String tableName, StringBuilder sets,
+	private <T> Script<List<Object>> sql(T obj, boolean hasId, boolean hasGeneralColumn, String tableName, StringBuilder sets,
 			StringBuilder condition, List<Object> values, List<Object> conditionValues) {
 		if (hasId) {
 			if (hasGeneralColumn) {
 				values.addAll(conditionValues);
-				return new SQL(
+				return new Script<List<Object>>(
 						PlaceHolderUtils.replace(UPDATE, "tableName", tableName, "sets", sets, "condition", condition),
 						values);
 			} else {
@@ -1221,12 +1221,12 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 		}
 	}
 
-	private SQL sql(String tableName, Map<String, StringBuilder> templateParams, List<Object> params) {
+	private Script<List<Object>> sql(String tableName, Map<String, StringBuilder> templateParams, List<Object> params) {
 		templateParams.put(TABLE_NAME, new StringBuilder(tableName));
 		if (templateParams.get(SETS).length() > 0) {
-			return new SQL(PlaceHolderUtils.replace(getSaveSQLTemplate(), templateParams), params);
+			return new Script<List<Object>>(PlaceHolderUtils.replace(getSaveSQLTemplate(), templateParams), params);
 		} else {
-			return new SQL(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams), params);
+			return new Script<List<Object>>(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams), params);
 		}
 	}
 

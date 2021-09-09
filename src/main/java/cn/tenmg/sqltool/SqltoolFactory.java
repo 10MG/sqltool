@@ -3,9 +3,9 @@ package cn.tenmg.sqltool;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
+import cn.tenmg.dsl.utils.PropertiesLoaderUtils;
 import cn.tenmg.sqltool.dao.BasicDao;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
-import cn.tenmg.sqltool.utils.PropertiesLoaderUtils;
 
 /**
  * Sqltool工厂

@@ -14,9 +14,11 @@ import javax.sql.DataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cn.tenmg.dsl.Script;
+import cn.tenmg.dsl.parser.JDBCParamsParser;
+import cn.tenmg.dsl.utils.DSLUtils;
 import cn.tenmg.dsql.NamedSQL;
 import cn.tenmg.dsql.utils.CollectionUtils;
-import cn.tenmg.sql.paging.SQL;
 import cn.tenmg.sql.paging.SQLMetaData;
 import cn.tenmg.sql.paging.utils.JDBCUtils;
 import cn.tenmg.sql.paging.utils.SQLUtils;
@@ -140,8 +142,8 @@ public abstract class AbstractDao implements Dao {
 
 	@Override
 	public <T extends Serializable> int update(DataSource dataSource, T obj) {
-		SQL sql = getSQLDialect(dataSource).update(obj);
-		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		Script<List<Object>> sql = getSQLDialect(dataSource).update(obj);
+		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -151,8 +153,8 @@ public abstract class AbstractDao implements Dao {
 
 	@Override
 	public <T extends Serializable> int update(DataSource dataSource, T obj, String... hardFields) {
-		SQL sql = getSQLDialect(dataSource).update(obj, hardFields);
-		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		Script<List<Object>> sql = getSQLDialect(dataSource).update(obj, hardFields);
+		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -297,8 +299,8 @@ public abstract class AbstractDao implements Dao {
 
 	@Override
 	public <T extends Serializable> int save(DataSource dataSource, T obj) {
-		SQL sql = getSQLDialect(dataSource).save(obj);
-		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		Script<List<Object>> sql = getSQLDialect(dataSource).save(obj);
+		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -308,8 +310,8 @@ public abstract class AbstractDao implements Dao {
 
 	@Override
 	public <T extends Serializable> int save(DataSource dataSource, T obj, String... hardFields) {
-		SQL sql = getSQLDialect(dataSource).save(obj, hardFields);
-		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		Script<List<Object>> sql = getSQLDialect(dataSource).save(obj, hardFields);
+		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -392,8 +394,8 @@ public abstract class AbstractDao implements Dao {
 
 	@Override
 	public <T extends Serializable> int hardSave(DataSource dataSource, T obj) {
-		SQL sql = getSQLDialect(dataSource).hardSave(obj);
-		return execute(dataSource, null, sql.getScript(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
+		Script<List<Object>> sql = getSQLDialect(dataSource).hardSave(obj);
+		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
@@ -573,8 +575,8 @@ public abstract class AbstractDao implements Dao {
 	@SuppressWarnings("unchecked")
 	public <T extends Serializable> List<T> select(DataSource dataSource, T obj) {
 		Class<T> type = (Class<T>) obj.getClass();
-		SQL sql = EntityUtils.parseSelect(obj);
-		return execute(dataSource, null, sql.getScript(), sql.getParams(), new SelectSQLExecuter<T>(type));
+		Script<List<Object>> sql = EntityUtils.parseSelect(obj);
+		return execute(dataSource, null, sql.getValue(), sql.getParams(), new SelectSQLExecuter<T>(type));
 	}
 
 	@Override
@@ -960,8 +962,9 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	private <T> T execute(DataSource dataSource, NamedSQL namedSQL, SQLExecuter<T> sqlExecuter) {
-		SQL sql = SQLUtils.toSQL(namedSQL.getScript(), namedSQL.getParams());
-		return execute(dataSource, namedSQL.getId(), sql.getScript(), sql.getParams(), sqlExecuter);
+		Script<List<Object>> sql = DSLUtils.toScript(namedSQL.getScript(), namedSQL.getParams(),
+				JDBCParamsParser.getInstance());
+		return execute(dataSource, namedSQL.getId(), sql.getValue(), sql.getParams(), sqlExecuter);
 	}
 
 	private <T extends Serializable> List<T> select(DataSource dataSource, NamedSQL namedSQL, Class<T> type) {
@@ -991,14 +994,16 @@ public abstract class AbstractDao implements Dao {
 			String id = namedSQL.getId(), script = namedSQL.getScript();
 			Map<String, Object> params = namedSQL.getParams();
 			SQLMetaData sqlMetaData = SQLUtils.getSQLMetaData(script);
-			SQL SQL = SQLUtils.toSQL(dialect.countSql(script, sqlMetaData), params);
-			Long total = JDBCExecuteUtils.execute(con, id, SQL.getScript(), SQL.getParams(),
+			Script<List<Object>> sql = DSLUtils.toScript(dialect.countSql(script, sqlMetaData), params,
+					JDBCParamsParser.getInstance());
+			Long total = JDBCExecuteUtils.execute(con, id, sql.getValue(), sql.getParams(),
 					LongResultSQLExecuter.getInstance(), showSql);
 			page.setTotal(total);
 			if (total != null && total > 0) {
 				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
-				SQL = SQLUtils.toSQL(dialect.pageSql(con, script, params, sqlMetaData, pageSize, currentPage), params);
-				page.setRows(JDBCExecuteUtils.execute(con, id, SQL.getScript(), SQL.getParams(),
+				sql = DSLUtils.toScript(dialect.pageSql(con, script, params, sqlMetaData, pageSize, currentPage),
+						params, JDBCParamsParser.getInstance());
+				page.setRows(JDBCExecuteUtils.execute(con, id, sql.getValue(), sql.getParams(),
 						new SelectSQLExecuter<T>(type), showSql));
 			} else {
 				page.setTotalPage(0L);
@@ -1024,17 +1029,18 @@ public abstract class AbstractDao implements Dao {
 			boolean showSql = isShowSql();
 			String script = countNamedSQL.getScript();
 			SQLDialect dialect = getSQLDialect(dataSource);
-			SQL SQL = SQLUtils.toSQL(dialect.countSql(script, SQLUtils.getSQLMetaData(script)),
-					countNamedSQL.getParams());
-			Long total = JDBCExecuteUtils.execute(con, countNamedSQL.getId(), SQL.getScript(), SQL.getParams(),
+			Script<List<Object>> sql = DSLUtils.toScript(dialect.countSql(script, SQLUtils.getSQLMetaData(script)),
+					countNamedSQL.getParams(), JDBCParamsParser.getInstance());
+			Long total = JDBCExecuteUtils.execute(con, countNamedSQL.getId(), sql.getValue(), sql.getParams(),
 					LongResultSQLExecuter.getInstance(), showSql);
 			page.setTotal(total);
 			if (total != null && total > 0) {
 				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
 				script = namedSQL.getScript();
-				SQL = SQLUtils.toSQL(dialect.pageSql(con, script, namedSQL.getParams(), SQLUtils.getSQLMetaData(script),
-						pageSize, currentPage), namedSQL.getParams());
-				page.setRows(JDBCExecuteUtils.execute(con, namedSQL.getId(), SQL.getScript(), SQL.getParams(),
+				sql = DSLUtils.toScript(dialect.pageSql(con, script, namedSQL.getParams(),
+						SQLUtils.getSQLMetaData(script), pageSize, currentPage), namedSQL.getParams(),
+						JDBCParamsParser.getInstance());
+				page.setRows(JDBCExecuteUtils.execute(con, namedSQL.getId(), sql.getValue(), sql.getParams(),
 						new SelectSQLExecuter<T>(type), showSql));
 			} else {
 				page.setTotalPage(0L);

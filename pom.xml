@@ -6,7 +6,7 @@
 	<description>一个给分布式环境（如Spark等）提供动态结构化查询语言（DSQL）解析和执行的框架</description>
 	<groupId>cn.tenmg</groupId>
 	<artifactId>sqltool</artifactId>
-	<version>1.4.2</version>
+	<version>1.4.3</version>
 	<packaging>jar</packaging>
 	<url>https://gitee.com/tenmg/sqltool</url>
 
@@ -34,14 +34,14 @@
 		<dependency>
 			<groupId>cn.tenmg</groupId>
 			<artifactId>dsql</artifactId>
-			<version>1.1.0</version>
+			<version>1.2.0</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/cn.tenmg/sql-paging -->
 		<dependency>
 			<groupId>cn.tenmg</groupId>
 			<artifactId>sql-paging</artifactId>
-			<version>1.1.0</version>
+			<version>1.2.0</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.alibaba/druid -->

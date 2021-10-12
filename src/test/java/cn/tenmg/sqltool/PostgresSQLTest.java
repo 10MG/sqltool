@@ -27,11 +27,6 @@ public class PostgresSQLTest {
 		doTest(SqltoolFactory.createDao("postgresql2.properties"));
 	}
 
-	public void doTest() {
-		testBasicDao();
-		testDistributedDao();
-	}
-
 	public static void doTest(Dao dao) {
 		TestUtils.testDao(dao);
 

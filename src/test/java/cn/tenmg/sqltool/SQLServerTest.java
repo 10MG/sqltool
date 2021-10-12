@@ -27,11 +27,6 @@ public class SQLServerTest {
 		doTest(SqltoolFactory.createDao("sqlserver2.properties"));
 	}
 
-	public void doTest() {
-		testBasicDao();
-		testDistributedDao();
-	}
-
 	public static void doTest(Dao dao) {
 		TestUtils.testDao(dao);
 

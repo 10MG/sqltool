@@ -15,8 +15,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cn.tenmg.dsl.Script;
-import cn.tenmg.dsl.parser.JDBCParamsParser;
-import cn.tenmg.dsl.utils.DSLUtils;
 import cn.tenmg.dsql.NamedSQL;
 import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sql.paging.SQLMetaData;
@@ -730,6 +728,14 @@ public abstract class AbstractDao implements Dao {
 		return getDSQLFactory().parse(dsql, params);
 	}
 
+	private Script<List<Object>> toJDBC(NamedSQL namedSQL) {
+		return getDSQLFactory().toJDBC(namedSQL);
+	}
+
+	private Script<List<Object>> toJDBC(String namedscript, Map<String, ?> params) {
+		return getDSQLFactory().toJDBC(namedscript, params);
+	}
+
 	private <T> T execute(DataSource dataSource, Object obj, DMLParser dmlParser, SQLExecuter<T> sqlExecuter) {
 		DML dml = dmlParser.parse(obj.getClass());
 		return execute(dataSource, null, dml.getSql(), EntityUtils.getParams(obj, dml.getFields()), sqlExecuter);
@@ -962,8 +968,7 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	private <T> T execute(DataSource dataSource, NamedSQL namedSQL, SQLExecuter<T> sqlExecuter) {
-		Script<List<Object>> sql = DSLUtils.toScript(namedSQL.getScript(), namedSQL.getParams(),
-				JDBCParamsParser.getInstance());
+		Script<List<Object>> sql = toJDBC(namedSQL);
 		return execute(dataSource, namedSQL.getId(), sql.getValue(), sql.getParams(), sqlExecuter);
 	}
 
@@ -994,15 +999,13 @@ public abstract class AbstractDao implements Dao {
 			String id = namedSQL.getId(), script = namedSQL.getScript();
 			Map<String, Object> params = namedSQL.getParams();
 			SQLMetaData sqlMetaData = SQLUtils.getSQLMetaData(script);
-			Script<List<Object>> sql = DSLUtils.toScript(dialect.countSql(script, sqlMetaData), params,
-					JDBCParamsParser.getInstance());
+			Script<List<Object>> sql = toJDBC(dialect.countSql(script, sqlMetaData), params);
 			Long total = JDBCExecuteUtils.execute(con, id, sql.getValue(), sql.getParams(),
 					LongResultSQLExecuter.getInstance(), showSql);
 			page.setTotal(total);
 			if (total != null && total > 0) {
 				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
-				sql = DSLUtils.toScript(dialect.pageSql(con, script, params, sqlMetaData, pageSize, currentPage),
-						params, JDBCParamsParser.getInstance());
+				sql = toJDBC(dialect.pageSql(con, script, params, sqlMetaData, pageSize, currentPage), params);
 				page.setRows(JDBCExecuteUtils.execute(con, id, sql.getValue(), sql.getParams(),
 						new SelectSQLExecuter<T>(type), showSql));
 			} else {
@@ -1029,17 +1032,16 @@ public abstract class AbstractDao implements Dao {
 			boolean showSql = isShowSql();
 			String script = countNamedSQL.getScript();
 			SQLDialect dialect = getSQLDialect(dataSource);
-			Script<List<Object>> sql = DSLUtils.toScript(dialect.countSql(script, SQLUtils.getSQLMetaData(script)),
-					countNamedSQL.getParams(), JDBCParamsParser.getInstance());
+			Script<List<Object>> sql = toJDBC(dialect.countSql(script, SQLUtils.getSQLMetaData(script)),
+					countNamedSQL.getParams());
 			Long total = JDBCExecuteUtils.execute(con, countNamedSQL.getId(), sql.getValue(), sql.getParams(),
 					LongResultSQLExecuter.getInstance(), showSql);
 			page.setTotal(total);
 			if (total != null && total > 0) {
 				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
 				script = namedSQL.getScript();
-				sql = DSLUtils.toScript(dialect.pageSql(con, script, namedSQL.getParams(),
-						SQLUtils.getSQLMetaData(script), pageSize, currentPage), namedSQL.getParams(),
-						JDBCParamsParser.getInstance());
+				sql = toJDBC(dialect.pageSql(con, script, namedSQL.getParams(), SQLUtils.getSQLMetaData(script),
+						pageSize, currentPage), namedSQL.getParams());
 				page.setRows(JDBCExecuteUtils.execute(con, namedSQL.getId(), sql.getValue(), sql.getParams(),
 						new SelectSQLExecuter<T>(type), showSql));
 			} else {

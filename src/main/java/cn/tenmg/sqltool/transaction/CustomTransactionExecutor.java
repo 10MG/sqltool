@@ -12,8 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cn.tenmg.dsl.Script;
-import cn.tenmg.dsl.parser.JDBCParamsParser;
-import cn.tenmg.dsl.utils.DSLUtils;
 import cn.tenmg.dsql.DSQLFactory;
 import cn.tenmg.dsql.NamedSQL;
 import cn.tenmg.dsql.utils.CollectionUtils;
@@ -462,8 +460,7 @@ public class CustomTransactionExecutor implements Serializable {
 
 	private boolean execute(NamedSQL namedSQL) {
 		Connection con = getCurrentConnection();
-		Script<List<Object>> sql = DSLUtils.toScript(namedSQL.getScript(), namedSQL.getParams(),
-				JDBCParamsParser.getInstance());
+		Script<List<Object>> sql = DSQLFactory.toJDBC(namedSQL);
 		PreparedStatement ps = null;
 		boolean rs = false;
 		try {
@@ -499,8 +496,7 @@ public class CustomTransactionExecutor implements Serializable {
 
 	private int executeUpdate(NamedSQL namedSQL) {
 		Connection con = getCurrentConnection();
-		Script<List<Object>> sql = DSLUtils.toScript(namedSQL.getScript(), namedSQL.getParams(),
-				JDBCParamsParser.getInstance());
+		Script<List<Object>> sql = DSQLFactory.toJDBC(namedSQL);
 		PreparedStatement ps = null;
 		int count = 0;
 		try {
@@ -536,8 +532,7 @@ public class CustomTransactionExecutor implements Serializable {
 	}
 
 	private <T> T execute(Connection con, NamedSQL namedSQL, SQLExecuter<T> sqlExecuter) throws SQLException {
-		Script<List<Object>> sql = DSLUtils.toScript(namedSQL.getScript(), namedSQL.getParams(),
-				JDBCParamsParser.getInstance());
+		Script<List<Object>> sql = DSQLFactory.toJDBC(namedSQL);
 		return JDBCExecuteUtils.execute(con, namedSQL.getId(), sql.getValue(), sql.getParams(), sqlExecuter, showSql);
 	}
 

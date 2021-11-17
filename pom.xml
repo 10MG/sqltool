@@ -6,7 +6,7 @@
 	<description>一个给分布式环境（如Spark等）提供动态结构化查询语言（DSQL）解析和执行的框架</description>
 	<groupId>cn.tenmg</groupId>
 	<artifactId>sqltool</artifactId>
-	<version>1.4.4</version>
+	<version>1.4.5</version>
 	<packaging>jar</packaging>
 	<url>https://gitee.com/tenmg/sqltool</url>
 
@@ -14,69 +14,68 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<druid.version>1.2.4</druid.version>
-		<commons-dbcp2.version>2.8.0</commons-dbcp2.version>
-		<junit.version>4.13.1</junit.version>
-		<mysql-connector-java.version>8.0.23</mysql-connector-java.version>
-		<postgresql.version>42.2.18</postgresql.version>
 	</properties>
 
 	<dependencies>
-		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>2.14.1</version>
-		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/cn.tenmg/dsql -->
 		<dependency>
 			<groupId>cn.tenmg</groupId>
 			<artifactId>dsql</artifactId>
-			<version>1.2.1</version>
+			<version>1.2.2</version>
 		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/cn.tenmg/sql-paging -->
 		<dependency>
 			<groupId>cn.tenmg</groupId>
 			<artifactId>sql-paging</artifactId>
-			<version>1.2.1</version>
+			<version>1.2.2</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.14.1</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
-			<version>${druid.version}</version>
-			<scope>provided</scope>
+			<version>1.2.8</version>
+			<scope>test</scope>
 		</dependency>
-
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-dbcp2 -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
-			<version>${commons-dbcp2.version}</version>
-			<scope>provided</scope>
+			<version>2.9.0</version>
+			<scope>test</scope>
 		</dependency>
-
+		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.14.1</version>			
 			<scope>test</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql-connector-java.version}</version>
+			<version>8.0.27</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>${postgresql.version}</version>
+			<version>42.3.1</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->

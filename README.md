@@ -4,7 +4,7 @@ Sqltool是一个给分布式集群环境（如Spark、Flink等）提供动态结
 
 ## DSQL
 
-[DSQL](https://gitee.com/tenmg/dsql)的全称是动态结构化查询语言(Dynamic Structured Query Language)是一种使用特殊字符#[]标记动态片段的结构化查询语言(SQL)，当实际执行查询时，判断实际传入参数值是否为空（null）决定是否保留该片段，同时保留片段的特殊字符会被自动去除。以此来避免程序员手动拼接繁杂的SQL，使得程序员能从繁杂的业务逻辑中解脱出来。
+[DSQL](https://gitee.com/tenmg/dsql)的全称是动态结构化查询语言(Dynamic Structured Query Language)，它使用特殊字符`#[]`标记动态片段。当实际执行查询时，判断实际传入参数值是否为空（`null`）决定是否保留该片段，同时自动去除`#[]`。以此来避免程序员手动拼接繁杂的SQL，使得程序员能从繁杂的业务逻辑中解脱出来。
 
 ### 例子
 
@@ -19,7 +19,7 @@ WHERE S.STATUS = 'VALID'
 #[AND S.STAFF_NAME LIKE :staffName]
 ```
 
-参数staffId为空（null），而staffName为非空（非null）时，实际执行的语句为：
+参数staffId为空（`null`），而staffName为非空（非`null`）时，实际执行的语句为：
 
 ```
 SELECT
@@ -29,7 +29,7 @@ SELECT
  AND S.STAFF_NAME LIKE :staffName
 ```
 
-相反，参数staffName为空（null），而staffId为非空（非null）时，实际执行的语句为：
+相反，参数staffName为空（`null`），而staffId为非空（非`null`）时，实际执行的语句为：
 
 
 ```
@@ -40,7 +40,7 @@ SELECT
  AND S.STAFF_ID = :staffId
 ```
 
-或者，参数staffId、staffName均为空（null）时，实际执行的语句为：
+或者，参数staffId、staffName均为空（`null`）时，实际执行的语句为：
 
 ```
 SELECT
@@ -49,7 +49,7 @@ SELECT
  WHERE S.STATUS = 'VALID'
 ```
 
-最后，参数staffId、staffName均为非空（非null）时，实际执行的语句为：
+最后，参数staffId、staffName均为非空（非`null`）时，实际执行的语句为：
 
 ```
 SELECT
@@ -60,7 +60,7 @@ SELECT
  AND S.STAFF_NAME LIKE :staffName
 ```
 
-通过上面这个小例子，我们看到了动态结构化查询语言（DSQL）的魔力。这种魔力的来源是巧妙的运用了一个值：空(null)，因为该值往往在结构化查询语言(SQL)中很少用到，而且即便使用也是往往作为特殊的常量使用，比如：
+通过上面这个小例子，我们看到了动态结构化查询语言（DSQL）的魔力。这种魔力的来源是巧妙的运用了一个值：空(`null`)，因为该值往往在结构化查询语言(SQL)中很少用到，而且即便使用也是往往作为特殊的常量使用，比如：
 ```
 NVL(EMAIL,'无')
 ```

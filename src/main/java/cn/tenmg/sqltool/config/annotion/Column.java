@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * 实体类属性对应数据库表列注解
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  * 
  * @since 1.0.0
  */

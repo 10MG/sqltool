@@ -5,7 +5,7 @@ import java.sql.Connection;
 /**
  * 当前连接持有者
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  * 
  * @since 1.2.0
  */

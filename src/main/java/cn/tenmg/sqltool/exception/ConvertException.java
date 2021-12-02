@@ -3,7 +3,7 @@ package cn.tenmg.sqltool.exception;
 /**
  * 转换异常
  * 
- * @author 赵伟均
+ * @author June
  * 
  * @since 1.2.0
  */

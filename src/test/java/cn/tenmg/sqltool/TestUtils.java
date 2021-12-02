@@ -81,9 +81,9 @@ public abstract class TestUtils {
 		 * Query with DSQL's id. You can also use map object to organize query
 		 * parameters at the same time
 		 */
-		Map<String, String> paramaters = new HashMap<String, String>();
-		paramaters.put("staffId", "000001");
-		StaffInfo june = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", paramaters);
+		Map<String, String> parameters = new HashMap<String, String>();
+		parameters.put("staffId", "000001");
+		StaffInfo june = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", parameters);
 		Assert.assertEquals(staffName, june.getStaffName());
 		Assert.assertEquals(staffName, dao.get(staffInfo).getStaffName());
 

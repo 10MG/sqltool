@@ -7,7 +7,7 @@ import cn.tenmg.dsl.utils.PropertiesLoaderUtils;
 /**
  * Sqltool上下文
  * 
- * @author 赵伟均 wjzho@aliyun.com
+ * @author June wjzho@aliyun.com
  * 
  * @since 1.4.3
  */

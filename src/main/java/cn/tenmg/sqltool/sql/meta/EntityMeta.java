@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * 实体类元数据
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  * 
  * @since 1.0.0
  */

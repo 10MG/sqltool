@@ -3,7 +3,7 @@ package cn.tenmg.sqltool.exception;
 /**
  * 未找到列异常。实体类未使用{@code @Column}注解数据表的列属性时会引发此异常
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  * 
  * @since 1.0.0
  */

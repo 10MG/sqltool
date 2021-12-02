@@ -21,7 +21,7 @@ import cn.tenmg.sqltool.utils.SQLDialectUtils;
 /**
  * 支持分布式环境的数据库访问对象
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  *
  */
 public class DistributedDao extends AbstractDao implements Serializable {

@@ -7,7 +7,7 @@ import java.sql.SQLException;
 /**
  * 执行SQL的执行器
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  * 
  * @since 1.1.1
  */

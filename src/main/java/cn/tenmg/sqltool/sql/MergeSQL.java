@@ -8,7 +8,7 @@ import cn.tenmg.sqltool.sql.meta.FieldMeta;
 /**
  * 合并数据操作对象
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  * 
  * @since 1.1.1
  */

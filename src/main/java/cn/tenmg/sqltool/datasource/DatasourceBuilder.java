@@ -7,7 +7,7 @@ import javax.sql.DataSource;
 /**
  * 数据源构建器
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  * 
  * @since 1.2.0
  */

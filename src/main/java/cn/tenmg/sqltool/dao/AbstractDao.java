@@ -51,7 +51,7 @@ import cn.tenmg.sqltool.utils.SQLDialectUtils;
 /**
  * 抽象数据库访问对象
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  *
  */
 public abstract class AbstractDao implements Dao {

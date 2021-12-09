@@ -142,9 +142,9 @@ Here is a simple example to help you to get started.
 	/**
 	 * Query with DSQL's id. You can also use map object to organize query parameters  at the same time
 	 */
-	Map<String, Object> paramaters = new HashMap<String, Object>();
-	paramaters.put("staffId", "000001");
-	june = dao.get(StaffInfo.class, "find_staff_by_id", paramaters);
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("staffId", "000001");
+	june = dao.get(StaffInfo.class, "find_staff_by_id", parameters);
 
 	/**
 	 * 

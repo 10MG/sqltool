@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 分页查询结果模型
  * 
- * @author 赵伟均 wjzhao@laiyun.com
+ * @author June wjzhao@laiyun.com
  *
  * @param <T>
  *            行数据类型

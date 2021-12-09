@@ -8,7 +8,7 @@ import cn.tenmg.sqltool.sql.DML;
 /**
  * 数据操作语言工具类
  * 
- * @author 赵伟均 wjzhao@aliyun.com
+ * @author June wjzhao@aliyun.com
  * 
  * @since 1.3.0
  */

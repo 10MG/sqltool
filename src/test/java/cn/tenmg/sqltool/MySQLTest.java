@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import cn.tenmg.sqltool.data.Page;
 
@@ -52,15 +52,15 @@ public class MySQLTest {
 		params.put("limit", pageSize);
 		Page<StaffInfo> page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_limit", currentPage, pageSize,
 				params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 
 		params.put("limit", pageSize);
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_limit", currentPage, pageSize, "staffName",
 				"1", "limit", pageSize);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 	}
 }

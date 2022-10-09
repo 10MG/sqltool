@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import cn.tenmg.sqltool.data.Page;
 
@@ -59,47 +59,47 @@ public class SQLServerTest {
 		Page<StaffInfo> page = dao.page(StaffInfo.class,
 				"SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 0 ROW FETCH NEXT :offset ROW ONLY",
 				currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 
 		page = dao.page(StaffInfo.class,
 				" SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 0 ROW FETCH NEXT :offset ROW ONLY",
 				currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 
 		page = dao.page(StaffInfo.class,
 				"SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 0 ROW FETCH NEXT :offset ROW ONLY ",
 				currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 
 		page = dao.page(StaffInfo.class, "sqlserver_offset_fetch", currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 
 		page = dao.page(StaffInfo.class,
 				"SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 10 ROW",
 				currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 
 		page = dao.page(StaffInfo.class,
 				" SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 10 ROW",
 				currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(pageSize >= page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 
 		page = dao.page(StaffInfo.class, "sqlserver_offset", currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertTrue(page.getTotal().intValue() == countLike1 - (int) params.get("offset"));
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(page.getTotal().intValue() == countLike1 - (int) params.get("offset"));
 	}
 
 }

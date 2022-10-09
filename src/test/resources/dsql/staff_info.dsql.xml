@@ -96,4 +96,27 @@
 			]]>
 		</script>
 	</dsql>
+
+
+	<dsql id="find_staff_info_staff_name_like_page">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				SELECT * FROM #[page(SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName)]
+			]]>
+		</script>
+	</dsql>
+
+	<dsql id="find_staff_info_staff_name_like_with_page">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script>
+			<![CDATA[
+				WITH T AS #[page(SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName)] SELECT * FROM T
+			]]>
+		</script>
+	</dsql>
 </dsqls>

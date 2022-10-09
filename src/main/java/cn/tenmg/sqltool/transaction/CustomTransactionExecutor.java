@@ -8,12 +8,13 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.tenmg.dsl.Script;
 import cn.tenmg.dsql.DSQLFactory;
 import cn.tenmg.dsql.NamedSQL;
+import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
 import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sql.paging.utils.JDBCUtils;
 import cn.tenmg.sqltool.exception.IllegalCallException;
@@ -46,7 +47,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 */
 	private static final long serialVersionUID = -1728127905781636407L;
 
-	private final static Logger log = LogManager.getLogger(CustomTransactionExecutor.class);
+	private final static Logger log = LoggerFactory.getLogger(XMLFileDSQLFactory.class);
 
 	private static ThreadLocal<SQLDialect> currentSQLDialect = new ThreadLocal<SQLDialect>();
 
@@ -279,7 +280,7 @@ public class CustomTransactionExecutor implements Serializable {
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
-	 * Date、BigDecimal类型，这事将返回结果集中的第1行第1列的值。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
+	 * Date、BigDecimal类型，这时将返回结果集中的第1行第1列的值。该方法不自动提交事务，且调用前需要先调用beginTransaction方法开启事务，之后在合适的时机还需要调用commit方法提交事务。
 	 * 
 	 * @param type
 	 *            对象类型

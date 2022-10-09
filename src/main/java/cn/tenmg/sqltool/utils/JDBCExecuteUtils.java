@@ -8,9 +8,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
 import cn.tenmg.sql.paging.utils.JDBCUtils;
 import cn.tenmg.sqltool.exception.DataAccessException;
 import cn.tenmg.sqltool.sql.DML;
@@ -31,7 +32,7 @@ import cn.tenmg.sqltool.sql.parser.UpdateDMLParser;
  */
 public abstract class JDBCExecuteUtils {
 
-	private static final Logger log = LogManager.getLogger(JDBCExecuteUtils.class);
+	private static final Logger log = LoggerFactory.getLogger(XMLFileDSQLFactory.class);
 
 	public static final String COMMA_SPACE = ", ", SPACE_AND_SPACE = " AND ", SPACE_EQ_SPACE = " = ";
 

@@ -7,12 +7,13 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.tenmg.dsl.Script;
 import cn.tenmg.dsql.DSQLFactory;
 import cn.tenmg.dsql.NamedSQL;
+import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
 import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sql.paging.utils.JDBCUtils;
 import cn.tenmg.sqltool.sql.DML;
@@ -42,7 +43,7 @@ public class TransactionExecutor implements Serializable {
 	 */
 	private static final long serialVersionUID = -4415310449248911047L;
 
-	private static final Logger log = LogManager.getLogger(TransactionExecutor.class);
+	private static final Logger log = LoggerFactory.getLogger(XMLFileDSQLFactory.class);
 
 	private boolean showSql = true;
 
@@ -371,7 +372,7 @@ public class TransactionExecutor implements Serializable {
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
-	 * Date、BigDecimal类型，这事将返回结果集中的第1行第1列的值
+	 * Date、BigDecimal类型，这时将返回结果集中的第1行第1列的值
 	 * 
 	 * @param type
 	 *            对象类型

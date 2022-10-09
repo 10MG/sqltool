@@ -753,7 +753,7 @@ public interface Dao {
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
-	 * Date、BigDecimal类型，这事将返回结果集中的第1行第1列的值
+	 * Date、BigDecimal类型，这时将返回结果集中的第1行第1列的值
 	 * 
 	 * @param type
 	 *            对象类型
@@ -767,7 +767,7 @@ public interface Dao {
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
-	 * Date、BigDecimal类型，这事将返回结果集中的第1行第1列的值
+	 * Date、BigDecimal类型，这时将返回结果集中的第1行第1列的值
 	 * 
 	 * @param dataSource
 	 *            数据源

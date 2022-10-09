@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import cn.tenmg.sqltool.data.Page;
 
@@ -84,8 +84,8 @@ public abstract class TestUtils {
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put("staffId", "000001");
 		StaffInfo june = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", parameters);
-		Assert.assertEquals(staffName, june.getStaffName());
-		Assert.assertEquals(staffName, dao.get(staffInfo).getStaffName());
+		Assertions.assertEquals(staffName, june.getStaffName());
+		Assertions.assertEquals(staffName, dao.get(staffInfo).getStaffName());
 
 		/**
 		 * 插入多条记录
@@ -101,7 +101,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.insert(staffInfos);
-		Assert.assertEquals(defaultBatchSize - 1, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize - 1, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 条目数等于批容量
 		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
@@ -110,7 +110,7 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("" + defaultBatchSize);
 		staffInfos.add(staffInfo);
 		dao.insert(staffInfos);
-		Assert.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 条目数大于批容量
 		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
@@ -119,7 +119,7 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("" + (defaultBatchSize + 1));
 		staffInfos.add(staffInfo);
 		dao.insert(staffInfos);
-		Assert.assertEquals(defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
 	}
 
 	private static void insertBatch(Dao dao) {
@@ -138,7 +138,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.insertBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize - 1, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize - 1, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 条目数等于批容量
 		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
@@ -148,7 +148,7 @@ public abstract class TestUtils {
 		staffInfo.setPosition(position);
 		staffInfos.add(staffInfo);
 		dao.insertBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 条目数大于批容量
 		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
@@ -158,7 +158,7 @@ public abstract class TestUtils {
 		staffInfo.setPosition(position);
 		staffInfos.add(staffInfo);
 		dao.insertBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
 	}
 
 	private static void update(Dao dao) {
@@ -174,7 +174,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.insertBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 更新单条数据
 		String staffId = df.format(0), staffName = "June";
@@ -182,19 +182,19 @@ public abstract class TestUtils {
 				original = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId);
 		june.setStaffName(staffName);
 		june.setPosition(position);
-		Assert.assertEquals(1, dao.update(june));
+		Assertions.assertEquals(1, dao.update(june));
 		StaffInfo newStaffInfo = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId);
-		Assert.assertEquals(staffName, newStaffInfo.getStaffName());
-		Assert.assertEquals(original.getPosition(), newStaffInfo.getPosition());
+		Assertions.assertEquals(staffName, newStaffInfo.getStaffName());
+		Assertions.assertEquals(original.getPosition(), newStaffInfo.getPosition());
 
 		june.setStaffName(null);
 		dao.update(june);
 		// 软更新，不更新null属性
-		Assert.assertEquals(staffName,
+		Assertions.assertEquals(staffName,
 				dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId).getStaffName());
 		// 部分硬更新，属性即使是null也更新
-		Assert.assertEquals(1, dao.update(june, "staffName"));
-		Assert.assertEquals(null,
+		Assertions.assertEquals(1, dao.update(june, "staffName"));
+		Assertions.assertEquals(null,
 				dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId).getStaffName());
 
 		// 更新多条数据
@@ -203,7 +203,7 @@ public abstract class TestUtils {
 			staffInfo.setStaffName(staffName);
 		}
 		dao.update(staffInfos);
-		Assert.assertEquals(defaultBatchSize,
+		Assertions.assertEquals(defaultBatchSize,
 				dao.get(Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
 
 		// 软更新，不更新null属性
@@ -213,12 +213,12 @@ public abstract class TestUtils {
 			staffInfo.setStaffName(null);
 		}
 		dao.update(staffInfos);
-		Assert.assertEquals(count,
+		Assertions.assertEquals(count,
 				dao.get(Long.class, "get_staff_count_the_same_name", "staffName", staffName).longValue());
 
 		// 部分硬更新，属性即使是null也更新
 		dao.update(staffInfos, "staffName");
-		Assert.assertEquals(0,
+		Assertions.assertEquals(0,
 				dao.get(Long.class, "get_staff_count_the_same_name", "staffName", staffName).longValue());
 
 		// 尝试更新不存在的数据
@@ -226,12 +226,12 @@ public abstract class TestUtils {
 		staffInfo.setStaffId(df.format(defaultBatchSize + 1));
 		staffInfo.setStaffName("" + (defaultBatchSize + 1));
 		staffInfo.setPosition(position);
-		Assert.assertEquals(0, dao.update(staffInfo));
-		Assert.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(0, dao.update(staffInfo));
+		Assertions.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		staffInfos.add(staffInfo);
 		dao.update(staffInfos);
-		Assert.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 	}
 
 	private static void updateBatch(Dao dao) {
@@ -247,7 +247,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.insertBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 批量更新多条数据
 		String staffName = "June";
@@ -256,7 +256,7 @@ public abstract class TestUtils {
 			staffInfo.setStaffName(staffName);
 		}
 		dao.updateBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize,
+		Assertions.assertEquals(defaultBatchSize,
 				dao.get(Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
 
 		// 软更新，不更新null属性
@@ -265,12 +265,12 @@ public abstract class TestUtils {
 			staffInfo.setStaffName(null);
 		}
 		dao.updateBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize,
+		Assertions.assertEquals(defaultBatchSize,
 				dao.get(Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
 
 		// 硬更新，null属性也更新
 		dao.updateBatch(staffInfos, "staffName");
-		Assert.assertEquals(0, dao.get(Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
+		Assertions.assertEquals(0, dao.get(Long.class, "get_staff_count_the_same_name", "staffName", staffName).intValue());
 
 		// 尝试更新不存在的数据
 		staffInfo = new StaffInfo();
@@ -279,7 +279,7 @@ public abstract class TestUtils {
 		staffInfo.setPosition(position);
 		staffInfos.add(staffInfo);
 		dao.updateBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 	}
 
 	private static void save(Dao dao) {
@@ -295,18 +295,18 @@ public abstract class TestUtils {
 		june.setStaffName("June");
 		dao.save(june);
 		StaffInfo staffInfo = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId);
-		Assert.assertEquals(june.getStaffName(), staffInfo.getStaffName());
+		Assertions.assertEquals(june.getStaffName(), staffInfo.getStaffName());
 
 		june.setStaffName("Happy June");
 		june.setPosition(position);
 		dao.save(june);
 		staffInfo = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId);
-		Assert.assertEquals(june.getStaffName(), staffInfo.getStaffName());
-		Assert.assertEquals(position, staffInfo.getPosition());
+		Assertions.assertEquals(june.getStaffName(), staffInfo.getStaffName());
+		Assertions.assertEquals(position, staffInfo.getPosition());
 
 		june.setPosition(null);
 		dao.save(june, "position");
-		Assert.assertEquals(null,
+		Assertions.assertEquals(null,
 				dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId).getPosition());
 
 		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
@@ -322,7 +322,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.save(staffInfos, "position");
-		Assert.assertEquals(0,
+		Assertions.assertEquals(0,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数等于批容量
@@ -332,7 +332,7 @@ public abstract class TestUtils {
 		staffInfo.setPosition(position);
 		staffInfos.add(staffInfo);
 		dao.save(staffInfos, "position");
-		Assert.assertEquals(1,
+		Assertions.assertEquals(1,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数大于批容量
@@ -342,7 +342,7 @@ public abstract class TestUtils {
 		staffInfo.setPosition(position);
 		staffInfos.add(staffInfo);
 		dao.save(staffInfos, "position");
-		Assert.assertEquals(2,
+		Assertions.assertEquals(2,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 	}
 
@@ -362,7 +362,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.saveBatch(staffInfos, "position");
-		Assert.assertEquals(defaultBatchSize,
+		Assertions.assertEquals(defaultBatchSize,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数小于批容量
@@ -374,7 +374,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.saveBatch(staffInfos, "position");
-		Assert.assertEquals(1,
+		Assertions.assertEquals(1,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数等于批容量
@@ -383,7 +383,7 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("" + defaultBatchSize);
 		staffInfos.add(staffInfo);
 		dao.saveBatch(staffInfos, "position");
-		Assert.assertEquals(0,
+		Assertions.assertEquals(0,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数大于批容量
@@ -392,9 +392,9 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("" + (defaultBatchSize + 1));
 		staffInfos.add(staffInfo);
 		dao.saveBatch(staffInfos, "position");
-		Assert.assertEquals(0,
+		Assertions.assertEquals(0,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
-		Assert.assertEquals(defaultBatchSize + 1,
+		Assertions.assertEquals(defaultBatchSize + 1,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", null).intValue());
 
 	}
@@ -409,12 +409,12 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("June");
 		staffInfo.setPosition(position);
 		dao.hardSave(staffInfo);
-		Assert.assertEquals(position, dao
+		Assertions.assertEquals(position, dao
 				.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffInfo.getStaffId()).getPosition());
 
 		staffInfo.setPosition(null);
 		dao.hardSave(staffInfo);
-		Assert.assertEquals(null, dao
+		Assertions.assertEquals(null, dao
 				.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffInfo.getStaffId()).getPosition());
 
 		dao.execute("DELETE FROM STAFF_INFO"); // 清空表
@@ -431,7 +431,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.hardSave(staffInfos);
-		Assert.assertEquals(defaultBatchSize,
+		Assertions.assertEquals(defaultBatchSize,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 		// 条目数小于批容量
 		staffInfos = new ArrayList<StaffInfo>();
@@ -442,7 +442,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.hardSave(staffInfos);
-		Assert.assertEquals(1,
+		Assertions.assertEquals(1,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数等于批容量
@@ -451,7 +451,7 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("" + defaultBatchSize);
 		staffInfos.add(staffInfo);
 		dao.hardSave(staffInfos);
-		Assert.assertEquals(0,
+		Assertions.assertEquals(0,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数大于批容量
@@ -460,9 +460,9 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("" + (defaultBatchSize + 1));
 		staffInfos.add(staffInfo);
 		dao.hardSave(staffInfos);
-		Assert.assertEquals(0,
+		Assertions.assertEquals(0,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
-		Assert.assertEquals(defaultBatchSize + 1,
+		Assertions.assertEquals(defaultBatchSize + 1,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", null).intValue());
 
 	}
@@ -484,7 +484,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.hardSaveBatch(staffInfos);
-		Assert.assertEquals(defaultBatchSize,
+		Assertions.assertEquals(defaultBatchSize,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 		// 条目数小于批容量
 		staffInfos = new ArrayList<StaffInfo>();
@@ -495,7 +495,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.hardSaveBatch(staffInfos);
-		Assert.assertEquals(1,
+		Assertions.assertEquals(1,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数等于批容量
@@ -504,7 +504,7 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("" + defaultBatchSize);
 		staffInfos.add(staffInfo);
 		dao.hardSaveBatch(staffInfos);
-		Assert.assertEquals(0,
+		Assertions.assertEquals(0,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 条目数大于批容量
@@ -513,9 +513,9 @@ public abstract class TestUtils {
 		staffInfo.setStaffName("" + (defaultBatchSize + 1));
 		staffInfos.add(staffInfo);
 		dao.hardSaveBatch(staffInfos);
-		Assert.assertEquals(0,
+		Assertions.assertEquals(0,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
-		Assert.assertEquals(defaultBatchSize + 1,
+		Assertions.assertEquals(defaultBatchSize + 1,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", null).intValue());
 	}
 
@@ -534,13 +534,13 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.hardSaveBatch(staffInfos);
-		Assert.assertEquals(total,
+		Assertions.assertEquals(total,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 删除单条记录
 		StaffInfo first = new StaffInfo(df.format(1));
-		Assert.assertEquals(1, dao.delete(first));
-		Assert.assertEquals(null, dao.get(first));
+		Assertions.assertEquals(1, dao.delete(first));
+		Assertions.assertEquals(null, dao.get(first));
 
 		// 删除多条记录
 		// 小于批容量
@@ -550,8 +550,8 @@ public abstract class TestUtils {
 			staffInfo.setStaffId(df.format(i));
 			staffInfosForDelete.add(staffInfo);
 		}
-		Assert.assertEquals(defaultBatchSize - 1, dao.delete(staffInfosForDelete));
-		Assert.assertEquals(total - defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize - 1, dao.delete(staffInfosForDelete));
+		Assertions.assertEquals(total - defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 等于批容量
 		staffInfosForDelete = new ArrayList<StaffInfo>();
@@ -560,8 +560,8 @@ public abstract class TestUtils {
 			staffInfo.setStaffId(df.format(defaultBatchSize + i));
 			staffInfosForDelete.add(staffInfo);
 		}
-		Assert.assertEquals(defaultBatchSize, dao.delete(staffInfosForDelete));
-		Assert.assertEquals(total - 2 * defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize, dao.delete(staffInfosForDelete));
+		Assertions.assertEquals(total - 2 * defaultBatchSize, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 大于批容量
 		staffInfosForDelete = new ArrayList<StaffInfo>();
@@ -570,8 +570,8 @@ public abstract class TestUtils {
 			staffInfo.setStaffId(df.format(2 * defaultBatchSize + i + 1));
 			staffInfosForDelete.add(staffInfo);
 		}
-		Assert.assertEquals(defaultBatchSize + 1, dao.delete(staffInfosForDelete));
-		Assert.assertEquals(0, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize + 1, dao.delete(staffInfosForDelete));
+		Assertions.assertEquals(0, dao.get(Long.class, "get_total_staff_count").intValue());
 	}
 
 	private static void deleteBatch(Dao dao) {
@@ -589,7 +589,7 @@ public abstract class TestUtils {
 			staffInfos.add(staffInfo);
 		}
 		dao.hardSaveBatch(staffInfos);
-		Assert.assertEquals(total,
+		Assertions.assertEquals(total,
 				dao.get(Long.class, "get_staff_count_of_specific_position", "position", position).intValue());
 
 		// 删除多条记录
@@ -600,8 +600,8 @@ public abstract class TestUtils {
 			staffInfo.setStaffId(df.format(i));
 			staffInfosForDelete.add(staffInfo);
 		}
-		Assert.assertEquals(defaultBatchSize - 1, dao.delete(staffInfosForDelete));
-		Assert.assertEquals(total - defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize - 1, dao.delete(staffInfosForDelete));
+		Assertions.assertEquals(total - defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 等于批容量
 		staffInfosForDelete = new ArrayList<StaffInfo>();
@@ -610,8 +610,8 @@ public abstract class TestUtils {
 			staffInfo.setStaffId(df.format(defaultBatchSize + i));
 			staffInfosForDelete.add(staffInfo);
 		}
-		Assert.assertEquals(defaultBatchSize, dao.delete(staffInfosForDelete));
-		Assert.assertEquals(total - 2 * defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize, dao.delete(staffInfosForDelete));
+		Assertions.assertEquals(total - 2 * defaultBatchSize + 1, dao.get(Long.class, "get_total_staff_count").intValue());
 
 		// 大于批容量
 		staffInfosForDelete = new ArrayList<StaffInfo>();
@@ -620,8 +620,8 @@ public abstract class TestUtils {
 			staffInfo.setStaffId(df.format(2 * defaultBatchSize + i));
 			staffInfosForDelete.add(staffInfo);
 		}
-		Assert.assertEquals(defaultBatchSize + 1, dao.delete(staffInfosForDelete));
-		Assert.assertEquals(0, dao.get(Long.class, "get_total_staff_count").intValue());
+		Assertions.assertEquals(defaultBatchSize + 1, dao.delete(staffInfosForDelete));
+		Assertions.assertEquals(0, dao.get(Long.class, "get_total_staff_count").intValue());
 	}
 
 	private static void get(Dao dao) {
@@ -638,7 +638,7 @@ public abstract class TestUtils {
 		 * Load staff information with staffId
 		 */
 		StaffInfo staffInfo = dao.get(new StaffInfo(staffId));
-		Assert.assertEquals(staffName, staffInfo.getStaffName());
+		Assertions.assertEquals(staffName, staffInfo.getStaffName());
 
 		/**
 		 * 使用DSQL编号查询
@@ -646,12 +646,12 @@ public abstract class TestUtils {
 		 * Query with id of DSQL's id
 		 */
 		staffInfo = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId);
-		Assert.assertEquals(staffName, staffInfo.getStaffName());
+		Assertions.assertEquals(staffName, staffInfo.getStaffName());
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("staffId", staffId);
 		staffInfo = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", params);
-		Assert.assertEquals(staffName, staffInfo.getStaffName());
+		Assertions.assertEquals(staffName, staffInfo.getStaffName());
 	}
 
 	private static void select(Dao dao) {
@@ -669,49 +669,49 @@ public abstract class TestUtils {
 		 * Load staff information with staffId
 		 */
 		List<StaffInfo> staffInfos = dao.select(new StaffInfo("000001"));
-		Assert.assertNotNull(staffInfos);
-		Assert.assertEquals(1, staffInfos.size());
-		Assert.assertEquals(staffName, staffInfos.get(0).getStaffName());
+		Assertions.assertNotNull(staffInfos);
+		Assertions.assertEquals(1, staffInfos.size());
+		Assertions.assertEquals(staffName, staffInfos.get(0).getStaffName());
 
 		StaffInfo staffInfo = new StaffInfo();
 		staffInfo.setStaffName(staffName);
 		staffInfos = dao.select(staffInfo);
-		Assert.assertNotNull(staffInfos);
-		Assert.assertEquals(1, staffInfos.size());
-		Assert.assertEquals(staffName, staffInfos.get(0).getStaffName());
+		Assertions.assertNotNull(staffInfos);
+		Assertions.assertEquals(1, staffInfos.size());
+		Assertions.assertEquals(staffName, staffInfos.get(0).getStaffName());
 		/**
 		 * 使用员工编号查询员工信息
 		 */
 		String[] staffIdArray = new String[] { "000001", "000002" };
 		staffInfos = dao.select(StaffInfo.class, "find_staff_info_by_staff_ids", "staffIds", staffIdArray);
-		Assert.assertNotNull(staffInfos);
-		Assert.assertEquals(2, staffInfos.size());
-		Assert.assertEquals("Sharry", staffInfos.get(0).getStaffName());
-		Assert.assertEquals("June", staffInfos.get(1).getStaffName());
+		Assertions.assertNotNull(staffInfos);
+		Assertions.assertEquals(2, staffInfos.size());
+		Assertions.assertEquals("Sharry", staffInfos.get(0).getStaffName());
+		Assertions.assertEquals("June", staffInfos.get(1).getStaffName());
 
 		List<String> staffIds = new ArrayList<String>();
 		staffIds.add("000001");
 		staffIds.add("000002");
 		staffInfos = dao.select(StaffInfo.class, "find_staff_info_by_staff_ids", "staffIds", staffIds);
-		Assert.assertNotNull(staffInfos);
-		Assert.assertEquals(2, staffInfos.size());
-		Assert.assertEquals("Sharry", staffInfos.get(0).getStaffName());
-		Assert.assertEquals("June", staffInfos.get(1).getStaffName());
+		Assertions.assertNotNull(staffInfos);
+		Assertions.assertEquals(2, staffInfos.size());
+		Assertions.assertEquals("Sharry", staffInfos.get(0).getStaffName());
+		Assertions.assertEquals("June", staffInfos.get(1).getStaffName());
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("staffIds", staffIdArray);
 		staffInfos = dao.select(StaffInfo.class, "find_staff_info_by_staff_ids", params);
-		Assert.assertNotNull(staffInfos);
-		Assert.assertEquals(2, staffInfos.size());
-		Assert.assertEquals("Sharry", staffInfos.get(0).getStaffName());
-		Assert.assertEquals("June", staffInfos.get(1).getStaffName());
+		Assertions.assertNotNull(staffInfos);
+		Assertions.assertEquals(2, staffInfos.size());
+		Assertions.assertEquals("Sharry", staffInfos.get(0).getStaffName());
+		Assertions.assertEquals("June", staffInfos.get(1).getStaffName());
 
 		params.put("staffIds", staffIds);
 		staffInfos = dao.select(StaffInfo.class, "find_staff_info_by_staff_ids", params);
-		Assert.assertNotNull(staffInfos);
-		Assert.assertEquals(2, staffInfos.size());
-		Assert.assertEquals("Sharry", staffInfos.get(0).getStaffName());
-		Assert.assertEquals("June", staffInfos.get(1).getStaffName());
+		Assertions.assertNotNull(staffInfos);
+		Assertions.assertEquals(2, staffInfos.size());
+		Assertions.assertEquals("Sharry", staffInfos.get(0).getStaffName());
+		Assertions.assertEquals("June", staffInfos.get(1).getStaffName());
 	}
 
 	private static void page(Dao dao) {
@@ -738,64 +738,64 @@ public abstract class TestUtils {
 		long currentPage = 1;
 		int pageSize = defaultBatchSize / 10;
 		Page<StaffInfo> page = dao.page(StaffInfo.class, "select * from staff_info", currentPage, pageSize);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(defaultBatchSize, page.getTotal().intValue());
-		Assert.assertEquals(pageSize, page.getRows().size());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(defaultBatchSize, page.getTotal().intValue());
+		Assertions.assertEquals(pageSize, page.getRows().size());
 
 		long totalPage = page.getTotalPage();
 		page = dao.page(StaffInfo.class, "select * from staff_info order by staff_id", totalPage, pageSize);
-		Assert.assertEquals(totalPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(defaultBatchSize, page.getTotal().intValue());
+		Assertions.assertEquals(totalPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(defaultBatchSize, page.getTotal().intValue());
 		List<StaffInfo> rows = page.getRows();
-		Assert.assertEquals(df.format(defaultBatchSize), rows.get(rows.size() - 1).getStaffId());
+		Assertions.assertEquals(df.format(defaultBatchSize), rows.get(rows.size() - 1).getStaffId());
 
 		page = dao.page(StaffInfo.class, "select * from staff_info order by staff_id desc", currentPage, pageSize);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(defaultBatchSize, page.getTotal().intValue());
-		Assert.assertEquals(df.format(defaultBatchSize), page.getRows().get(0).getStaffId());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(defaultBatchSize, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(defaultBatchSize), page.getRows().get(0).getStaffId());
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("staffName", "1");
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like", currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
 
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_with", currentPage, pageSize, "staffName", "1");
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
 
 		params.put("defualtPosition", "Salesperson");
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_has_param", currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
-		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
 		
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
 				"find_staff_info_staff_name_like", currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
-		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
 
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
 				"find_staff_info_staff_name_like", currentPage, pageSize, "staffName", "1");
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
-		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
 
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
 				"find_staff_info_staff_name_like", currentPage, pageSize, params);
-		Assert.assertEquals(currentPage, page.getCurrentPage());
-		Assert.assertEquals(pageSize, page.getPageSize());
-		Assert.assertEquals(staffNameLikeCount, page.getTotal().intValue());
-		Assert.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
 	}
 
 	private static void execute(Dao dao) {
@@ -808,7 +808,7 @@ public abstract class TestUtils {
 		dao.execute("INSERT INTO STAFF_INFO(STAFF_ID, STAFF_NAME) VALUES (:staffId, :staffName)", "staffId", staffId,
 				"staffName", staffName);
 		StaffInfo staffInfo = dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId);
-		Assert.assertEquals(staffName, staffInfo.getStaffName());
+		Assertions.assertEquals(staffName, staffInfo.getStaffName());
 
 		/**
 		 * 更新语句
@@ -816,7 +816,7 @@ public abstract class TestUtils {
 		String newStaffName = "Sharry";
 		dao.execute("UPDATE STAFF_INFO SET STAFF_NAME = :staffName WHERE STAFF_ID = :staffId", "staffId", staffId,
 				"staffName", newStaffName);
-		Assert.assertEquals(newStaffName,
+		Assertions.assertEquals(newStaffName,
 				dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId).getStaffName());
 
 		/**
@@ -826,7 +826,7 @@ public abstract class TestUtils {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("staffId", staffId);
 		dao.execute("DELETE FROM STAFF_INFO WHERE STAFF_ID = :staffId", params);
-		Assert.assertNull(dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId));
+		Assertions.assertNull(dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId));
 	}
 
 	private static void executeUpdate(Dao dao) {
@@ -838,8 +838,8 @@ public abstract class TestUtils {
 		String staffId = "000001", staffName = "June";
 		int count = dao.executeUpdate("INSERT INTO STAFF_INFO(STAFF_ID, STAFF_NAME) VALUES (:staffId, :staffName)",
 				"staffId", staffId, "staffName", staffName);
-		Assert.assertEquals(1, count);
-		Assert.assertEquals(staffName,
+		Assertions.assertEquals(1, count);
+		Assertions.assertEquals(staffName,
 				dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId).getStaffName());
 
 		/**
@@ -848,8 +848,8 @@ public abstract class TestUtils {
 		String newStaffName = "Sharry";
 		count = dao.executeUpdate("UPDATE STAFF_INFO SET STAFF_NAME = :staffName WHERE STAFF_ID = :staffId", "staffId",
 				staffId, "staffName", newStaffName);
-		Assert.assertEquals(1, count);
-		Assert.assertEquals(newStaffName,
+		Assertions.assertEquals(1, count);
+		Assertions.assertEquals(newStaffName,
 				dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId).getStaffName());
 
 		/**
@@ -858,8 +858,8 @@ public abstract class TestUtils {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("staffId", staffId);
 		count = dao.executeUpdate("DELETE FROM STAFF_INFO WHERE STAFF_ID = :staffId", params);
-		Assert.assertEquals(1, count);
-		Assert.assertNull(dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId));
+		Assertions.assertEquals(1, count);
+		Assertions.assertNull(dao.get(StaffInfo.class, "get_staff_info_by_staff_id", "staffId", staffId));
 	}
 
 }

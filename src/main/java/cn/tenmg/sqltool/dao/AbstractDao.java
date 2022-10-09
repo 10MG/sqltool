@@ -11,11 +11,12 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.tenmg.dsl.Script;
 import cn.tenmg.dsql.NamedSQL;
+import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
 import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sql.paging.SQLMetaData;
 import cn.tenmg.sql.paging.utils.JDBCUtils;
@@ -56,7 +57,7 @@ import cn.tenmg.sqltool.utils.SQLDialectUtils;
  */
 public abstract class AbstractDao implements Dao {
 
-	private static final Logger log = LogManager.getLogger(AbstractDao.class);
+	private static final Logger log = LoggerFactory.getLogger(XMLFileDSQLFactory.class);
 
 	private static final Map<DataSource, SQLDialect> DIALECTS = new HashMap<DataSource, SQLDialect>();
 

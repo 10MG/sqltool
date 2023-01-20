@@ -35,7 +35,7 @@ public class SQLServerTest {
 		List<StaffInfo> staffInfos = new ArrayList<StaffInfo>();
 		StaffInfo staffInfo;
 		String staffId;
-		int countLike1 = 0;
+		long countLike1 = 0;
 		for (int i = 1; i <= 1000; i++) {
 			staffInfo = new StaffInfo();
 			staffId = df.format(i);
@@ -50,56 +50,49 @@ public class SQLServerTest {
 		}
 		dao.save(staffInfos);
 
-		long currentPage = 1;
+		long currentPage = 1, rows = 10;
 		int pageSize = 10;
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("staffName", "1");
-		params.put("offset", pageSize);
+		params.put("rows", rows);
 
-		Page<StaffInfo> page = dao.page(StaffInfo.class,
-				"SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 0 ROW FETCH NEXT :offset ROW ONLY",
-				currentPage, pageSize, params);
+		Page<StaffInfo> page = dao.page(StaffInfo.class, "find_offset_fetch", currentPage, pageSize, params);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
-		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
+		if (countLike1 >= rows) {
+			Assertions.assertEquals(rows, page.getTotal());
+		} else {
+			Assertions.assertEquals(countLike1, page.getTotal());
+		}
 
-		page = dao.page(StaffInfo.class,
-				" SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 0 ROW FETCH NEXT :offset ROW ONLY",
-				currentPage, pageSize, params);
+		page = dao.page(StaffInfo.class, "page_offset_fetch", currentPage, pageSize, params);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
-		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
+		if (countLike1 >= rows) {
+			Assertions.assertEquals(rows, page.getTotal());
+		} else {
+			Assertions.assertEquals(countLike1, page.getTotal());
+		}
 
-		page = dao.page(StaffInfo.class,
-				"SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 0 ROW FETCH NEXT :offset ROW ONLY ",
-				currentPage, pageSize, params);
+		long offset = 10;
+		params.put("offset", offset);
+		page = dao.page(StaffInfo.class, "find_offset", currentPage, pageSize, params);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
-		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
+		if (countLike1 >= offset) {
+			Assertions.assertEquals(countLike1 - offset, page.getTotal());
+		} else {
+			Assertions.assertEquals(0L, page.getTotal());
+		}
 
-		page = dao.page(StaffInfo.class, "sqlserver_offset_fetch", currentPage, pageSize, params);
+		page = dao.page(StaffInfo.class, "page_offset", currentPage, pageSize, params);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
-		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
-
-		page = dao.page(StaffInfo.class,
-				"SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 10 ROW",
-				currentPage, pageSize, params);
-		Assertions.assertEquals(currentPage, page.getCurrentPage());
-		Assertions.assertEquals(pageSize, page.getPageSize());
-		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
-
-		page = dao.page(StaffInfo.class,
-				" SELECT staff_id, staff_name FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME OFFSET 10 ROW",
-				currentPage, pageSize, params);
-		Assertions.assertEquals(currentPage, page.getCurrentPage());
-		Assertions.assertEquals(pageSize, page.getPageSize());
-		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
-
-		page = dao.page(StaffInfo.class, "sqlserver_offset", currentPage, pageSize, params);
-		Assertions.assertEquals(currentPage, page.getCurrentPage());
-		Assertions.assertEquals(pageSize, page.getPageSize());
-		Assertions.assertTrue(page.getTotal().intValue() == countLike1 - (int) params.get("offset"));
+		if (countLike1 >= offset) {
+			Assertions.assertEquals(countLike1 - offset, page.getTotal());
+		} else {
+			Assertions.assertEquals(0L, page.getTotal());
+		}
 	}
 
 }

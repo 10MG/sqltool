@@ -1,9 +1,7 @@
 package cn.tenmg.sqltool.dao;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -11,13 +9,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.tenmg.dsl.Script;
+import cn.tenmg.dsl.utils.CollectionUtils;
 import cn.tenmg.dsql.NamedSQL;
-import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
-import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sql.paging.SQLMetaData;
 import cn.tenmg.sql.paging.utils.JDBCUtils;
 import cn.tenmg.sql.paging.utils.SQLUtils;
@@ -26,7 +20,9 @@ import cn.tenmg.sqltool.Transaction;
 import cn.tenmg.sqltool.data.Page;
 import cn.tenmg.sqltool.exception.DetermineSQLDialectException;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
+import cn.tenmg.sqltool.exception.SQLExecutorException;
 import cn.tenmg.sqltool.exception.TransactionException;
+import cn.tenmg.sqltool.macro.Paging;
 import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.DMLParser;
 import cn.tenmg.sqltool.sql.MergeSQL;
@@ -38,7 +34,6 @@ import cn.tenmg.sqltool.sql.executer.ExecuteUpdateSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.GetSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.LongResultSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.SelectSQLExecuter;
-import cn.tenmg.sqltool.sql.meta.FieldMeta;
 import cn.tenmg.sqltool.sql.parser.DeleteDMLParser;
 import cn.tenmg.sqltool.sql.parser.GetDMLParser;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
@@ -56,8 +51,6 @@ import cn.tenmg.sqltool.utils.SQLDialectUtils;
  *
  */
 public abstract class AbstractDao implements Dao {
-
-	private static final Logger log = LoggerFactory.getLogger(XMLFileDSQLFactory.class);
 
 	private static final Map<DataSource, SQLDialect> DIALECTS = new HashMap<DataSource, SQLDialect>();
 
@@ -213,7 +206,8 @@ public abstract class AbstractDao implements Dao {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
-		updateBatch(dataSource, rows, batchSize, getSQLDialect(dataSource).update(rows.get(0).getClass()));
+		JDBCExecuteUtils.updateBatch(dataSource, getSQLDialect(dataSource).update(rows.get(0).getClass()), rows,
+				batchSize, isShowSql());
 	}
 
 	@Override
@@ -252,7 +246,7 @@ public abstract class AbstractDao implements Dao {
 				con = dataSource.getConnection();
 				con.setAutoCommit(false);
 				con.setReadOnly(false);
-				int count = JDBCExecuteUtils.hardUpdate(con, isShowSql(), rows);
+				int count = JDBCExecuteUtils.hardUpdate(con, rows, isShowSql());
 				con.commit();
 				return count;
 			} catch (SQLException e) {
@@ -261,7 +255,7 @@ public abstract class AbstractDao implements Dao {
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
-				throw new cn.tenmg.sqltool.exception.SQLException(e);
+				throw new SQLExecutorException(e);
 			} finally {
 				JDBCUtils.close(con);
 			}
@@ -287,7 +281,7 @@ public abstract class AbstractDao implements Dao {
 	public <T extends Serializable> void hardUpdateBatch(DataSource dataSource, List<T> rows, int batchSize) {
 		if (!CollectionUtils.isEmpty(rows)) {
 			DML dml = UpdateDMLParser.getInstance().parse(rows.get(0).getClass());
-			executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize);
+			JDBCExecuteUtils.executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize, isShowSql());
 		}
 	}
 
@@ -369,7 +363,8 @@ public abstract class AbstractDao implements Dao {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
-		saveBatch(dataSource, rows, batchSize, getSQLDialect(dataSource).save(rows.get(0).getClass()));
+		JDBCExecuteUtils.saveBatch(dataSource, getSQLDialect(dataSource).save(rows.get(0).getClass()), rows, batchSize,
+				isShowSql());
 	}
 
 	@Override
@@ -383,7 +378,8 @@ public abstract class AbstractDao implements Dao {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
-		saveBatch(dataSource, rows, batchSize, getSQLDialect(dataSource).save(rows.get(0).getClass(), hardFields));
+		JDBCExecuteUtils.saveBatch(dataSource, getSQLDialect(dataSource).save(rows.get(0).getClass(), hardFields), rows,
+				batchSize, isShowSql());
 	}
 
 	@Override
@@ -413,7 +409,7 @@ public abstract class AbstractDao implements Dao {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
 			con.setReadOnly(false);
-			int count = JDBCExecuteUtils.hardSave(con, dialect, isShowSql(), rows);
+			int count = JDBCExecuteUtils.hardSave(con, dialect, rows, isShowSql());
 			con.commit();
 			return count;
 		} catch (SQLException e) {
@@ -422,7 +418,7 @@ public abstract class AbstractDao implements Dao {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw new SQLExecutorException(e);
 		} finally {
 			JDBCUtils.close(con);
 		}
@@ -448,48 +444,8 @@ public abstract class AbstractDao implements Dao {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
-		SQLDialect dialect = getSQLDialect(dataSource);
-		Connection con = null;
-		PreparedStatement ps = null;
-		try {
-			con = dataSource.getConnection();
-			con.setAutoCommit(false);
-			con.setReadOnly(false);
-			MergeSQL mergeSql = dialect.hardSave(rows.get(0).getClass());
-			String sql = mergeSql.getScript();
-			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
-			if (isShowSql() && log.isInfoEnabled()) {
-				log.info("Execute SQL: ".concat(sql));
-			}
-			ps = con.prepareStatement(sql);
-			int size = rows.size(), current = 0, times = (int) Math.ceil(size / (double) batchSize);
-			while (current < times) {
-				int end = (current + 1) * batchSize, last = end < size ? end : size;
-				for (int i = current * batchSize; i < last; i++) {
-					JDBCExecuteUtils.addBatch(ps, fieldMetas, rows.get(i));
-				}
-				ps.executeBatch();
-				con.commit();
-				ps.clearBatch();
-				current++;
-			}
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			if (ps != null) {
-				try {
-					ps.clearBatch();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			JDBCUtils.close(con);
-		}
+		JDBCExecuteUtils.saveBatch(dataSource, getSQLDialect(dataSource).hardSave(rows.get(0).getClass()), rows,
+				batchSize, isShowSql());
 	}
 
 	@Override
@@ -556,12 +512,12 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> T get(Class<T> type, String dsql, Map<String, ?> params) {
+	public <T extends Serializable> T get(Class<T> type, String dsql, Object params) {
 		return get(getDefaultDataSource(), parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> T get(DataSource dataSource, Class<T> type, String dsql, Map<String, ?> params) {
+	public <T extends Serializable> T get(DataSource dataSource, Class<T> type, String dsql, Object params) {
 		return get(dataSource, parse(dsql, params), type);
 	}
 
@@ -590,13 +546,12 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Map<String, ?> params) {
+	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Object params) {
 		return select(getDefaultDataSource(), parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> List<T> select(DataSource dataSource, Class<T> type, String dsql,
-			Map<String, ?> params) {
+	public <T extends Serializable> List<T> select(DataSource dataSource, Class<T> type, String dsql, Object params) {
 		return select(dataSource, parse(dsql, params), type);
 	}
 
@@ -609,7 +564,62 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
 			int pageSize, Object... params) {
-		return page(dataSource, parse(dsql, params), currentPage, pageSize, type);
+		Connection con = null;
+		Page<T> page = new Page<T>();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		try {
+			con = dataSource.getConnection();
+			con.setAutoCommit(true);
+			con.setReadOnly(true);
+			boolean showSql = isShowSql();
+			SQLDialect dialect = getSQLDialect(dataSource);
+			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
+			NamedSQL namedSQL = parse(dsql, params);// 假设存在#[page(……)]，尝试解析COUNT查询SQL
+			Script<List<Object>> sql;
+			String id = namedSQL.getId();
+			SQLMetaData sqlMetaData;
+			if (Paging.isCounted()) {// 已被Paging解析为COUNT查询SQL
+				sql = toJDBC(namedSQL.getScript(), namedSQL.getParams());
+				Long total = JDBCExecuteUtils.execute(con, LongResultSQLExecuter.getInstance(), id, sql.getValue(),
+						sql.getParams(), showSql);
+				page.setTotal(total);
+				if (total != null && total > 0) {
+					page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
+					Paging.initPageEnv(dialect, con, page);// 初始化Paging的分页查询SQL解析环境
+					namedSQL = parse(dsql, params);// 解析分页查询SQL
+					sql = toJDBC(namedSQL.getScript(), namedSQL.getParams());
+					page.setRows(JDBCExecuteUtils.execute(con, new SelectSQLExecuter<T>(type), id, sql.getValue(),
+							sql.getParams(), showSql));
+				} else {
+					page.setTotalPage(0L);
+				}
+			} else {// 重新按普通场景解析
+				namedSQL = parse(dsql, params);
+				String script = namedSQL.getScript();
+				sqlMetaData = SQLUtils.getSQLMetaData(script);
+				Map<String, Object> usedParams = namedSQL.getParams();
+				sql = toJDBC(dialect.countSql(script, sqlMetaData), usedParams);
+				Long total = JDBCExecuteUtils.execute(con, LongResultSQLExecuter.getInstance(), id, sql.getValue(),
+						sql.getParams(), showSql);
+				page.setTotal(total);
+				if (total != null && total > 0) {
+					page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
+					sql = toJDBC(dialect.pageSql(con, script, usedParams, sqlMetaData, pageSize, currentPage),
+							usedParams);
+					page.setRows(JDBCExecuteUtils.execute(con, new SelectSQLExecuter<T>(type), id, sql.getValue(),
+							sql.getParams(), showSql));
+				} else {
+					page.setTotalPage(0L);
+				}
+			}
+		} catch (SQLException e) {
+			throw new SQLExecutorException(e);
+		} finally {
+			Paging.clear();
+			JDBCUtils.close(con);
+		}
+		return page;
 	}
 
 	@Override
@@ -621,31 +631,174 @@ public abstract class AbstractDao implements Dao {
 	@Override
 	public <T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
 			long currentPage, int pageSize, Object... params) {
-		return page(dataSource, parse(dsql, params), parse(cntDsql, params), currentPage, pageSize, type);
+		Connection con = null;
+		Page<T> page = new Page<T>();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		try {
+			con = dataSource.getConnection();
+			con.setAutoCommit(true);
+			con.setReadOnly(true);
+			boolean showSql = isShowSql();
+			SQLDialect dialect = getSQLDialect(dataSource);
+			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
+			NamedSQL countNamedSQL = parse(cntDsql, params);
+			Script<List<Object>> sql;
+			if (Paging.isCounted()) {
+				sql = toJDBC(countNamedSQL.getScript(), countNamedSQL.getParams());
+			} else {
+				String script = countNamedSQL.getScript();
+				sql = toJDBC(dialect.countSql(script, SQLUtils.getSQLMetaData(script)), countNamedSQL.getParams());
+			}
+			Long total = JDBCExecuteUtils.execute(con, LongResultSQLExecuter.getInstance(), countNamedSQL.getId(),
+					sql.getValue(), sql.getParams(), showSql);
+			page.setTotal(total);
+			if (total != null && total > 0) {
+				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
+				Paging.initPageEnv(dialect, con, page);// 初始化Paging的分页查询SQL解析环境
+				NamedSQL namedSQL = parse(dsql, params);// 假设存在#[page(……)]，尝试解析分页查询SQL
+				if (Paging.isPaged()) {// DSL已被Paging解析为分页查询SQL
+					sql = toJDBC(namedSQL.getScript(), namedSQL.getParams());
+				} else {
+					String script = namedSQL.getScript();
+					sql = toJDBC(dialect.pageSql(con, script, namedSQL.getParams(), SQLUtils.getSQLMetaData(script),
+							pageSize, currentPage), namedSQL.getParams());
+				}
+				page.setRows(JDBCExecuteUtils.execute(con, new SelectSQLExecuter<T>(type), namedSQL.getId(),
+						sql.getValue(), sql.getParams(), showSql));
+			} else {
+				page.setTotalPage(0L);
+			}
+		} catch (SQLException e) {
+			throw new SQLExecutorException(e);
+		} finally {
+			Paging.clear();
+			JDBCUtils.close(con);
+		}
+		return page;
 	}
 
 	@Override
 	public <T extends Serializable> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
-			Map<String, Object> params) {
+			Object params) {
 		return page(getDefaultDataSource(), type, dsql, currentPage, pageSize, params);
 	}
 
 	@Override
 	public <T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
-			int pageSize, Map<String, Object> params) {
-		return page(dataSource, parse(dsql, params), currentPage, pageSize, type);
+			int pageSize, Object params) {
+		Connection con = null;
+		Page<T> page = new Page<T>();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		try {
+			con = dataSource.getConnection();
+			con.setAutoCommit(true);
+			con.setReadOnly(true);
+			boolean showSql = isShowSql();
+			SQLDialect dialect = getSQLDialect(dataSource);
+			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
+			NamedSQL namedSQL = parse(dsql, params);// 假设存在#[page(……)]，尝试解析COUNT查询SQL
+			Script<List<Object>> sql;
+			String id = namedSQL.getId();
+			SQLMetaData sqlMetaData;
+			if (Paging.isCounted()) {// 已被Paging解析为COUNT查询SQL
+				sql = toJDBC(namedSQL.getScript(), namedSQL.getParams());
+				Long total = JDBCExecuteUtils.execute(con, LongResultSQLExecuter.getInstance(), id, sql.getValue(),
+						sql.getParams(), showSql);
+				page.setTotal(total);
+				if (total != null && total > 0) {
+					page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
+					Paging.initPageEnv(dialect, con, page);// 初始化Paging的分页查询SQL解析环境
+					namedSQL = parse(dsql, params);// 解析分页查询SQL
+					sql = toJDBC(namedSQL.getScript(), namedSQL.getParams());
+					page.setRows(JDBCExecuteUtils.execute(con, new SelectSQLExecuter<T>(type), id, sql.getValue(),
+							sql.getParams(), showSql));
+				} else {
+					page.setTotalPage(0L);
+				}
+			} else {// 重新按普通场景解析
+				namedSQL = parse(dsql, params);
+				String script = namedSQL.getScript();
+				sqlMetaData = SQLUtils.getSQLMetaData(script);
+				Map<String, Object> usedParams = namedSQL.getParams();
+				sql = toJDBC(dialect.countSql(script, sqlMetaData), usedParams);
+				Long total = JDBCExecuteUtils.execute(con, LongResultSQLExecuter.getInstance(), id, sql.getValue(),
+						sql.getParams(), showSql);
+				page.setTotal(total);
+				if (total != null && total > 0) {
+					page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
+					sql = toJDBC(dialect.pageSql(con, script, usedParams, sqlMetaData, pageSize, currentPage),
+							usedParams);
+					page.setRows(JDBCExecuteUtils.execute(con, new SelectSQLExecuter<T>(type), id, sql.getValue(),
+							sql.getParams(), showSql));
+				} else {
+					page.setTotalPage(0L);
+				}
+			}
+		} catch (SQLException e) {
+			throw new SQLExecutorException(e);
+		} finally {
+			Paging.clear();
+			JDBCUtils.close(con);
+		}
+		return page;
 	}
 
 	@Override
 	public <T extends Serializable> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage,
-			int pageSize, Map<String, Object> params) {
+			int pageSize, Object params) {
 		return page(getDefaultDataSource(), type, dsql, cntDsql, currentPage, pageSize, params);
 	}
 
 	@Override
 	public <T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
-			long currentPage, int pageSize, Map<String, Object> params) {
-		return page(dataSource, parse(dsql, params), parse(cntDsql, params), currentPage, pageSize, type);
+			long currentPage, int pageSize, Object params) {
+		Connection con = null;
+		Page<T> page = new Page<T>();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		try {
+			con = dataSource.getConnection();
+			con.setAutoCommit(true);
+			con.setReadOnly(true);
+			boolean showSql = isShowSql();
+			SQLDialect dialect = getSQLDialect(dataSource);
+			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
+			NamedSQL countNamedSQL = parse(cntDsql, params);
+			Script<List<Object>> sql;
+			if (Paging.isCounted()) {
+				sql = toJDBC(countNamedSQL.getScript(), countNamedSQL.getParams());
+			} else {
+				String script = countNamedSQL.getScript();
+				sql = toJDBC(dialect.countSql(script, SQLUtils.getSQLMetaData(script)), countNamedSQL.getParams());
+			}
+			Long total = JDBCExecuteUtils.execute(con, LongResultSQLExecuter.getInstance(), countNamedSQL.getId(),
+					sql.getValue(), sql.getParams(), showSql);
+			page.setTotal(total);
+			if (total != null && total > 0) {
+				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
+				Paging.initPageEnv(dialect, con, page);// 初始化Paging的分页查询SQL解析环境
+				NamedSQL namedSQL = parse(dsql, params);// 假设存在#[page(……)]，尝试解析分页查询SQL
+				if (Paging.isPaged()) {// DSL已被Paging解析为分页查询SQL
+					sql = toJDBC(namedSQL.getScript(), namedSQL.getParams());
+				} else {
+					String script = namedSQL.getScript();
+					sql = toJDBC(dialect.pageSql(con, script, namedSQL.getParams(), SQLUtils.getSQLMetaData(script),
+							pageSize, currentPage), namedSQL.getParams());
+				}
+				page.setRows(JDBCExecuteUtils.execute(con, new SelectSQLExecuter<T>(type), namedSQL.getId(),
+						sql.getValue(), sql.getParams(), showSql));
+			} else {
+				page.setTotalPage(0L);
+			}
+		} catch (SQLException e) {
+			throw new SQLExecutorException(e);
+		} finally {
+			Paging.clear();
+			JDBCUtils.close(con);
+		}
+		return page;
 	}
 
 	@Override
@@ -659,12 +812,12 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public boolean execute(String dsql, Map<String, ?> params) {
+	public boolean execute(String dsql, Object params) {
 		return execute(getDefaultDataSource(), parse(dsql, params));
 	}
 
 	@Override
-	public boolean execute(DataSource dataSource, String dsql, Map<String, ?> params) {
+	public boolean execute(DataSource dataSource, String dsql, Object params) {
 		return execute(dataSource, parse(dsql, params));
 	}
 
@@ -679,12 +832,12 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public int executeUpdate(String dsql, Map<String, ?> params) {
+	public int executeUpdate(String dsql, Object params) {
 		return executeUpdate(getDefaultDataSource(), parse(dsql, params));
 	}
 
 	@Override
-	public int executeUpdate(DataSource dataSource, String dsql, Map<String, ?> params) {
+	public int executeUpdate(DataSource dataSource, String dsql, Object params) {
 		return executeUpdate(dataSource, parse(dsql, params));
 	}
 
@@ -712,7 +865,7 @@ public abstract class AbstractDao implements Dao {
 			if (e instanceof ClassNotFoundException) {
 				throw new IllegalConfigException(e);
 			} else if (e instanceof SQLException) {
-				throw new cn.tenmg.sqltool.exception.SQLException(e);
+				throw new SQLExecutorException(e);
 			}
 			throw new TransactionException(e);
 		} finally {
@@ -725,7 +878,7 @@ public abstract class AbstractDao implements Dao {
 		return getDSQLFactory().parse(dsql, params);
 	}
 
-	private NamedSQL parse(String dsql, Map<String, ?> params) {
+	private NamedSQL parse(String dsql, Object params) {
 		return getDSQLFactory().parse(dsql, params);
 	}
 
@@ -750,9 +903,9 @@ public abstract class AbstractDao implements Dao {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
 			con.setReadOnly(sqlExecuter.isReadOnly());
-			result = JDBCExecuteUtils.execute(con, id, sql, params, sqlExecuter, isShowSql());
+			result = JDBCExecuteUtils.execute(con, sqlExecuter, id, sql, params, isShowSql());
 		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw new SQLExecutorException(e);
 		} finally {
 			JDBCUtils.close(con);
 		}
@@ -765,7 +918,7 @@ public abstract class AbstractDao implements Dao {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
 			con.setReadOnly(false);
-			int count = JDBCExecuteUtils.executeBatch(con, isShowSql(), rows, dmlParser);
+			int count = JDBCExecuteUtils.executeBatch(con, dmlParser, rows, isShowSql());
 			con.commit();
 			return count;
 		} catch (SQLException e) {
@@ -774,7 +927,7 @@ public abstract class AbstractDao implements Dao {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw new SQLExecutorException(e);
 		} finally {
 			JDBCUtils.close(con);
 		}
@@ -783,49 +936,7 @@ public abstract class AbstractDao implements Dao {
 	private <T extends Serializable> void executeBatch(DataSource dataSource, List<T> rows, DMLParser dmlParser,
 			int batchSize) {
 		DML dml = dmlParser.parse(rows.get(0).getClass());
-		executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize);
-	}
-
-	private <T extends Serializable> void executeBatch(DataSource dataSource, String sql, List<T> rows,
-			List<Field> fields, int batchSize) {
-		Connection con = null;
-		PreparedStatement ps = null;
-		try {
-			con = dataSource.getConnection();
-			con.setAutoCommit(false);
-			con.setReadOnly(false);
-			ps = con.prepareStatement(sql);
-			if (isShowSql() && log.isInfoEnabled()) {
-				log.info("Execute SQL: ".concat(sql));
-			}
-			int size = rows.size(), current = 0, times = (int) Math.ceil(size / (double) batchSize);
-			while (current < times) {
-				int end = (current + 1) * batchSize, last = end < size ? end : size;
-				for (int i = current * batchSize; i < last; i++) {
-					JDBCExecuteUtils.addBatch(ps, rows.get(i), fields);
-				}
-				ps.executeBatch();
-				con.commit();
-				ps.clearBatch();
-				current++;
-			}
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			if (ps != null) {
-				try {
-					ps.clearBatch();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			JDBCUtils.close(con);
-		}
+		JDBCExecuteUtils.executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize, isShowSql());
 	}
 
 	private static <T> int update(DataSource dataSource, boolean showSql, List<T> rows, UpdateSQL updateSQL) {
@@ -834,7 +945,7 @@ public abstract class AbstractDao implements Dao {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
 			con.setReadOnly(false);
-			int count = JDBCExecuteUtils.update(con, showSql, rows, updateSQL);
+			int count = JDBCExecuteUtils.update(con, updateSQL, rows, showSql);
 			con.commit();
 			return count;
 		} catch (SQLException e) {
@@ -843,7 +954,7 @@ public abstract class AbstractDao implements Dao {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw new SQLExecutorException(e);
 		} finally {
 			JDBCUtils.close(con);
 		}
@@ -854,50 +965,8 @@ public abstract class AbstractDao implements Dao {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
-		updateBatch(dataSource, rows, batchSize, getSQLDialect(dataSource).update(rows.get(0).getClass(), hardFields));
-	}
-
-	private <T> void updateBatch(DataSource dataSource, List<T> rows, int batchSize, UpdateSQL updateSql) {
-		Connection con = null;
-		PreparedStatement ps = null;
-		try {
-			int size = rows.size(), current = 0, times = (int) Math.ceil(size / (double) batchSize);
-			con = dataSource.getConnection();
-			con.setAutoCommit(false);
-			con.setReadOnly(false);
-			String sql = updateSql.getScript();
-			List<Field> fields = updateSql.getFields();
-			if (isShowSql() && log.isInfoEnabled()) {
-				log.info("Execute SQL: ".concat(sql));
-			}
-			ps = con.prepareStatement(sql);
-			while (current < times) {
-				int end = (current + 1) * batchSize, last = end < size ? end : size;
-				for (int i = current * batchSize; i < last; i++) {
-					JDBCExecuteUtils.addBatch(ps, rows.get(i), fields);
-				}
-				ps.executeBatch();
-				con.commit();
-				ps.clearBatch();
-				current++;
-			}
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			if (ps != null) {
-				try {
-					ps.clearBatch();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			JDBCUtils.close(con);
-		}
+		JDBCExecuteUtils.updateBatch(dataSource, getSQLDialect(dataSource).update(rows.get(0).getClass(), hardFields),
+				rows, batchSize, isShowSql());
 	}
 
 	private static <T> int save(DataSource dataSource, boolean showSql, List<T> rows, MergeSQL mergeSql) {
@@ -906,7 +975,7 @@ public abstract class AbstractDao implements Dao {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
 			con.setReadOnly(false);
-			int count = JDBCExecuteUtils.save(con, showSql, rows, mergeSql);
+			int count = JDBCExecuteUtils.save(con, mergeSql, rows, showSql);
 			con.commit();
 			return count;
 		} catch (SQLException e) {
@@ -915,51 +984,8 @@ public abstract class AbstractDao implements Dao {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw new SQLExecutorException(e);
 		} finally {
-			JDBCUtils.close(con);
-		}
-	}
-
-	private <T> void saveBatch(DataSource dataSource, List<T> rows, int batchSize, MergeSQL mergeSql) {
-		Connection con = null;
-		PreparedStatement ps = null;
-		try {
-			int size = rows.size(), current = 0, times = (int) Math.ceil(size / (double) batchSize);
-			con = dataSource.getConnection();
-			con.setAutoCommit(false);
-			con.setReadOnly(false);
-			String sql = mergeSql.getScript();
-			List<FieldMeta> fieldMetas = mergeSql.getFieldMetas();
-			if (isShowSql() && log.isInfoEnabled()) {
-				log.info("Execute SQL: ".concat(sql));
-			}
-			ps = con.prepareStatement(sql);
-			while (current < times) {
-				int end = (current + 1) * batchSize, last = end < size ? end : size;
-				for (int i = current * batchSize; i < last; i++) {
-					JDBCExecuteUtils.addBatch(ps, fieldMetas, rows.get(i));
-				}
-				ps.executeBatch();
-				con.commit();
-				ps.clearBatch();
-				current++;
-			}
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			if (ps != null) {
-				try {
-					ps.clearBatch();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
 			JDBCUtils.close(con);
 		}
 	}
@@ -983,77 +1009,6 @@ public abstract class AbstractDao implements Dao {
 
 	private int executeUpdate(DataSource dataSource, NamedSQL namedSQL) {
 		return execute(dataSource, namedSQL, ExecuteUpdateSQLExecuter.getInstance());
-	}
-
-	private <T extends Serializable> Page<T> page(DataSource dataSource, NamedSQL namedSQL, long currentPage,
-			int pageSize, Class<T> type) {
-		Connection con = null;
-		Page<T> page = new Page<T>();
-		page.setCurrentPage(currentPage);
-		page.setPageSize(pageSize);
-		try {
-			con = dataSource.getConnection();
-			con.setAutoCommit(true);
-			con.setReadOnly(true);
-			boolean showSql = isShowSql();
-			SQLDialect dialect = getSQLDialect(dataSource);
-			String id = namedSQL.getId(), script = namedSQL.getScript();
-			Map<String, Object> params = namedSQL.getParams();
-			SQLMetaData sqlMetaData = SQLUtils.getSQLMetaData(script);
-			Script<List<Object>> sql = toJDBC(dialect.countSql(script, sqlMetaData), params);
-			Long total = JDBCExecuteUtils.execute(con, id, sql.getValue(), sql.getParams(),
-					LongResultSQLExecuter.getInstance(), showSql);
-			page.setTotal(total);
-			if (total != null && total > 0) {
-				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
-				sql = toJDBC(dialect.pageSql(con, script, params, sqlMetaData, pageSize, currentPage), params);
-				page.setRows(JDBCExecuteUtils.execute(con, id, sql.getValue(), sql.getParams(),
-						new SelectSQLExecuter<T>(type), showSql));
-			} else {
-				page.setTotalPage(0L);
-			}
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			JDBCUtils.close(con);
-		}
-		return page;
-	}
-
-	private <T extends Serializable> Page<T> page(DataSource dataSource, NamedSQL namedSQL, NamedSQL countNamedSQL,
-			long currentPage, int pageSize, Class<T> type) {
-		Connection con = null;
-		Page<T> page = new Page<T>();
-		page.setCurrentPage(currentPage);
-		page.setPageSize(pageSize);
-		try {
-			con = dataSource.getConnection();
-			con.setAutoCommit(true);
-			con.setReadOnly(true);
-			boolean showSql = isShowSql();
-			String script = countNamedSQL.getScript();
-			SQLDialect dialect = getSQLDialect(dataSource);
-			Script<List<Object>> sql = toJDBC(dialect.countSql(script, SQLUtils.getSQLMetaData(script)),
-					countNamedSQL.getParams());
-			Long total = JDBCExecuteUtils.execute(con, countNamedSQL.getId(), sql.getValue(), sql.getParams(),
-					LongResultSQLExecuter.getInstance(), showSql);
-			page.setTotal(total);
-			if (total != null && total > 0) {
-				page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
-				script = namedSQL.getScript();
-				sql = toJDBC(dialect.pageSql(con, script, namedSQL.getParams(), SQLUtils.getSQLMetaData(script),
-						pageSize, currentPage), namedSQL.getParams());
-				page.setRows(JDBCExecuteUtils.execute(con, namedSQL.getId(), sql.getValue(), sql.getParams(),
-						new SelectSQLExecuter<T>(type), showSql));
-			} else {
-				page.setTotalPage(0L);
-			}
-		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			JDBCUtils.close(con);
-		}
-		return page;
 	}
 
 }

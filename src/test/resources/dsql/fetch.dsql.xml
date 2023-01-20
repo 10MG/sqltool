@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dsqls xmlns="http://www.10mg.cn/schema/dsql"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.10mg.cn/schema/dsql http://www.10mg.cn/schema/dsql.xsd">
+	<dsql id="find_fetch">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script><![CDATA[
+		SELECT
+		  STAFF_ID,
+		  STAFF_NAME
+		FROM STAFF_INFO
+		WHERE STAFF_NAME LIKE :staffName
+		ORDER BY STAFF_NAME
+		FETCH NEXT :rows ROW ONLY
+		]]></script>
+	</dsql>
+
+	<dsql id="page_fetch">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script><![CDATA[
+		SELECT
+		  Y.*
+		FROM #[page(
+		  SELECT
+		    STAFF_ID,
+		    STAFF_NAME
+		  FROM STAFF_INFO
+		  WHERE STAFF_NAME LIKE :staffName
+		  ORDER BY STAFF_NAME
+		  FETCH NEXT :rows ROW ONLY
+		)] X
+		LEFT JOIN STAFF_INFO Y ON X.STAFF_ID = Y.STAFF_ID
+		]]></script>
+	</dsql>
+</dsqls>

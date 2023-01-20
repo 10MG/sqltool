@@ -11,11 +11,10 @@ import java.util.Map;
 import java.util.Set;
 
 import cn.tenmg.dsl.Script;
+import cn.tenmg.dsl.utils.PlaceHolderUtils;
 import cn.tenmg.dsl.utils.StringUtils;
-import cn.tenmg.dsql.utils.PlaceHolderUtils;
 import cn.tenmg.sql.paging.SQLMetaData;
 import cn.tenmg.sql.paging.SQLPagingDialect;
-import cn.tenmg.sql.paging.dialect.AbstractSQLPagingDialect;
 import cn.tenmg.sql.paging.utils.SQLUtils;
 import cn.tenmg.sqltool.config.annotion.Column;
 import cn.tenmg.sqltool.config.annotion.Id;
@@ -38,7 +37,7 @@ import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
  *
  * @since 1.1.0
  */
-public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implements SQLDialect {
+public abstract class AbstractSQLDialect implements SQLDialect {
 
 	private static final String UPDATE = "UPDATE ${tableName} SET ${sets} WHERE ${condition}";
 
@@ -130,6 +129,17 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 	abstract String getSetIfNotNullTemplate();
 
 	@Override
+	public String countSql(String namedSql, SQLMetaData sqlMetaData) {
+		return getSQLPagingDialect().countSql(namedSql, sqlMetaData);
+	}
+
+	@Override
+	public String pageSql(Connection con, String sql, Map<String, ?> params, SQLMetaData sqlMetaData, int pageSize,
+			long currentPage) throws SQLException {
+		return getSQLPagingDialect().pageSql(con, sql, params, sqlMetaData, pageSize, currentPage);
+	}
+
+	@Override
 	public <T> UpdateSQL update(Class<T> type) {
 		EntityMeta entityMeta = EntityUtils.getCachedEntityMeta(type);
 		boolean hasId = false, hasGeneralColumn = false;
@@ -197,7 +207,8 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 						} else {
 							hasId = true;
 						}
-						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
+						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+								.append(SQLUtils.PARAM_MARK);
 					} else {// 组织已存在时的更新子句
 						generalFields.add(field);
 						if (hasGeneralColumn) {
@@ -294,7 +305,8 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 						} else {
 							hasId = true;
 						}
-						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
+						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+								.append(SQLUtils.PARAM_MARK);
 					} else {// 组织已存在时的更新子句
 						generalFields.add(field);
 						if (hasGeneralColumn) {
@@ -541,7 +553,8 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 						} else {
 							hasId = true;
 						}
-						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
+						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+								.append(SQLUtils.PARAM_MARK);
 					} else {// 组织已存在时的更新子句
 						if (param != null) {
 							values.add(param);
@@ -638,7 +651,8 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 						} else {
 							hasId = true;
 						}
-						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE).append(SQLUtils.PARAM_MARK);
+						condition.append(columnName).append(JDBCExecuteUtils.SPACE_EQ_SPACE)
+								.append(SQLUtils.PARAM_MARK);
 					} else {// 组织已存在时的更新子句
 						if (param != null || hardFieldSet.contains(field.getName())) {
 							values.add(param);
@@ -820,12 +834,6 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 			throw new ColumnNotFoundException(
 					String.format("Column not found in class %s, please use @Column to config fields", type.getName()));
 		}
-	}
-
-	@Override
-	public String pageSql(Connection con, String sql, Map<String, ?> params, SQLMetaData sqlMetaData, int pageSize,
-			long currentPage) throws SQLException {
-		return getSQLPagingDialect().pageSql(con, sql, params, sqlMetaData, pageSize, currentPage);
 	}
 
 	private <T> UpdateSQL updateSQL(Class<T> type, boolean hasId, boolean hasGeneralColumn, String tableName,
@@ -1202,8 +1210,8 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 		}
 	}
 
-	private <T> Script<List<Object>> sql(T obj, boolean hasId, boolean hasGeneralColumn, String tableName, StringBuilder sets,
-			StringBuilder condition, List<Object> values, List<Object> conditionValues) {
+	private <T> Script<List<Object>> sql(T obj, boolean hasId, boolean hasGeneralColumn, String tableName,
+			StringBuilder sets, StringBuilder condition, List<Object> values, List<Object> conditionValues) {
 		if (hasId) {
 			if (hasGeneralColumn) {
 				values.addAll(conditionValues);
@@ -1226,7 +1234,8 @@ public abstract class AbstractSQLDialect extends AbstractSQLPagingDialect implem
 		if (templateParams.get(SETS).length() > 0) {
 			return new Script<List<Object>>(PlaceHolderUtils.replace(getSaveSQLTemplate(), templateParams), params);
 		} else {
-			return new Script<List<Object>>(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams), params);
+			return new Script<List<Object>>(PlaceHolderUtils.replace(getInsertIfNotExistsSQLTemplate(), templateParams),
+					params);
 		}
 	}
 

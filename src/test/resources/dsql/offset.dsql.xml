@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dsqls xmlns="http://www.10mg.cn/schema/dsql"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.10mg.cn/schema/dsql http://www.10mg.cn/schema/dsql.xsd">
+	<dsql id="find_offset_fetch">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script><![CDATA[
+		SELECT
+		  STAFF_ID,
+		  STAFF_NAME
+		FROM STAFF_INFO
+		WHERE STAFF_NAME LIKE :staffName
+		OFFSET 0 ROW FETCH NEXT :rows ROW ONLY
+		]]></script>
+	</dsql>
+	
+	<dsql id="page_offset_fetch">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<!-- 这里仅仅是为了测试#[page(...)]宏，SQL这样写是没有意义的，实际场景中需左连接不同的表（注意：分页查询数据行数限制（例如取前100名，每页10条的分页查询）需在宏内进行，否则分页结果不正确） -->
+		<script><![CDATA[
+		SELECT
+		  Y.*
+		FROM #[page(
+		  SELECT
+		    STAFF_ID,
+		    STAFF_NAME
+		  FROM STAFF_INFO
+		  WHERE STAFF_NAME LIKE :staffName
+		  ORDER BY STAFF_NAME
+		  OFFSET 0 ROW FETCH NEXT :rows ROW ONLY
+		)] X
+		LEFT JOIN STAFF_INFO Y ON X.STAFF_ID = Y.STAFF_ID
+		]]></script>
+	</dsql>
+	
+	<dsql id="find_offset">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script><![CDATA[
+		SELECT
+		  STAFF_ID,
+		  STAFF_NAME
+		FROM STAFF_INFO
+		WHERE STAFF_NAME LIKE :staffName
+		ORDER BY STAFF_NAME
+		OFFSET :offset ROW
+		]]></script>
+	</dsql>
+	
+	<dsql id="page_offset">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script><![CDATA[
+		SELECT
+		  Y.*
+		FROM #[page(
+		  SELECT
+		    STAFF_ID,
+		    STAFF_NAME
+		  FROM STAFF_INFO
+		  WHERE STAFF_NAME LIKE :staffName
+		  ORDER BY STAFF_NAME
+		  OFFSET :offset ROW
+		)] X
+		LEFT JOIN STAFF_INFO Y ON X.STAFF_ID = Y.STAFF_ID
+		]]></script>
+	</dsql>
+</dsqls>

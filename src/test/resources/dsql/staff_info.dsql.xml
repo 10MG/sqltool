@@ -3,120 +3,148 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.10mg.cn/schema/dsql http://www.10mg.cn/schema/dsql.xsd">
 	<dsql id="get_total_staff_count">
-		<script>
-			<![CDATA[
-				SELECT COUNT(*) FROM STAFF_INFO
-			]]>
-		</script>
+		<script><![CDATA[
+		SELECT COUNT(*) FROM STAFF_INFO
+		]]></script>
 	</dsql>
 
 	<dsql id="get_staff_count_the_same_name">
-		<script>
-			<![CDATA[
-				SELECT COUNT(*) FROM STAFF_INFO WHERE STAFF_NAME = :staffName
-			]]>
-		</script>
+		<script><![CDATA[
+		SELECT COUNT(*) FROM STAFF_INFO WHERE STAFF_NAME = :staffName
+		]]></script>
 	</dsql>
 
 	<dsql id="get_staff_count_of_specific_position">
-		<script>
-			<![CDATA[
-				SELECT COUNT(*) FROM STAFF_INFO WHERE #[if(:position==null)POSITION IS NULL]#[else POSITION = :position]
-			]]>
-		</script>
+		<script><![CDATA[
+			SELECT COUNT(*) FROM STAFF_INFO WHERE #[if(:position==null)POSITION IS NULL]#[else POSITION = :position]
+		]]></script>
 	</dsql>
 
 	<dsql id="get_staff_info_by_staff_id">
-		<script>
-			<![CDATA[
-				SELECT * FROM STAFF_INFO WHERE STAFF_ID = :staffId
-			]]>
-		</script>
+		<script><![CDATA[
+		SELECT * FROM STAFF_INFO WHERE STAFF_ID = :staffId
+		]]></script>
 	</dsql>
 
 	<dsql id="find_staff_info_by_staff_ids">
-		<script>
-			<![CDATA[
-				SELECT * FROM STAFF_INFO WHERE STAFF_ID IN (:staffIds)
-			]]>
-		</script>
+		<script><![CDATA[
+		SELECT * FROM STAFF_INFO WHERE STAFF_ID IN (:staffIds)
+		]]></script>
 	</dsql>
 
 	<dsql id="find_staff_info_staff_name_like">
 		<converter>
 			<wrap-string params="staffName" formatter="%${value}%" />
 		</converter>
-		<script>
-			<![CDATA[
-				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName
-			]]>
-		</script>
+		<script><![CDATA[
+		SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName
+		]]></script>
+	</dsql>
+
+	<dsql id="page_staff_info_staff_name_like">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<!-- 这里仅仅是为了测试#[page(...)]宏，SQL这样写是没有意义的，实际场景中需左连接不同的表-->
+		<script><![CDATA[
+		SELECT
+		  Y.*
+		FROM #[page(
+		  SELECT
+		    STAFF_ID
+		  FROM STAFF_INFO
+		  WHERE STAFF_NAME LIKE :staffName
+		)] X
+		LEFT JOIN STAFF_INFO Y ON X.STAFF_ID = Y.STAFF_ID
+		]]></script>
 	</dsql>
 
 	<dsql id="find_staff_info_staff_name_like_with">
 		<converter>
 			<wrap-string params="staffName" formatter="%${value}%" />
 		</converter>
-		<script>
-			<![CDATA[
-				WITH T AS (SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName) SELECT * FROM T
-			]]>
-		</script>
+		<script><![CDATA[
+		WITH T AS (SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName) SELECT * FROM T
+		]]></script>
+	</dsql>
+
+	<dsql id="page_staff_info_staff_name_like_with">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script><![CDATA[
+		WITH T AS #[page(
+		  SELECT
+		    STAFF_ID
+		  FROM STAFF_INFO
+		  WHERE STAFF_NAME LIKE :staffName
+		)]
+		SELECT * FROM T
+		]]></script>
+	</dsql>
+
+	<dsql id="count_staff_info_staff_name_like">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<script><![CDATA[
+		SELECT COUNT(*) FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName
+		]]></script>
 	</dsql>
 
 	<dsql id="find_staff_info_staff_name_like_order_by_staff_name">
 		<converter>
 			<wrap-string params="staffName" formatter="%${value}%" />
 		</converter>
-		<script>
-			<![CDATA[
-				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME
-			]]>
-		</script>
+		<script><![CDATA[
+		SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY STAFF_NAME
+		]]></script>
+	</dsql>
+	
+	<dsql id="page_staff_info_staff_name_like_order_by_staff_name">
+		<converter>
+			<wrap-string params="staffName" formatter="%${value}%" />
+		</converter>
+		<!-- 这里仅仅是为了测试#[page(...)]宏，SQL这样写是没有意义的，实际场景中需左连接不同的表（注意：排序需在宏内进行，否则分页结果不正确）-->
+		<script><![CDATA[
+		SELECT
+		  Y.*
+		FROM #[page(
+		  SELECT
+		    STAFF_ID
+		  FROM STAFF_INFO
+		  WHERE STAFF_NAME LIKE :staffName
+		  ORDER BY STAFF_NAME
+		)] X
+		LEFT JOIN STAFF_INFO Y ON X.STAFF_ID = Y.STAFF_ID
+		]]></script>
 	</dsql>
 
 	<dsql id="find_staff_info_staff_name_like_order_by_has_param">
 		<converter>
 			<wrap-string params="staffName" formatter="%${value}%" />
 		</converter>
-		<script>
-			<![CDATA[
-				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY CASE WHEN POSITION IS NULL THEN :defualtPosition ELSE POSITION END, STAFF_NAME
-			]]>
-		</script>
+		<script><![CDATA[
+		SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName ORDER BY CASE WHEN POSITION IS NULL THEN :defualtPosition ELSE POSITION END, STAFF_NAME
+		]]></script>
 	</dsql>
-
-	<dsql id="find_staff_info_staff_name_like_limit">
+	
+	<dsql id="page_staff_info_staff_name_like_order_by_has_param">
 		<converter>
 			<wrap-string params="staffName" formatter="%${value}%" />
 		</converter>
-		<script>
-			<![CDATA[
-				SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName LIMIT :limit
-			]]>
-		</script>
-	</dsql>
-
-
-	<dsql id="find_staff_info_staff_name_like_page">
-		<converter>
-			<wrap-string params="staffName" formatter="%${value}%" />
-		</converter>
-		<script>
-			<![CDATA[
-				SELECT * FROM #[page(SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName)]
-			]]>
-		</script>
-	</dsql>
-
-	<dsql id="find_staff_info_staff_name_like_with_page">
-		<converter>
-			<wrap-string params="staffName" formatter="%${value}%" />
-		</converter>
-		<script>
-			<![CDATA[
-				WITH T AS #[page(SELECT * FROM STAFF_INFO WHERE STAFF_NAME LIKE :staffName)] SELECT * FROM T
-			]]>
-		</script>
+		<!-- 这里仅仅是为了测试#[page(...)]宏，SQL这样写是没有意义的，实际场景中需左连接不同的表（注意：排序需在宏内进行，否则分页结果不正确）-->
+		<script><![CDATA[
+		SELECT
+		  Y.*
+		FROM #[page(
+		  SELECT
+		    STAFF_ID
+		  FROM STAFF_INFO
+		  WHERE STAFF_NAME LIKE :staffName
+		  ORDER BY CASE WHEN POSITION IS NULL THEN :defualtPosition ELSE POSITION END, STAFF_NAME
+		)] X
+		LEFT JOIN STAFF_INFO Y ON X.STAFF_ID = Y.STAFF_ID
+		]]></script>
 	</dsql>
 </dsqls>

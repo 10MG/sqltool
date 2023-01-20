@@ -3,25 +3,22 @@ package cn.tenmg.sqltool.transaction;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.tenmg.dsl.Script;
+import cn.tenmg.dsl.utils.CollectionUtils;
 import cn.tenmg.dsql.DSQLFactory;
 import cn.tenmg.dsql.NamedSQL;
-import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
-import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sql.paging.utils.JDBCUtils;
 import cn.tenmg.sqltool.exception.IllegalCallException;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
+import cn.tenmg.sqltool.exception.SQLExecutorException;
 import cn.tenmg.sqltool.sql.DML;
 import cn.tenmg.sqltool.sql.SQLDialect;
 import cn.tenmg.sqltool.sql.SQLExecuter;
+import cn.tenmg.sqltool.sql.executer.ExecuteSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.ExecuteUpdateSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.GetSQLExecuter;
 import cn.tenmg.sqltool.sql.executer.SelectSQLExecuter;
@@ -30,7 +27,6 @@ import cn.tenmg.sqltool.sql.parser.GetDMLParser;
 import cn.tenmg.sqltool.sql.parser.InsertDMLParser;
 import cn.tenmg.sqltool.sql.utils.EntityUtils;
 import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
-import cn.tenmg.sqltool.utils.JSONUtils;
 import cn.tenmg.sqltool.utils.SQLDialectUtils;
 
 /**
@@ -46,8 +42,6 @@ public class CustomTransactionExecutor implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -1728127905781636407L;
-
-	private final static Logger log = LoggerFactory.getLogger(XMLFileDSQLFactory.class);
 
 	private static ThreadLocal<SQLDialect> currentSQLDialect = new ThreadLocal<SQLDialect>();
 
@@ -97,7 +91,7 @@ public class CustomTransactionExecutor implements Serializable {
 			CurrentConnectionHolder.set(con);
 		} catch (SQLException e) {
 			JDBCUtils.close(con);
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw new SQLExecutorException(e);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException(e);
 		}
@@ -115,8 +109,8 @@ public class CustomTransactionExecutor implements Serializable {
 	public <T extends Serializable> int insert(T obj) throws SQLException {
 		DML dml = InsertDMLParser.getInstance().parse(obj.getClass());
 		List<Object> params = EntityUtils.getParams(obj, dml.getFields());
-		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), null, dml.getSql(), params,
-				ExecuteUpdateSQLExecuter.getInstance(), showSql);
+		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), ExecuteUpdateSQLExecuter.getInstance(), null,
+				dml.getSql(), params, showSql);
 	}
 
 	/**
@@ -129,8 +123,8 @@ public class CustomTransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public <T extends Serializable> int insert(List<T> rows) throws SQLException {
-		return JDBCExecuteUtils.executeBatch(CurrentConnectionHolder.get(), showSql, rows,
-				InsertDMLParser.getInstance());
+		return JDBCExecuteUtils.executeBatch(CurrentConnectionHolder.get(), InsertDMLParser.getInstance(), rows,
+				showSql);
 	}
 
 	/**
@@ -144,8 +138,8 @@ public class CustomTransactionExecutor implements Serializable {
 	 */
 	public <T extends Serializable> int save(T obj) throws SQLException {
 		Script<List<Object>> sql = currentSQLDialect.get().save(obj);
-		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), null, sql.getValue(), sql.getParams(),
-				ExecuteUpdateSQLExecuter.getInstance(), showSql);
+		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), ExecuteUpdateSQLExecuter.getInstance(), null,
+				sql.getValue(), sql.getParams(), showSql);
 	}
 
 	/**
@@ -161,8 +155,8 @@ public class CustomTransactionExecutor implements Serializable {
 	 */
 	public <T extends Serializable> int save(T obj, String... hardFields) throws SQLException {
 		Script<List<Object>> sql = currentSQLDialect.get().save(obj, hardFields);
-		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), null, sql.getValue(), sql.getParams(),
-				ExecuteUpdateSQLExecuter.getInstance(), showSql);
+		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), ExecuteUpdateSQLExecuter.getInstance(), null,
+				sql.getValue(), sql.getParams(), showSql);
 	}
 
 	/**
@@ -178,8 +172,8 @@ public class CustomTransactionExecutor implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		return JDBCExecuteUtils.save(CurrentConnectionHolder.get(), showSql, rows,
-				currentSQLDialect.get().save(rows.get(0).getClass()));
+		return JDBCExecuteUtils.save(CurrentConnectionHolder.get(),
+				currentSQLDialect.get().save(rows.get(0).getClass()), rows, showSql);
 	}
 
 	/**
@@ -197,8 +191,8 @@ public class CustomTransactionExecutor implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		return JDBCExecuteUtils.save(CurrentConnectionHolder.get(), showSql, rows,
-				currentSQLDialect.get().save(rows.get(0).getClass(), hardFields));
+		return JDBCExecuteUtils.save(CurrentConnectionHolder.get(),
+				currentSQLDialect.get().save(rows.get(0).getClass(), hardFields), rows, showSql);
 	}
 
 	/**
@@ -212,8 +206,8 @@ public class CustomTransactionExecutor implements Serializable {
 	 */
 	public <T extends Serializable> int hardSave(T obj) throws SQLException {
 		Script<List<Object>> sql = currentSQLDialect.get().hardSave(obj);
-		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), null, sql.getValue(), sql.getParams(),
-				ExecuteUpdateSQLExecuter.getInstance(), showSql);
+		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), ExecuteUpdateSQLExecuter.getInstance(), null,
+				sql.getValue(), sql.getParams(), showSql);
 	}
 
 	/**
@@ -229,7 +223,7 @@ public class CustomTransactionExecutor implements Serializable {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
-		return JDBCExecuteUtils.hardSave(CurrentConnectionHolder.get(), currentSQLDialect.get(), showSql, rows);
+		return JDBCExecuteUtils.hardSave(CurrentConnectionHolder.get(), currentSQLDialect.get(), rows, showSql);
 	}
 
 	/**
@@ -243,8 +237,8 @@ public class CustomTransactionExecutor implements Serializable {
 	 */
 	public <T extends Serializable> int delete(T obj) throws SQLException {
 		DML dml = DeleteDMLParser.getInstance().parse(obj.getClass());
-		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), null, dml.getSql(),
-				EntityUtils.getParams(obj, dml.getFields()), ExecuteUpdateSQLExecuter.getInstance(), showSql);
+		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), ExecuteUpdateSQLExecuter.getInstance(), null,
+				dml.getSql(), EntityUtils.getParams(obj, dml.getFields()), showSql);
 	}
 
 	/**
@@ -257,8 +251,8 @@ public class CustomTransactionExecutor implements Serializable {
 	 *             SQL异常
 	 */
 	public <T extends Serializable> int delete(List<T> rows) throws SQLException {
-		return JDBCExecuteUtils.executeBatch(CurrentConnectionHolder.get(), showSql, rows,
-				DeleteDMLParser.getInstance());
+		return JDBCExecuteUtils.executeBatch(CurrentConnectionHolder.get(), DeleteDMLParser.getInstance(), rows,
+				showSql);
 	}
 
 	/**
@@ -274,8 +268,8 @@ public class CustomTransactionExecutor implements Serializable {
 	public <T extends Serializable> T get(T obj) throws SQLException {
 		Class<T> type = (Class<T>) obj.getClass();
 		DML dml = GetDMLParser.getInstance().parse(type);
-		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), null, dml.getSql(),
-				EntityUtils.getParams(obj, dml.getFields()), new GetSQLExecuter<T>(type), showSql);
+		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), new GetSQLExecuter<T>(type), null, dml.getSql(),
+				EntityUtils.getParams(obj, dml.getFields()), showSql);
 	}
 
 	/**
@@ -327,8 +321,8 @@ public class CustomTransactionExecutor implements Serializable {
 	public <T extends Serializable> List<T> select(T obj) throws SQLException {
 		Class<T> type = (Class<T>) obj.getClass();
 		DML dml = GetDMLParser.getInstance().parse(type);
-		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), null, dml.getSql(),
-				EntityUtils.getParams(obj, dml.getFields()), new SelectSQLExecuter<T>(type), showSql);
+		return JDBCExecuteUtils.execute(CurrentConnectionHolder.get(), new SelectSQLExecuter<T>(type), null,
+				dml.getSql(), EntityUtils.getParams(obj, dml.getFields()), showSql);
 	}
 
 	/**
@@ -376,9 +370,11 @@ public class CustomTransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public boolean execute(String dsql, Object... params) {
-		return this.execute(DSQLFactory.parse(dsql, params));
+	public boolean execute(String dsql, Object... params) throws SQLException {
+		return execute(DSQLFactory.parse(dsql, params));
 	}
 
 	/**
@@ -389,9 +385,11 @@ public class CustomTransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public boolean execute(String dsql, Map<String, ?> params) {
-		return this.execute(DSQLFactory.parse(dsql, params));
+	public boolean execute(String dsql, Map<String, ?> params) throws SQLException {
+		return execute(DSQLFactory.parse(dsql, params));
 	}
 
 	/**
@@ -402,8 +400,10 @@ public class CustomTransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public int executeUpdate(String dsql, Object... params) {
+	public int executeUpdate(String dsql, Object... params) throws SQLException {
 		return executeUpdate(DSQLFactory.parse(dsql, params));
 	}
 
@@ -415,8 +415,10 @@ public class CustomTransactionExecutor implements Serializable {
 	 * @param params
 	 *            查询参数键值集
 	 * @return 返回受影响行数
+	 * @throws SQLException
+	 *             SQL异常
 	 */
-	public int executeUpdate(String dsql, Map<String, ?> params) {
+	public int executeUpdate(String dsql, Map<String, ?> params) throws SQLException {
 		return executeUpdate(DSQLFactory.parse(dsql, params));
 	}
 
@@ -428,7 +430,7 @@ public class CustomTransactionExecutor implements Serializable {
 		try {
 			con.rollback();
 		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw new SQLExecutorException(e);
 		} finally {
 			JDBCUtils.close(con);
 			CurrentConnectionHolder.remove();
@@ -444,7 +446,7 @@ public class CustomTransactionExecutor implements Serializable {
 		try {
 			con.commit();
 		} catch (SQLException e) {
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
+			throw new SQLExecutorException(e);
 		} finally {
 			JDBCUtils.close(con);
 			CurrentConnectionHolder.remove();
@@ -459,82 +461,21 @@ public class CustomTransactionExecutor implements Serializable {
 		return this.execute(con, sql, new SelectSQLExecuter<T>(type));
 	}
 
-	private boolean execute(NamedSQL namedSQL) {
-		Connection con = getCurrentConnection();
+	private boolean execute(NamedSQL namedSQL) throws SQLException {
 		Script<List<Object>> sql = DSQLFactory.toJDBC(namedSQL);
-		PreparedStatement ps = null;
-		boolean rs = false;
-		try {
-			String script = sql.getValue();
-			List<Object> params = sql.getParams();
-			ps = con.prepareStatement(script);
-			JDBCUtils.setParams(ps, params);
-			if (showSql) {
-				StringBuilder sb = new StringBuilder();
-				if (log.isInfoEnabled()) {
-					sb.append("Execute SQL: ").append(script).append(JDBCExecuteUtils.COMMA_SPACE)
-							.append("parameters: ").append(JSONUtils.toJSONString(params));
-					String id = namedSQL.getId();
-					if (id != null) {
-						sb.append(JDBCExecuteUtils.COMMA_SPACE).append("id: ").append(id);
-					}
-					log.info(sb.toString());
-				}
-			}
-			rs = ps.execute();
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			JDBCUtils.close(ps);
-		}
-		return rs;
+		return (boolean) JDBCExecuteUtils.execute(getCurrentConnection(), ExecuteSQLExecuter.getInstance(),
+				namedSQL.getId(), sql.getValue(), sql.getParams(), showSql);
 	}
 
-	private int executeUpdate(NamedSQL namedSQL) {
-		Connection con = getCurrentConnection();
+	private int executeUpdate(NamedSQL namedSQL) throws SQLException {
 		Script<List<Object>> sql = DSQLFactory.toJDBC(namedSQL);
-		PreparedStatement ps = null;
-		int count = 0;
-		try {
-			String script = sql.getValue();
-			List<Object> params = sql.getParams();
-			ps = con.prepareStatement(script);
-			JDBCUtils.setParams(ps, params);
-			if (showSql) {
-				if (log.isInfoEnabled()) {
-					StringBuilder sb = new StringBuilder();
-					sb.append("Execute SQL: ").append(script).append(JDBCExecuteUtils.COMMA_SPACE)
-							.append("parameters: ").append(JSONUtils.toJSONString(params));
-					String id = namedSQL.getId();
-					if (id != null) {
-						sb.append(JDBCExecuteUtils.COMMA_SPACE).append("id: ").append(id);
-					}
-					log.info(sb.toString());
-				}
-
-			}
-			count = ps.executeUpdate();
-		} catch (SQLException e) {
-			try {
-				con.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			throw new cn.tenmg.sqltool.exception.SQLException(e);
-		} finally {
-			JDBCUtils.close(ps);
-		}
-		return count;
+		return (int) JDBCExecuteUtils.execute(getCurrentConnection(), ExecuteUpdateSQLExecuter.getInstance(),
+				namedSQL.getId(), sql.getValue(), sql.getParams(), showSql);
 	}
 
 	private <T> T execute(Connection con, NamedSQL namedSQL, SQLExecuter<T> sqlExecuter) throws SQLException {
 		Script<List<Object>> sql = DSQLFactory.toJDBC(namedSQL);
-		return JDBCExecuteUtils.execute(con, namedSQL.getId(), sql.getValue(), sql.getParams(), sqlExecuter, showSql);
+		return JDBCExecuteUtils.execute(con, sqlExecuter, namedSQL.getId(), sql.getValue(), sql.getParams(), showSql);
 	}
 
 	private static Connection getCurrentConnection() {

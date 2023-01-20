@@ -2,7 +2,6 @@ package cn.tenmg.sqltool;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -760,7 +759,7 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回查询到的对象
 	 */
 	<T extends Serializable> T get(Class<T> type, String dsql, Object... params);
@@ -776,7 +775,7 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回查询到的对象
 	 */
 	<T extends Serializable> T get(DataSource dataSource, Class<T> type, String dsql, Object... params);
@@ -790,10 +789,10 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回查询到的对象
 	 */
-	<T extends Serializable> T get(Class<T> type, String dsql, Map<String, ?> params);
+	<T extends Serializable> T get(Class<T> type, String dsql, Object params);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）并组装对象，其中类型可以是实体对象，也可以是String、Number、
@@ -806,10 +805,10 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回查询到的对象
 	 */
-	<T extends Serializable> T get(DataSource dataSource, Class<T> type, String dsql, Map<String, ?> params);
+	<T extends Serializable> T get(DataSource dataSource, Class<T> type, String dsql, Object params);
 
 	/**
 	 * 从数据库查询并组装实体对象列表
@@ -840,7 +839,7 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回查询到的对象列表
 	 */
 	<T extends Serializable> List<T> select(Class<T> type, String dsql, Object... params);
@@ -856,7 +855,7 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回查询到的对象列表
 	 */
 	<T extends Serializable> List<T> select(DataSource dataSource, Class<T> type, String dsql, Object... params);
@@ -870,10 +869,10 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回查询到的对象列表
 	 */
-	<T extends Serializable> List<T> select(Class<T> type, String dsql, Map<String, ?> params);
+	<T extends Serializable> List<T> select(Class<T> type, String dsql, Object params);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）并组装对象列表，其中类型可以是实体对象，也可以是String、Number、
@@ -886,10 +885,10 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回查询到的对象列表
 	 */
-	<T extends Serializable> List<T> select(DataSource dataSource, Class<T> type, String dsql, Map<String, ?> params);
+	<T extends Serializable> List<T> select(DataSource dataSource, Class<T> type, String dsql, Object params);
 
 	/**
 	 * 使用指定类，指定动态结构化查询语言（DSQL），指定页码，指定页容量和指定参数（分别列出参数名和参数值）分页查询对象。
@@ -997,11 +996,10 @@ public interface Dao {
 	 * @param pageSize
 	 *            指定页容量
 	 * @param params
-	 *            指定参数
+	 *            参数对象
 	 * @return 返回查询到的对象并封装为Page对象
 	 */
-	<T extends Serializable> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
-			Map<String, Object> params);
+	<T extends Serializable> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize, Object params);
 
 	/**
 	 * 使用指定类，指定动态结构化查询语言（DSQL），指定页码，指定页容量和指定参数分页查询对象。 该方法将根据DSQL中的别名将对象映射为指定类的对象，
@@ -1020,11 +1018,11 @@ public interface Dao {
 	 * @param pageSize
 	 *            指定页容量
 	 * @param params
-	 *            指定参数
+	 *            参数对象
 	 * @return 返回查询到的对象并封装为Page对象
 	 */
 	<T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
-			int pageSize, Map<String, Object> params);
+			int pageSize, Object params);
 
 	/**
 	 * 使用指定类，指定动态结构化查询语言（DSQL），指定统计总数DSQL，指定页码，指定页容量和指定参数分页查询对象。
@@ -1043,11 +1041,11 @@ public interface Dao {
 	 * @param pageSize
 	 *            指定页容量
 	 * @param params
-	 *            指定参数
+	 *            参数对象
 	 * @return 返回查询到的对象并封装为Page对象
 	 */
 	<T extends Serializable> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage, int pageSize,
-			Map<String, Object> params);
+			Object params);
 
 	/**
 	 * 使用指定类，指定动态结构化查询语言（DSQL），指定统计总数DSQL，指定页码，指定页容量和指定参数分页查询对象。
@@ -1068,11 +1066,11 @@ public interface Dao {
 	 * @param pageSize
 	 *            指定页容量
 	 * @param params
-	 *            指定参数
+	 *            参数对象
 	 * @return 返回查询到的对象并封装为Page对象
 	 */
 	<T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
-			long currentPage, int pageSize, Map<String, Object> params);
+			long currentPage, int pageSize, Object params);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作
@@ -1080,7 +1078,7 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
 	 */
 	boolean execute(String dsql, Object... params);
@@ -1093,7 +1091,7 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
 	 */
 	boolean execute(DataSource dataSource, String dsql, Object... params);
@@ -1104,10 +1102,10 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
 	 */
-	boolean execute(String dsql, Map<String, ?> params);
+	boolean execute(String dsql, Object params);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作
@@ -1117,10 +1115,10 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 如果第一个结果是ResultSet对象，则为true；如果第一个结果是更新计数或没有结果，则为false
 	 */
-	boolean execute(DataSource dataSource, String dsql, Map<String, ?> params);
+	boolean execute(DataSource dataSource, String dsql, Object params);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作
@@ -1128,7 +1126,7 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回受影响行数
 	 */
 	int executeUpdate(String dsql, Object... params);
@@ -1141,7 +1139,7 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回受影响行数
 	 */
 	int executeUpdate(DataSource dataSource, String dsql, Object... params);
@@ -1152,10 +1150,10 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回受影响行数
 	 */
-	int executeUpdate(String dsql, Map<String, ?> params);
+	int executeUpdate(String dsql, Object params);
 
 	/**
 	 * 使用动态结构化查询语言（DSQL）执行插入、修改、删除操作
@@ -1165,10 +1163,10 @@ public interface Dao {
 	 * @param dsql
 	 *            动态结构化查询语言
 	 * @param params
-	 *            查询参数键值集
+	 *            参数对象
 	 * @return 返回受影响行数
 	 */
-	int executeUpdate(DataSource dataSource, String dsql, Map<String, ?> params);
+	int executeUpdate(DataSource dataSource, String dsql, Object params);
 
 	/**
 	 * 执行一个事务操作

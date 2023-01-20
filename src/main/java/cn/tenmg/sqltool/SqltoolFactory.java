@@ -1,7 +1,10 @@
 package cn.tenmg.sqltool;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 
+import cn.tenmg.dsl.utils.PlaceHolderUtils;
 import cn.tenmg.dsl.utils.PropertiesLoaderUtils;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 
@@ -44,11 +47,20 @@ public abstract class SqltoolFactory {
 	 * @return 返回数据库访问对象
 	 */
 	public static Dao createDao(String pathInClassPath) {
-		Properties properties;
+		Properties properties = new Properties();
+		properties.putAll(System.getenv());// 系统环境变量
+		properties.putAll(System.getProperties());// JVM环境变量
 		try {
-			properties = PropertiesLoaderUtils.loadFromClassPath(pathInClassPath);
+			PropertiesLoaderUtils.load(properties, pathInClassPath);
 		} catch (Exception e) {
 			throw new IllegalConfigException("Exception occurred when building database access object", e);
+		}
+		Object value;
+		Entry<Object, Object> entry;
+		for (Iterator<Entry<Object, Object>> it = properties.entrySet().iterator(); it.hasNext();) {
+			entry = it.next();
+			value = entry.getValue();
+			properties.put(entry.getKey(), PlaceHolderUtils.replace(value.toString(), properties));
 		}
 		return createDao(properties);
 	}

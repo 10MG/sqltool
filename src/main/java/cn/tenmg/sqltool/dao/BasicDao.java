@@ -8,9 +8,9 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import cn.tenmg.dsl.utils.MapUtils;
 import cn.tenmg.dsql.DSQLFactory;
 import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
-import cn.tenmg.dsql.utils.CollectionUtils;
 import cn.tenmg.sqltool.datasource.DataSourceFactory;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 import cn.tenmg.sqltool.exception.InitializeDataSourceException;
@@ -136,7 +136,7 @@ public class BasicDao extends AbstractDao {
 				datasourceConfig.put(param, value);
 			}
 		}
-		if (CollectionUtils.isEmpty(datasourceConfigs)) {
+		if (MapUtils.isEmpty(datasourceConfigs)) {
 			throw new IllegalConfigException("No datasource is configured, please check the configuration");
 		}
 		String defaultName = DEFAULT_NAME;

@@ -1,7 +1,10 @@
 package cn.tenmg.sqltool;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 
+import cn.tenmg.dsl.utils.PlaceHolderUtils;
 import cn.tenmg.dsl.utils.PropertiesLoaderUtils;
 
 /**
@@ -16,23 +19,21 @@ public abstract class SqltoolContext {
 	private static final String DEFAULT_STRATEGIES_PATH = "sqltool-context-loader.properties",
 			CONFIG_LOCATION_KEY = "config.location", DEFAULT_CONFIG_LOCATION = "sqltool-context.properties";
 
-	private static Properties defaultProperties, configProperties;
+	private static Properties config = new Properties();
 
 	static {
-		try {
-			defaultProperties = PropertiesLoaderUtils.loadFromClassPath(DEFAULT_STRATEGIES_PATH);
-		} catch (Exception e) {
-			defaultProperties = new Properties();
-		}
-		try {
-			configProperties = PropertiesLoaderUtils.loadFromClassPath("sqltool-default.properties");
-		} catch (Exception e) {
-			configProperties = new Properties();
-		}
-		try {
-			configProperties.putAll(PropertiesLoaderUtils
-					.loadFromClassPath(defaultProperties.getProperty(CONFIG_LOCATION_KEY, DEFAULT_CONFIG_LOCATION)));
-		} catch (Exception e) {
+		config.putAll(System.getenv());// 系统环境变量
+		config.putAll(System.getProperties());// JVM环境变量
+		PropertiesLoaderUtils.loadIgnoreException(config, DEFAULT_STRATEGIES_PATH);
+		PropertiesLoaderUtils.loadIgnoreException(config, "sqltool-default.properties");
+		PropertiesLoaderUtils.loadIgnoreException(config,
+				config.getProperty(CONFIG_LOCATION_KEY, DEFAULT_CONFIG_LOCATION));
+		Object value;
+		Entry<Object, Object> entry;
+		for (Iterator<Entry<Object, Object>> it = config.entrySet().iterator(); it.hasNext();) {
+			entry = it.next();
+			value = entry.getValue();
+			config.put(entry.getKey(), PlaceHolderUtils.replace(value.toString(), config));
 		}
 	}
 
@@ -53,7 +54,7 @@ public abstract class SqltoolContext {
 	 * @return 配置属性值或null
 	 */
 	public static String getProperty(String key) {
-		return configProperties.containsKey(key) ? configProperties.getProperty(key)
-				: defaultProperties.getProperty(key);
+		return config.getProperty(key);
 	}
+
 }

@@ -7,6 +7,7 @@ package cn.tenmg.sqltool.exception;
  *
  * @since 1.0.0
  */
+@Deprecated
 public class SQLException extends RuntimeException {
 
 	/**

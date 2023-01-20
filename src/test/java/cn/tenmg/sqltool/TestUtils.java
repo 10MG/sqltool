@@ -712,6 +712,9 @@ public abstract class TestUtils {
 		Assertions.assertEquals(2, staffInfos.size());
 		Assertions.assertEquals("Sharry", staffInfos.get(0).getStaffName());
 		Assertions.assertEquals("June", staffInfos.get(1).getStaffName());
+
+		List<String> selectedStaffIds = dao.select(String.class, "find_staff_info_by_staff_ids", params);
+		Assertions.assertLinesMatch(staffIds, selectedStaffIds);
 	}
 
 	private static void page(Dao dao) {
@@ -763,8 +766,19 @@ public abstract class TestUtils {
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		
+		params.put("staffName", "1");
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like", currentPage, pageSize, params);
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
 
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_with", currentPage, pageSize, "staffName", "1");
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_with", currentPage, pageSize, "staffName", "1");
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
@@ -776,7 +790,20 @@ public abstract class TestUtils {
 		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
 		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
 		
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_order_by_has_param", currentPage, pageSize, params);
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
+				"find_staff_info_staff_name_like", currentPage, pageSize, params);
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_order_by_staff_name",
 				"find_staff_info_staff_name_like", currentPage, pageSize, params);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
@@ -789,9 +816,23 @@ public abstract class TestUtils {
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
 		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_order_by_staff_name",
+				"find_staff_info_staff_name_like", currentPage, pageSize, "staffName", "1");
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
 
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_order_by_staff_name",
 				"find_staff_info_staff_name_like", currentPage, pageSize, params);
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());
+		Assertions.assertEquals(df.format(1), page.getRows().get(0).getStaffId());
+		
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_order_by_staff_name",
+				"page_staff_info_staff_name_like", currentPage, pageSize, params);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertEquals(staffNameLikeCount, page.getTotal().intValue());

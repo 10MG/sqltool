@@ -55,9 +55,20 @@ public class MySQLTest {
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
+		
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_limit", currentPage, pageSize,
+				params);
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 
-		params.put("limit", pageSize);
 		page = dao.page(StaffInfo.class, "find_staff_info_staff_name_like_limit", currentPage, pageSize, "staffName",
+				"1", "limit", pageSize);
+		Assertions.assertEquals(currentPage, page.getCurrentPage());
+		Assertions.assertEquals(pageSize, page.getPageSize());
+		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
+		
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_limit", currentPage, pageSize, "staffName",
 				"1", "limit", pageSize);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());

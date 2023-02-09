@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * byte[]类型结果获取器
+ * {@link byte[]} 类型结果获取器
  * 
  * @author June wjzhao@aliyun.com
  *

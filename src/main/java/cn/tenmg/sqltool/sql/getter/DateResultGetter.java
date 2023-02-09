@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.Date;
 
 /**
- * java.util.Date类型结果获取器
+ * {@link java.util.Date} 类型结果获取器
  * 
  * @author June wjzhao@aliyun.com
  *

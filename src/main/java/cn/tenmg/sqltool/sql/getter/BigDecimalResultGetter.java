@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * java.math.BigDecimal类型结果获取器
+ * {@link java.math.BigDecimal} 类型结果获取器
  * 
  * @author June wjzhao@aliyun.com
  * 

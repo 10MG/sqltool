@@ -1,4 +1,5 @@
 cn.tenmg.sqltool.sql.getter.BigDecimalResultGetter
+cn.tenmg.sqltool.sql.getter.BigIntegerResultGetter
 cn.tenmg.sqltool.sql.getter.BooleanResultGetter
 cn.tenmg.sqltool.sql.getter.ByteResultGetter
 cn.tenmg.sqltool.sql.getter.BytesObjectResultGetter
@@ -6,6 +7,7 @@ cn.tenmg.sqltool.sql.getter.BytesResultGetter
 cn.tenmg.sqltool.sql.getter.DateResultGetter
 cn.tenmg.sqltool.sql.getter.DoubleResultGetter
 cn.tenmg.sqltool.sql.getter.FloatResultGetter
+cn.tenmg.sqltool.sql.getter.IntegerResultGetter
 cn.tenmg.sqltool.sql.getter.LocalDateResultGetter
 cn.tenmg.sqltool.sql.getter.LocalDateTimeResultGetter
 cn.tenmg.sqltool.sql.getter.LocalTimeResultGetter

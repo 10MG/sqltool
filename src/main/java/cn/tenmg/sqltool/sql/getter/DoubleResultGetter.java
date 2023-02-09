@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * java.lang.Double类型结果获取器
+ * {@link java.lang.Double}类型结果获取器
  * 
  * @author June wjzhao@aliyun.com
  *

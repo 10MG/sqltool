@@ -14,15 +14,17 @@ import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import cn.tenmg.dsl.utils.ObjectUtils;
 import cn.tenmg.dsl.utils.StringUtils;
 import cn.tenmg.sqltool.exception.SQLExecutorException;
 import cn.tenmg.sqltool.sql.ResultGetter;
 import cn.tenmg.sqltool.sql.SQLExecuter;
-import cn.tenmg.sqltool.sql.utils.ResultGetterUtils;
 
 /**
  * 只读SQL执行器
@@ -34,7 +36,19 @@ import cn.tenmg.sqltool.sql.utils.ResultGetterUtils;
  * 
  * @since 1.2.0
  */
+@SuppressWarnings("rawtypes")
 public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
+
+	private static final Map<Class<?>, ResultGetter> RESULT_GETTERS = new HashMap<Class<?>, ResultGetter>();
+
+	static {
+		ServiceLoader<ResultGetter> loader = ServiceLoader.load(ResultGetter.class);
+		ResultGetter<?> resultGetter;
+		for (Iterator<ResultGetter> it = loader.iterator(); it.hasNext();) {
+			resultGetter = it.next();
+			RESULT_GETTERS.put(resultGetter.getType(), resultGetter);
+		}
+	}
 
 	@Override
 	public boolean isReadOnly() {
@@ -56,7 +70,7 @@ public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
 	@SuppressWarnings("unchecked")
 	protected static <T> T getRow(ResultSet rs, Class<T> type) throws SQLException {
 		T row;
-		ResultGetter<?> resultGetter = ResultGetterUtils.getResultGetter(type);
+		ResultGetter<?> resultGetter = RESULT_GETTERS.get(type);
 		if (resultGetter == null) {
 			if (Map.class.isAssignableFrom(type)) {
 				ResultSetMetaData rsmd = rs.getMetaData();
@@ -139,7 +153,7 @@ public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
 		if (type == null) {// 无法识别准确类型
 			value = rs.getObject(columnIndex);
 		} else {
-			ResultGetter<?> resultGetter = ResultGetterUtils.getResultGetter(type);
+			ResultGetter<?> resultGetter = RESULT_GETTERS.get(type);
 			if (resultGetter == null) {// 没有定义该类型结果获取器，则进一步判断类型再调用不同API
 				if (Ref.class.isAssignableFrom(type)) {
 					value = rs.getRef(columnIndex);
@@ -167,11 +181,6 @@ public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
 			}
 		}
 		ObjectUtils.setValue(row, fieldName, value, false);
-	}
-
-	public static void main(String[] args) throws NoSuchMethodException, SecurityException {
-		Object object = new Integer(1);
-		object.getClass().getConstructor();
 	}
 
 }

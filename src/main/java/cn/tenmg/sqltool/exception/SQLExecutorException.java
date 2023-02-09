@@ -5,7 +5,7 @@ package cn.tenmg.sqltool.exception;
  * 
  * @author June wjzhao@aliyun.com
  *
- * @since 1.4.8
+ * @since 1.5.0
  */
 public class SQLExecutorException extends RuntimeException {
 

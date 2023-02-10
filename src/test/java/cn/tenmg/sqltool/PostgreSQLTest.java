@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import cn.tenmg.sqltool.data.Page;
 
-public class PostgresSQLTest {
+public class PostgreSQLTest {
 
 	private static DecimalFormat df = new DecimalFormat("0000000000");
 

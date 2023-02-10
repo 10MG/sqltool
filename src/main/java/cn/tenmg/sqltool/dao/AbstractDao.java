@@ -1,9 +1,12 @@
 package cn.tenmg.sqltool.dao;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +82,37 @@ public abstract class AbstractDao implements Dao {
 			}
 		}
 		return dialect;
+	}
+
+	protected void closeDataSourcesWhenShutdown(Collection<DataSource> dataSources) {
+		Runtime.getRuntime().addShutdownHook(new Thread("sqltool") {
+			@Override
+			public void run() {
+				if (dataSources != null) {
+					DataSource dataSource;
+					for (Iterator<DataSource> it = dataSources.iterator(); it.hasNext();) {
+						dataSource = it.next();
+						if (dataSource instanceof Closeable) {
+							try {
+								((Closeable) dataSource).close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					DataSource defaultDataSource = getDefaultDataSource();
+					if (!dataSources.contains(defaultDataSource)) {
+						if (defaultDataSource instanceof Closeable) {
+							try {
+								((Closeable) defaultDataSource).close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			}
+		});
 	}
 
 	@Override

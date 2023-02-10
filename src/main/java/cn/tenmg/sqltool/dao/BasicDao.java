@@ -108,10 +108,10 @@ public class BasicDao extends AbstractDao {
 		}
 		this.showSql = Boolean.valueOf(properties.getProperty("sqltool.showSql", "false"));
 		this.defaultBatchSize = Integer.valueOf(properties.getProperty("sqltool.defaultBatchSize", "500"));
-		Map<String, Properties> datasourceConfigs = new HashMap<String, Properties>();
+		Map<String, Properties> dataSourceConfigs = new HashMap<String, Properties>();
 		String key, name, param, firstName = null;
 		Object value;
-		Properties datasourceConfig;
+		Properties dataSourceConfig;
 		for (Iterator<Entry<Object, Object>> it = properties.entrySet().iterator(); it.hasNext();) {
 			Entry<Object, Object> entry = it.next();
 			key = entry.getKey().toString();
@@ -128,38 +128,39 @@ public class BasicDao extends AbstractDao {
 				if (firstName == null) {
 					firstName = name;
 				}
-				datasourceConfig = datasourceConfigs.get(name);
-				if (datasourceConfig == null) {
-					datasourceConfig = new Properties();
-					datasourceConfigs.put(name, datasourceConfig);
+				dataSourceConfig = dataSourceConfigs.get(name);
+				if (dataSourceConfig == null) {
+					dataSourceConfig = new Properties();
+					dataSourceConfigs.put(name, dataSourceConfig);
 				}
-				datasourceConfig.put(param, value);
+				dataSourceConfig.put(param, value);
 			}
 		}
-		if (MapUtils.isEmpty(datasourceConfigs)) {
+		if (MapUtils.isEmpty(dataSourceConfigs)) {
 			throw new IllegalConfigException("No datasource is configured, please check the configuration");
 		}
 		String defaultName = DEFAULT_NAME;
-		datasourceConfig = datasourceConfigs.get(DEFAULT_NAME);
-		if (datasourceConfig == null) {// 默认数据源不存在则将第一个数据源作为默认数据源
+		dataSourceConfig = dataSourceConfigs.get(DEFAULT_NAME);
+		if (dataSourceConfig == null) {// 默认数据源不存在则将第一个数据源作为默认数据源
 			defaultName = firstName;
-			datasourceConfig = datasourceConfigs.get(firstName);
+			dataSourceConfig = dataSourceConfigs.get(firstName);
 		}
 		try {
-			defaultDataSource = DataSourceFactory.createDataSource(datasourceConfig);
+			defaultDataSource = DataSourceFactory.createDataSource(dataSourceConfig);
 			dataSources.put(defaultName, defaultDataSource);
-			cacheSQLDialect(defaultDataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
-			datasourceConfigs.remove(defaultName);
+			cacheSQLDialect(defaultDataSource, SQLDialectUtils.getSQLDialect(dataSourceConfig));
+			dataSourceConfigs.remove(defaultName);
 			DataSource dataSource;
-			for (Iterator<Entry<String, Properties>> it = datasourceConfigs.entrySet().iterator(); it.hasNext();) {
+			for (Iterator<Entry<String, Properties>> it = dataSourceConfigs.entrySet().iterator(); it.hasNext();) {
 				Entry<String, Properties> entry = it.next();
-				datasourceConfig = entry.getValue();
-				dataSource = DataSourceFactory.createDataSource(datasourceConfig);
+				dataSourceConfig = entry.getValue();
+				dataSource = DataSourceFactory.createDataSource(dataSourceConfig);
 				dataSources.put(entry.getKey(), dataSource);
-				cacheSQLDialect(dataSource, SQLDialectUtils.getSQLDialect(datasourceConfig));
+				cacheSQLDialect(dataSource, SQLDialectUtils.getSQLDialect(dataSourceConfig));
 			}
 		} catch (Exception e) {
 			throw new InitializeDataSourceException("An exception occurred while initializing datasource(s)", e);
 		}
+		closeDataSourcesWhenShutdown(dataSources.values());
 	}
 }

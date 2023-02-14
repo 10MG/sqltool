@@ -56,16 +56,15 @@ public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
 	}
 
 	/**
-	 * 获取结果当前行集指定列的值
+	 * 获取并将当前行结果集转换为指定类型
 	 * 
 	 * @param rs
-	 *            结果集
-	 * @param columnIndex
-	 *            指定列索引
+	 *            当前行结果集
 	 * @param type
-	 *            值的类型
-	 * @return 返回当前行集指定列的值
+	 *            指定类型
+	 * @return 转换为指定类型的行结果集对象
 	 * @throws SQLException
+	 *             SQL异常
 	 */
 	@SuppressWarnings("unchecked")
 	protected static <T> T getRow(ResultSet rs, Class<T> type) throws SQLException {

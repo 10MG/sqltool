@@ -122,7 +122,7 @@ public class DistributedDao extends AbstractDao implements Serializable {
 				int index = param.indexOf(".");
 				if (index > 0) {
 					name = param.substring(0, index);
-					param = param.substring(index);
+					param = param.substring(index + 1);
 				} else {
 					name = DEFAULT_NAME;
 				}

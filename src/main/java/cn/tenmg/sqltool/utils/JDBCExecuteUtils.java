@@ -1,6 +1,5 @@
 package cn.tenmg.sqltool.utils;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -94,7 +93,7 @@ public abstract class JDBCExecuteUtils {
 	 * @throws SQLException
 	 *             SQL异常
 	 */
-	public static <T extends Serializable> int executeBatch(Connection con, DMLParser dmlParser, List<T> rows,
+	public static <T> int executeBatch(Connection con, DMLParser dmlParser, List<T> rows,
 			boolean showSql) throws SQLException {
 		PreparedStatement ps = null;
 		try {
@@ -182,7 +181,7 @@ public abstract class JDBCExecuteUtils {
 	 * @param showSql
 	 *            是否打印SQL
 	 */
-	public static <T extends Serializable> void executeBatch(DataSource dataSource, String sql, List<T> rows,
+	public static <T> void executeBatch(DataSource dataSource, String sql, List<T> rows,
 			List<Field> fields, int batchSize, boolean showSql) {
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -317,7 +316,7 @@ public abstract class JDBCExecuteUtils {
 	 * @throws SQLException
 	 *             SQL异常
 	 */
-	public static <T extends Serializable> int hardUpdate(Connection con, List<T> rows, boolean showSql)
+	public static <T> int hardUpdate(Connection con, List<T> rows, boolean showSql)
 			throws SQLException {
 		PreparedStatement ps = null;
 		try {

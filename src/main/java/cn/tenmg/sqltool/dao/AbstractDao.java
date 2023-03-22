@@ -1,7 +1,6 @@
 package cn.tenmg.sqltool.dao;
 
 import java.io.Closeable;
-import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -116,22 +115,22 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> int insert(T obj) {
+	public <T> int insert(T obj) {
 		return insert(getDefaultDataSource(), obj);
 	}
 
 	@Override
-	public <T extends Serializable> int insert(DataSource dataSource, T obj) {
+	public <T> int insert(DataSource dataSource, T obj) {
 		return execute(dataSource, obj, InsertDMLParser.getInstance(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> int insert(List<T> rows) {
+	public <T> int insert(List<T> rows) {
 		return insert(getDefaultDataSource(), rows);
 	}
 
 	@Override
-	public <T extends Serializable> int insert(DataSource dataSource, List<T> rows) {
+	public <T> int insert(DataSource dataSource, List<T> rows) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		} else {
@@ -140,56 +139,56 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> void insertBatch(List<T> rows) {
+	public <T> void insertBatch(List<T> rows) {
 		insertBatch(rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void insertBatch(DataSource dataSource, List<T> rows) {
+	public <T> void insertBatch(DataSource dataSource, List<T> rows) {
 		insertBatch(dataSource, rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void insertBatch(List<T> rows, int batchSize) {
+	public <T> void insertBatch(List<T> rows, int batchSize) {
 		insertBatch(getDefaultDataSource(), rows, batchSize);
 	}
 
 	@Override
-	public <T extends Serializable> void insertBatch(DataSource dataSource, List<T> rows, int batchSize) {
+	public <T> void insertBatch(DataSource dataSource, List<T> rows, int batchSize) {
 		if (!CollectionUtils.isEmpty(rows)) {
 			executeBatch(dataSource, rows, InsertDMLParser.getInstance(), batchSize);
 		}
 	}
 
 	@Override
-	public <T extends Serializable> int update(T obj) {
+	public <T> int update(T obj) {
 		return update(getDefaultDataSource(), obj);
 	}
 
 	@Override
-	public <T extends Serializable> int update(DataSource dataSource, T obj) {
+	public <T> int update(DataSource dataSource, T obj) {
 		Script<List<Object>> sql = getSQLDialect(dataSource).update(obj);
 		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> int update(T obj, String... hardFields) {
+	public <T> int update(T obj, String... hardFields) {
 		return update(getDefaultDataSource(), obj, hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> int update(DataSource dataSource, T obj, String... hardFields) {
+	public <T> int update(DataSource dataSource, T obj, String... hardFields) {
 		Script<List<Object>> sql = getSQLDialect(dataSource).update(obj, hardFields);
 		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> int update(List<T> rows) {
+	public <T> int update(List<T> rows) {
 		return update(getDefaultDataSource(), rows);
 	}
 
 	@Override
-	public <T extends Serializable> int update(DataSource dataSource, List<T> rows) {
+	public <T> int update(DataSource dataSource, List<T> rows) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
@@ -197,12 +196,12 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> int update(List<T> rows, String... hardFields) {
+	public <T> int update(List<T> rows, String... hardFields) {
 		return update(getDefaultDataSource(), rows, hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> int update(DataSource dataSource, List<T> rows, String... hardFields) {
+	public <T> int update(DataSource dataSource, List<T> rows, String... hardFields) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
@@ -211,32 +210,32 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> void updateBatch(List<T> rows) {
+	public <T> void updateBatch(List<T> rows) {
 		updateBatch(rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void updateBatch(DataSource dataSource, List<T> rows) {
+	public <T> void updateBatch(DataSource dataSource, List<T> rows) {
 		updateBatch(dataSource, rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void updateBatch(List<T> rows, String... hardFields) {
+	public <T> void updateBatch(List<T> rows, String... hardFields) {
 		updateBatch(rows, getDefaultBatchSize(), hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> void updateBatch(DataSource dataSource, List<T> rows, String... hardFields) {
+	public <T> void updateBatch(DataSource dataSource, List<T> rows, String... hardFields) {
 		updateBatch(dataSource, rows, getDefaultBatchSize(), hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> void updateBatch(List<T> rows, int batchSize) {
+	public <T> void updateBatch(List<T> rows, int batchSize) {
 		updateBatch(getDefaultDataSource(), rows, batchSize);
 	}
 
 	@Override
-	public <T extends Serializable> void updateBatch(DataSource dataSource, List<T> rows, int batchSize) {
+	public <T> void updateBatch(DataSource dataSource, List<T> rows, int batchSize) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
@@ -245,33 +244,33 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> void updateBatch(List<T> rows, int batchSize, String... hardFields) {
+	public <T> void updateBatch(List<T> rows, int batchSize, String... hardFields) {
 		updateBatch(getDefaultDataSource(), batchSize, rows, hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> void updateBatch(DataSource dataSource, List<T> rows, int batchSize,
+	public <T> void updateBatch(DataSource dataSource, List<T> rows, int batchSize,
 			String... hardFields) {
 		updateBatch(dataSource, batchSize, rows, hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> int hardUpdate(T obj) {
+	public <T> int hardUpdate(T obj) {
 		return hardUpdate(getDefaultDataSource(), obj);
 	}
 
 	@Override
-	public <T extends Serializable> int hardUpdate(DataSource dataSource, T obj) {
+	public <T> int hardUpdate(DataSource dataSource, T obj) {
 		return execute(dataSource, obj, UpdateDMLParser.getInstance(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> int hardUpdate(List<T> rows) {
+	public <T> int hardUpdate(List<T> rows) {
 		return hardUpdate(getDefaultDataSource(), rows);
 	}
 
 	@Override
-	public <T extends Serializable> int hardUpdate(DataSource dataSource, List<T> rows) {
+	public <T> int hardUpdate(DataSource dataSource, List<T> rows) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		} else {
@@ -297,22 +296,22 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> void hardUpdateBatch(List<T> rows) {
+	public <T> void hardUpdateBatch(List<T> rows) {
 		hardUpdateBatch(rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void hardUpdateBatch(DataSource dataSource, List<T> rows) {
+	public <T> void hardUpdateBatch(DataSource dataSource, List<T> rows) {
 		hardUpdateBatch(dataSource, rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void hardUpdateBatch(List<T> rows, int batchSize) {
+	public <T> void hardUpdateBatch(List<T> rows, int batchSize) {
 		hardUpdateBatch(getDefaultDataSource(), rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void hardUpdateBatch(DataSource dataSource, List<T> rows, int batchSize) {
+	public <T> void hardUpdateBatch(DataSource dataSource, List<T> rows, int batchSize) {
 		if (!CollectionUtils.isEmpty(rows)) {
 			DML dml = UpdateDMLParser.getInstance().parse(rows.get(0).getClass());
 			JDBCExecuteUtils.executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize, isShowSql());
@@ -320,34 +319,34 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> int save(T obj) {
+	public <T> int save(T obj) {
 		return save(getDefaultDataSource(), obj);
 	}
 
 	@Override
-	public <T extends Serializable> int save(DataSource dataSource, T obj) {
+	public <T> int save(DataSource dataSource, T obj) {
 		Script<List<Object>> sql = getSQLDialect(dataSource).save(obj);
 		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> int save(T obj, String... hardFields) {
+	public <T> int save(T obj, String... hardFields) {
 		return save(getDefaultDataSource(), obj, hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> int save(DataSource dataSource, T obj, String... hardFields) {
+	public <T> int save(DataSource dataSource, T obj, String... hardFields) {
 		Script<List<Object>> sql = getSQLDialect(dataSource).save(obj, hardFields);
 		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> int save(List<T> rows) {
+	public <T> int save(List<T> rows) {
 		return save(getDefaultDataSource(), rows);
 	}
 
 	@Override
-	public <T extends Serializable> int save(DataSource dataSource, List<T> rows) {
+	public <T> int save(DataSource dataSource, List<T> rows) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
@@ -355,12 +354,12 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> int save(List<T> rows, String... hardFields) {
+	public <T> int save(List<T> rows, String... hardFields) {
 		return save(getDefaultDataSource(), rows, hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> int save(DataSource dataSource, List<T> rows, String... hardFields) {
+	public <T> int save(DataSource dataSource, List<T> rows, String... hardFields) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
@@ -368,32 +367,32 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> void saveBatch(List<T> rows) {
+	public <T> void saveBatch(List<T> rows) {
 		saveBatch(rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void saveBatch(DataSource dataSource, List<T> rows) {
+	public <T> void saveBatch(DataSource dataSource, List<T> rows) {
 		saveBatch(dataSource, rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void saveBatch(List<T> rows, String... hardFields) {
+	public <T> void saveBatch(List<T> rows, String... hardFields) {
 		saveBatch(rows, getDefaultBatchSize(), hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> void saveBatch(DataSource dataSource, List<T> rows, String... hardFields) {
+	public <T> void saveBatch(DataSource dataSource, List<T> rows, String... hardFields) {
 		saveBatch(dataSource, rows, getDefaultBatchSize(), hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> void saveBatch(List<T> rows, int batchSize) {
+	public <T> void saveBatch(List<T> rows, int batchSize) {
 		saveBatch(getDefaultDataSource(), rows, batchSize);
 	}
 
 	@Override
-	public <T extends Serializable> void saveBatch(DataSource dataSource, List<T> rows, int batchSize) {
+	public <T> void saveBatch(DataSource dataSource, List<T> rows, int batchSize) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
@@ -402,12 +401,12 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> void saveBatch(List<T> rows, int batchSize, String... hardFields) {
+	public <T> void saveBatch(List<T> rows, int batchSize, String... hardFields) {
 		saveBatch(getDefaultDataSource(), rows, batchSize, hardFields);
 	}
 
 	@Override
-	public <T extends Serializable> void saveBatch(DataSource dataSource, List<T> rows, int batchSize,
+	public <T> void saveBatch(DataSource dataSource, List<T> rows, int batchSize,
 			String... hardFields) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
@@ -417,23 +416,23 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> int hardSave(T obj) {
+	public <T> int hardSave(T obj) {
 		return hardSave(getDefaultDataSource(), obj);
 	}
 
 	@Override
-	public <T extends Serializable> int hardSave(DataSource dataSource, T obj) {
+	public <T> int hardSave(DataSource dataSource, T obj) {
 		Script<List<Object>> sql = getSQLDialect(dataSource).hardSave(obj);
 		return execute(dataSource, null, sql.getValue(), sql.getParams(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> int hardSave(List<T> rows) {
+	public <T> int hardSave(List<T> rows) {
 		return hardSave(getDefaultDataSource(), rows);
 	}
 
 	@Override
-	public <T extends Serializable> int hardSave(DataSource dataSource, List<T> rows) {
+	public <T> int hardSave(DataSource dataSource, List<T> rows) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return 0;
 		}
@@ -459,22 +458,22 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> void hardSaveBatch(List<T> rows) {
+	public <T> void hardSaveBatch(List<T> rows) {
 		hardSaveBatch(rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void hardSaveBatch(DataSource dataSource, List<T> rows) {
+	public <T> void hardSaveBatch(DataSource dataSource, List<T> rows) {
 		hardSaveBatch(dataSource, rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void hardSaveBatch(List<T> rows, int batchSize) {
+	public <T> void hardSaveBatch(List<T> rows, int batchSize) {
 		hardSaveBatch(getDefaultDataSource(), rows, batchSize);
 	}
 
 	@Override
-	public <T extends Serializable> void hardSaveBatch(DataSource dataSource, List<T> rows, int batchSize) {
+	public <T> void hardSaveBatch(DataSource dataSource, List<T> rows, int batchSize) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
@@ -483,120 +482,120 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> int delete(T obj) {
+	public <T> int delete(T obj) {
 		return delete(getDefaultDataSource(), obj);
 	}
 
 	@Override
-	public <T extends Serializable> int delete(DataSource dataSource, T obj) {
+	public <T> int delete(DataSource dataSource, T obj) {
 		return execute(dataSource, obj, DeleteDMLParser.getInstance(), ExecuteUpdateSQLExecuter.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> int delete(List<T> rows) {
+	public <T> int delete(List<T> rows) {
 		return delete(getDefaultDataSource(), rows);
 	}
 
 	@Override
-	public <T extends Serializable> int delete(DataSource dataSource, List<T> rows) {
+	public <T> int delete(DataSource dataSource, List<T> rows) {
 		return execute(dataSource, rows, DeleteDMLParser.getInstance());
 	}
 
 	@Override
-	public <T extends Serializable> void deleteBatch(List<T> rows) {
+	public <T> void deleteBatch(List<T> rows) {
 		deleteBatch(getDefaultDataSource(), rows);
 	}
 
 	@Override
-	public <T extends Serializable> void deleteBatch(DataSource dataSource, List<T> rows) {
+	public <T> void deleteBatch(DataSource dataSource, List<T> rows) {
 		deleteBatch(dataSource, rows, getDefaultBatchSize());
 	}
 
 	@Override
-	public <T extends Serializable> void deleteBatch(List<T> rows, int batchSize) {
+	public <T> void deleteBatch(List<T> rows, int batchSize) {
 		deleteBatch(getDefaultDataSource(), rows, batchSize);
 	}
 
 	@Override
-	public <T extends Serializable> void deleteBatch(DataSource dataSource, List<T> rows, int batchSize) {
+	public <T> void deleteBatch(DataSource dataSource, List<T> rows, int batchSize) {
 		if (!CollectionUtils.isEmpty(rows)) {
 			executeBatch(dataSource, rows, DeleteDMLParser.getInstance(), batchSize);
 		}
 	}
 
 	@Override
-	public <T extends Serializable> T get(T obj) {
+	public <T> T get(T obj) {
 		return get(getDefaultDataSource(), obj);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T extends Serializable> T get(DataSource dataSource, T obj) {
+	public <T> T get(DataSource dataSource, T obj) {
 		return execute(dataSource, obj, GetDMLParser.getInstance(), new GetSQLExecuter<T>((Class<T>) obj.getClass()));
 	}
 
 	@Override
-	public <T extends Serializable> T get(Class<T> type, String dsql, Object... params) {
+	public <T> T get(Class<T> type, String dsql, Object... params) {
 		return get(getDefaultDataSource(), parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> T get(DataSource dataSource, Class<T> type, String dsql, Object... params) {
+	public <T> T get(DataSource dataSource, Class<T> type, String dsql, Object... params) {
 		return get(dataSource, parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> T get(Class<T> type, String dsql, Object params) {
+	public <T> T get(Class<T> type, String dsql, Object params) {
 		return get(getDefaultDataSource(), parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> T get(DataSource dataSource, Class<T> type, String dsql, Object params) {
+	public <T> T get(DataSource dataSource, Class<T> type, String dsql, Object params) {
 		return get(dataSource, parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> List<T> select(T obj) {
+	public <T> List<T> select(T obj) {
 		return select(getDefaultDataSource(), obj);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T extends Serializable> List<T> select(DataSource dataSource, T obj) {
+	public <T> List<T> select(DataSource dataSource, T obj) {
 		Class<T> type = (Class<T>) obj.getClass();
 		Script<List<Object>> sql = EntityUtils.parseSelect(obj);
 		return execute(dataSource, null, sql.getValue(), sql.getParams(), new SelectSQLExecuter<T>(type));
 	}
 
 	@Override
-	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Object... params) {
+	public <T> List<T> select(Class<T> type, String dsql, Object... params) {
 		return select(getDefaultDataSource(), parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> List<T> select(DataSource dataSource, Class<T> type, String dsql,
+	public <T> List<T> select(DataSource dataSource, Class<T> type, String dsql,
 			Object... params) {
 		return select(dataSource, parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> List<T> select(Class<T> type, String dsql, Object params) {
+	public <T> List<T> select(Class<T> type, String dsql, Object params) {
 		return select(getDefaultDataSource(), parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> List<T> select(DataSource dataSource, Class<T> type, String dsql, Object params) {
+	public <T> List<T> select(DataSource dataSource, Class<T> type, String dsql, Object params) {
 		return select(dataSource, parse(dsql, params), type);
 	}
 
 	@Override
-	public <T extends Serializable> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
+	public <T> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
 			Object... params) {
 		return page(getDefaultDataSource(), type, dsql, currentPage, pageSize, params);
 	}
 
 	@Override
-	public <T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
+	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
 			int pageSize, Object... params) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
@@ -657,13 +656,13 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage,
+	public <T> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage,
 			int pageSize, Object... params) {
 		return page(getDefaultDataSource(), type, dsql, cntDsql, currentPage, pageSize, params);
 	}
 
 	@Override
-	public <T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
+	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
 			long currentPage, int pageSize, Object... params) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
@@ -713,13 +712,13 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
+	public <T> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
 			Object params) {
 		return page(getDefaultDataSource(), type, dsql, currentPage, pageSize, params);
 	}
 
 	@Override
-	public <T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
+	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
 			int pageSize, Object params) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
@@ -780,13 +779,13 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T extends Serializable> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage,
+	public <T> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage,
 			int pageSize, Object params) {
 		return page(getDefaultDataSource(), type, dsql, cntDsql, currentPage, pageSize, params);
 	}
 
 	@Override
-	public <T extends Serializable> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
+	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
 			long currentPage, int pageSize, Object params) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
@@ -946,7 +945,7 @@ public abstract class AbstractDao implements Dao {
 		return result;
 	}
 
-	private <T extends Serializable> int execute(DataSource dataSource, List<T> rows, DMLParser dmlParser) {
+	private <T> int execute(DataSource dataSource, List<T> rows, DMLParser dmlParser) {
 		Connection con = null;
 		try {
 			con = dataSource.getConnection();
@@ -967,7 +966,7 @@ public abstract class AbstractDao implements Dao {
 		}
 	}
 
-	private <T extends Serializable> void executeBatch(DataSource dataSource, List<T> rows, DMLParser dmlParser,
+	private <T> void executeBatch(DataSource dataSource, List<T> rows, DMLParser dmlParser,
 			int batchSize) {
 		DML dml = dmlParser.parse(rows.get(0).getClass());
 		JDBCExecuteUtils.executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize, isShowSql());
@@ -994,7 +993,7 @@ public abstract class AbstractDao implements Dao {
 		}
 	}
 
-	private <T extends Serializable> void updateBatch(DataSource dataSource, int batchSize, List<T> rows,
+	private <T> void updateBatch(DataSource dataSource, int batchSize, List<T> rows,
 			String... hardFields) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
@@ -1024,7 +1023,7 @@ public abstract class AbstractDao implements Dao {
 		}
 	}
 
-	private <T extends Serializable> T get(DataSource dataSource, NamedSQL namedSQL, Class<T> type) {
+	private <T> T get(DataSource dataSource, NamedSQL namedSQL, Class<T> type) {
 		return execute(dataSource, namedSQL, new GetSQLExecuter<T>(type));
 	}
 
@@ -1033,7 +1032,7 @@ public abstract class AbstractDao implements Dao {
 		return execute(dataSource, namedSQL.getId(), sql.getValue(), sql.getParams(), sqlExecuter);
 	}
 
-	private <T extends Serializable> List<T> select(DataSource dataSource, NamedSQL namedSQL, Class<T> type) {
+	private <T> List<T> select(DataSource dataSource, NamedSQL namedSQL, Class<T> type) {
 		return execute(dataSource, namedSQL, new SelectSQLExecuter<T>(type));
 	}
 

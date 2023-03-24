@@ -5,36 +5,41 @@ import java.util.List;
 import java.util.Map;
 
 import cn.tenmg.sql.paging.SQLPagingDialect;
-import cn.tenmg.sql.paging.dialect.PostgreSQLPagingDialect;
+import cn.tenmg.sql.paging.dialect.SQLitePagingDialect;
 import cn.tenmg.sql.paging.utils.SQLUtils;
 import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
 
 /**
- * PostgreSQL方言
+ * SQLite方言
  * 
  * @author June wjzhao@aliyun.com
  * 
- * @since 1.1.1
+ * @since 1.5.1
  */
-public class PostgreSQLDialect extends AbstractSQLDialect {
+public class SQLiteDialect extends AbstractSQLDialect {
 
-	private static final String UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = COALESCE(?, ${columnName})",
-			INSERT_IF_NOT_EXISTS_TEMPLATE = "INSERT INTO ${tableName} (${columns}) VALUES (${values}) ON CONFLICT(${ids}) DO NOTHING",
-			SAVE_TEMPLATE = "INSERT INTO ${tableName} AS X(${columns}) VALUES (${values}) ON CONFLICT(${ids}) DO UPDATE SET ${sets}",
+	private static final String UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(?, ${columnName})",
+			INSERT_IF_NOT_EXISTS_TEMPLATE = "INSERT OR IGNORE INTO ${tableName} (${columns}) VALUES (${values})",
+			SAVE_TEMPLATE = "INSERT INTO ${tableName} AS X(${columns}) VALUES (${values}) ON CONFLICT(STAFF_ID) DO UPDATE SET ${sets}",
 			SET_TEMPLATE = "${columnName} = EXCLUDED.${columnName}", IDS = "ids",
-			SET_IF_NOT_NULL_TEMPLATE = "${columnName} = COALESCE(EXCLUDED.${columnName}, X.${columnName})";
+			SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(EXCLUDED.${columnName}, X.${columnName})";
 
 	private static final List<String> EXT_SQL_TEMPLATE_PARAM_NAMES = Arrays.asList(IDS),
 			NEEDS_COMMA_PARAM_NAMES = Arrays.asList(COLUMNS, VALUES);
 
-	private static final PostgreSQLDialect INSTANCE = new PostgreSQLDialect();
+	private static final SQLiteDialect INSTANCE = new SQLiteDialect();
 
-	private PostgreSQLDialect() {
+	private SQLiteDialect() {
 		super();
 	}
 
-	public static final PostgreSQLDialect getInstance() {
+	public static final SQLiteDialect getInstance() {
 		return INSTANCE;
+	}
+
+	@Override
+	SQLPagingDialect getSQLPagingDialect() {
+		return SQLitePagingDialect.getInstance();
 	}
 
 	@Override
@@ -85,11 +90,6 @@ public class PostgreSQLDialect extends AbstractSQLDialect {
 	@Override
 	String getSetIfNotNullTemplate() {
 		return SET_IF_NOT_NULL_TEMPLATE;
-	}
-
-	@Override
-	SQLPagingDialect getSQLPagingDialect() {
-		return PostgreSQLPagingDialect.getInstance();
 	}
 
 }

@@ -18,7 +18,6 @@ import cn.tenmg.sqltool.sql.SQLDialect;
  * @author June wjzhao@aliyun.com
  * 
  * @since 1.5.0
- *
  */
 @Macro("page")
 public class Paging implements cn.tenmg.dsl.Macro {

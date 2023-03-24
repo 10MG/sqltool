@@ -50,7 +50,8 @@ import cn.tenmg.sqltool.utils.SQLDialectUtils;
  * 抽象数据库访问对象
  * 
  * @author June wjzhao@aliyun.com
- *
+ * 
+ * @since 1.2.0
  */
 public abstract class AbstractDao implements Dao {
 
@@ -70,7 +71,7 @@ public abstract class AbstractDao implements Dao {
 			Connection con = null;
 			try {
 				con = dataSource.getConnection();
-				con.setReadOnly(true);
+				// con.setReadOnly(true);
 				String url = con.getMetaData().getURL();
 				dialect = SQLDialectUtils.getSQLDialect(url);
 				cacheSQLDialect(dataSource, dialect);
@@ -249,8 +250,7 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T> void updateBatch(DataSource dataSource, List<T> rows, int batchSize,
-			String... hardFields) {
+	public <T> void updateBatch(DataSource dataSource, List<T> rows, int batchSize, String... hardFields) {
 		updateBatch(dataSource, batchSize, rows, hardFields);
 	}
 
@@ -278,7 +278,7 @@ public abstract class AbstractDao implements Dao {
 			try {
 				con = dataSource.getConnection();
 				con.setAutoCommit(false);
-				con.setReadOnly(false);
+				// con.setReadOnly(false);
 				int count = JDBCExecuteUtils.hardUpdate(con, rows, isShowSql());
 				con.commit();
 				return count;
@@ -406,8 +406,7 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T> void saveBatch(DataSource dataSource, List<T> rows, int batchSize,
-			String... hardFields) {
+	public <T> void saveBatch(DataSource dataSource, List<T> rows, int batchSize, String... hardFields) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
@@ -441,7 +440,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			con.setReadOnly(false);
+			// con.setReadOnly(false);
 			int count = JDBCExecuteUtils.hardSave(con, dialect, rows, isShowSql());
 			con.commit();
 			return count;
@@ -573,8 +572,7 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T> List<T> select(DataSource dataSource, Class<T> type, String dsql,
-			Object... params) {
+	public <T> List<T> select(DataSource dataSource, Class<T> type, String dsql, Object... params) {
 		return select(dataSource, parse(dsql, params), type);
 	}
 
@@ -589,14 +587,13 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
-			Object... params) {
+	public <T> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize, Object... params) {
 		return page(getDefaultDataSource(), type, dsql, currentPage, pageSize, params);
 	}
 
 	@Override
-	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
-			int pageSize, Object... params) {
+	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage, int pageSize,
+			Object... params) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
 		page.setCurrentPage(currentPage);
@@ -604,7 +601,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			con.setReadOnly(true);
+			// con.setReadOnly(true);
 			boolean showSql = isShowSql();
 			SQLDialect dialect = getSQLDialect(dataSource);
 			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
@@ -656,14 +653,14 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage,
-			int pageSize, Object... params) {
+	public <T> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage, int pageSize,
+			Object... params) {
 		return page(getDefaultDataSource(), type, dsql, cntDsql, currentPage, pageSize, params);
 	}
 
 	@Override
-	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
-			long currentPage, int pageSize, Object... params) {
+	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql, long currentPage,
+			int pageSize, Object... params) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
 		page.setCurrentPage(currentPage);
@@ -671,7 +668,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			con.setReadOnly(true);
+			// con.setReadOnly(true);
 			boolean showSql = isShowSql();
 			SQLDialect dialect = getSQLDialect(dataSource);
 			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
@@ -712,14 +709,13 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize,
-			Object params) {
+	public <T> Page<T> page(Class<T> type, String dsql, long currentPage, int pageSize, Object params) {
 		return page(getDefaultDataSource(), type, dsql, currentPage, pageSize, params);
 	}
 
 	@Override
-	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage,
-			int pageSize, Object params) {
+	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, long currentPage, int pageSize,
+			Object params) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
 		page.setCurrentPage(currentPage);
@@ -727,7 +723,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			con.setReadOnly(true);
+			// con.setReadOnly(true);
 			boolean showSql = isShowSql();
 			SQLDialect dialect = getSQLDialect(dataSource);
 			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
@@ -779,14 +775,13 @@ public abstract class AbstractDao implements Dao {
 	}
 
 	@Override
-	public <T> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage,
-			int pageSize, Object params) {
+	public <T> Page<T> page(Class<T> type, String dsql, String cntDsql, long currentPage, int pageSize, Object params) {
 		return page(getDefaultDataSource(), type, dsql, cntDsql, currentPage, pageSize, params);
 	}
 
 	@Override
-	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql,
-			long currentPage, int pageSize, Object params) {
+	public <T> Page<T> page(DataSource dataSource, Class<T> type, String dsql, String cntDsql, long currentPage,
+			int pageSize, Object params) {
 		Connection con = null;
 		Page<T> page = new Page<T>();
 		page.setCurrentPage(currentPage);
@@ -794,7 +789,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			con.setReadOnly(true);
+			// con.setReadOnly(true);
 			boolean showSql = isShowSql();
 			SQLDialect dialect = getSQLDialect(dataSource);
 			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
@@ -885,7 +880,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			con.setReadOnly(false);
+			// con.setReadOnly(false);
 			CurrentConnectionHolder.set(con);
 			transaction.execute(new TransactionExecutor(isShowSql(), getDSQLFactory(), getSQLDialect(dataSource)));
 			con.commit();
@@ -935,7 +930,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			con.setReadOnly(sqlExecuter.isReadOnly());
+			// con.setReadOnly(sqlExecuter.isReadOnly());
 			result = JDBCExecuteUtils.execute(con, sqlExecuter, id, sql, params, isShowSql());
 		} catch (SQLException e) {
 			throw new SQLExecutorException(e);
@@ -950,7 +945,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			con.setReadOnly(false);
+			// con.setReadOnly(false);
 			int count = JDBCExecuteUtils.executeBatch(con, dmlParser, rows, isShowSql());
 			con.commit();
 			return count;
@@ -966,8 +961,7 @@ public abstract class AbstractDao implements Dao {
 		}
 	}
 
-	private <T> void executeBatch(DataSource dataSource, List<T> rows, DMLParser dmlParser,
-			int batchSize) {
+	private <T> void executeBatch(DataSource dataSource, List<T> rows, DMLParser dmlParser, int batchSize) {
 		DML dml = dmlParser.parse(rows.get(0).getClass());
 		JDBCExecuteUtils.executeBatch(dataSource, dml.getSql(), rows, dml.getFields(), batchSize, isShowSql());
 	}
@@ -977,7 +971,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			con.setReadOnly(false);
+			// con.setReadOnly(false);
 			int count = JDBCExecuteUtils.update(con, updateSQL, rows, showSql);
 			con.commit();
 			return count;
@@ -993,8 +987,7 @@ public abstract class AbstractDao implements Dao {
 		}
 	}
 
-	private <T> void updateBatch(DataSource dataSource, int batchSize, List<T> rows,
-			String... hardFields) {
+	private <T> void updateBatch(DataSource dataSource, int batchSize, List<T> rows, String... hardFields) {
 		if (CollectionUtils.isEmpty(rows)) {
 			return;
 		}
@@ -1007,7 +1000,7 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			con.setReadOnly(false);
+			// con.setReadOnly(false);
 			int count = JDBCExecuteUtils.save(con, mergeSql, rows, showSql);
 			con.commit();
 			return count;

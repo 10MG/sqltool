@@ -14,7 +14,6 @@ import cn.tenmg.sqltool.datasource.DatasourceBuilder;
  * @author June wjzhao@aliyun.com
  * 
  * @since 1.2.0
- *
  */
 public class BasicDataSourceBuilder implements DatasourceBuilder {
 

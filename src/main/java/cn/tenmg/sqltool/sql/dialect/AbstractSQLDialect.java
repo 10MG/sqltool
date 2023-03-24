@@ -39,7 +39,8 @@ import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
  */
 public abstract class AbstractSQLDialect implements SQLDialect {
 
-	private static final String UPDATE = "UPDATE ${tableName} SET ${sets} WHERE ${condition}";
+	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
+			UPDATE = "UPDATE ${tableName} SET ${sets} WHERE ${condition}";
 
 	protected static final String TABLE_NAME = "tableName", COLUMNS = "columns", VALUES = "values", SETS = "sets",
 			LEFT_COLUMN_NAME = "columnName", RIGHT_COLUMN_NAME = "columnName";
@@ -52,11 +53,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 	 * @return SQL分页查询方言
 	 */
 	abstract SQLPagingDialect getSQLPagingDialect();
-
-	/**
-	 * 获取更新语句的SET子句模板。例如Mysql数据库为<code>${columnName}=?</code>
-	 */
-	abstract String getUpdateSetTemplate();
 
 	/**
 	 * 获取更新语句非空时SET子句模板。例如Mysql数据库为<code>${columnName}=IFNULL(${columnName}, ?)</code>
@@ -268,7 +264,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 										hasGeneralColumn = true;
 									}
 									if (hardFieldSet.contains(field.getName())) {
-										updateSetTemplate = getUpdateSetTemplate();
+										updateSetTemplate = UPDATE_SET_TEMPLATE;
 									} else {
 										updateSetTemplate = getUpdateSetIfNotNullTemplate();
 									}
@@ -315,7 +311,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							hasGeneralColumn = true;
 						}
 						if (hardFieldSet.contains(field.getName())) {
-							updateSetTemplate = getUpdateSetTemplate();
+							updateSetTemplate = UPDATE_SET_TEMPLATE;
 						} else {
 							updateSetTemplate = getUpdateSetIfNotNullTemplate();
 						}
@@ -517,7 +513,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 										} else {
 											hasGeneralColumn = true;
 										}
-										sets.append(PlaceHolderUtils.replace(getUpdateSetTemplate(), "columnName",
+										sets.append(PlaceHolderUtils.replace(UPDATE_SET_TEMPLATE, "columnName",
 												columnName));
 									}
 								} else {
@@ -563,7 +559,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							} else {
 								hasGeneralColumn = true;
 							}
-							sets.append(PlaceHolderUtils.replace(getUpdateSetTemplate(), "columnName", columnName));
+							sets.append(PlaceHolderUtils.replace(UPDATE_SET_TEMPLATE, "columnName", columnName));
 						}
 					}
 				}
@@ -615,7 +611,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 										} else {
 											hasGeneralColumn = true;
 										}
-										sets.append(PlaceHolderUtils.replace(getUpdateSetTemplate(), "columnName",
+										sets.append(PlaceHolderUtils.replace(UPDATE_SET_TEMPLATE, "columnName",
 												columnName));
 									}
 								} else {
@@ -661,7 +657,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 							} else {
 								hasGeneralColumn = true;
 							}
-							sets.append(PlaceHolderUtils.replace(getUpdateSetTemplate(), "columnName", columnName));
+							sets.append(PlaceHolderUtils.replace(UPDATE_SET_TEMPLATE, "columnName", columnName));
 						}
 					}
 				}

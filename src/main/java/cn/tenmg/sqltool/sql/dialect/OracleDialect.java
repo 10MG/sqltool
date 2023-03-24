@@ -18,20 +18,14 @@ import cn.tenmg.sqltool.utils.JDBCExecuteUtils;
  */
 public class OracleDialect extends AbstractSQLDialect {
 
-	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
-			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = NVL(?, ${columnName})";
-
-	private static final String INSERT_IF_NOT_EXISTS = "MERGE INTO ${tableName} X USING (SELECT ${fields} FROM DUAL) Y ON (${condition}) WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})";
-
-	private static final String SAVE = "MERGE INTO ${tableName} X USING (SELECT ${fields} FROM DUAL) Y ON (${condition}) WHEN MATCHED THEN UPDATE SET ${sets} WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})";
-
-	private static final String FIELDS = "fields", CONDITION = "condition", SPACE = " ";
+	private static final String UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = NVL(?, ${columnName})",
+			INSERT_IF_NOT_EXISTS_TEMPLATE = "MERGE INTO ${tableName} X USING (SELECT ${fields} FROM DUAL) Y ON (${condition}) WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})",
+			SAVE_TEMPLATE = "MERGE INTO ${tableName} X USING (SELECT ${fields} FROM DUAL) Y ON (${condition}) WHEN MATCHED THEN UPDATE SET ${sets} WHEN NOT MATCHED THEN INSERT (${columns}) VALUES(${values})",
+			FIELDS = "fields", CONDITION = "condition", SPACE = " ", SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
+			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = NVL(Y.${columnName}, X.${columnName})";
 
 	private static final List<String> EXT_SQL_TEMPLATE_PARAM_NAMES = Arrays.asList(FIELDS, CONDITION),
 			NEEDS_COMMA_PARAM_NAMES = Arrays.asList(FIELDS, COLUMNS, VALUES);
-
-	private static final String SET_TEMPLATE = "X.${columnName} = Y.${columnName}",
-			SET_IF_NOT_NULL_TEMPLATE = "X.${columnName} = NVL(Y.${columnName}, X.${columnName})";
 
 	private static final OracleDialect INSTANCE = new OracleDialect();
 
@@ -41,11 +35,6 @@ public class OracleDialect extends AbstractSQLDialect {
 
 	public static final OracleDialect getInstance() {
 		return INSTANCE;
-	}
-
-	@Override
-	String getUpdateSetTemplate() {
-		return UPDATE_SET_TEMPLATE;
 	}
 
 	@Override
@@ -60,12 +49,12 @@ public class OracleDialect extends AbstractSQLDialect {
 
 	@Override
 	String getSaveSQLTemplate() {
-		return SAVE;
+		return SAVE_TEMPLATE;
 	}
 
 	@Override
 	String getInsertIfNotExistsSQLTemplate() {
-		return INSERT_IF_NOT_EXISTS;
+		return INSERT_IF_NOT_EXISTS_TEMPLATE;
 	}
 
 	@Override

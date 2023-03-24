@@ -21,6 +21,7 @@ import cn.tenmg.sqltool.utils.SQLDialectUtils;
  * 
  * @author June wjzhao@aliyun.com
  *
+ * @since 1.2.0
  */
 public class BasicDao extends AbstractDao {
 

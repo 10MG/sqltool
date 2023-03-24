@@ -17,17 +17,13 @@ import cn.tenmg.sql.paging.utils.SQLUtils;
  */
 public class MySQLDialect extends AbstractSQLDialect {
 
-	private static final String UPDATE_SET_TEMPLATE = "${columnName} = ?",
-			UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(?, ${columnName})";
-
-	private static final String INSERT_IF_NOT_EXISTS = "INSERT IGNORE INTO ${tableName} (${columns}) VALUES (${values})";
-
-	private static final String SAVE = "INSERT INTO ${tableName} (${columns}) VALUES (${values}) ON DUPLICATE KEY UPDATE ${sets}";
+	private static final String UPDATE_SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(?, ${columnName})",
+			INSERT_IF_NOT_EXISTS_TEMPLATE = "INSERT IGNORE INTO ${tableName} (${columns}) VALUES (${values})",
+			SAVE_TEMPLATE = "INSERT INTO ${tableName} (${columns}) VALUES (${values}) ON DUPLICATE KEY UPDATE ${sets}",
+			SET_TEMPLATE = "${columnName} = VALUES(${columnName})",
+			SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(VALUES(${columnName}), ${columnName})";
 
 	private static final List<String> NEEDS_COMMA_PARAM_NAMES = Arrays.asList(COLUMNS, VALUES);
-
-	private static final String SET_TEMPLATE = "${columnName} = VALUES(${columnName})",
-			SET_IF_NOT_NULL_TEMPLATE = "${columnName} = IFNULL(VALUES(${columnName}), ${columnName})";
 
 	private static final MySQLDialect INSTANCE = new MySQLDialect();
 
@@ -40,8 +36,8 @@ public class MySQLDialect extends AbstractSQLDialect {
 	}
 
 	@Override
-	String getUpdateSetTemplate() {
-		return UPDATE_SET_TEMPLATE;
+	SQLPagingDialect getSQLPagingDialect() {
+		return MySQLPagingDialect.getInstance();
 	}
 
 	@Override
@@ -56,12 +52,12 @@ public class MySQLDialect extends AbstractSQLDialect {
 
 	@Override
 	String getSaveSQLTemplate() {
-		return SAVE;
+		return SAVE_TEMPLATE;
 	}
 
 	@Override
 	String getInsertIfNotExistsSQLTemplate() {
-		return INSERT_IF_NOT_EXISTS;
+		return INSERT_IF_NOT_EXISTS_TEMPLATE;
 	}
 
 	@Override
@@ -90,8 +86,4 @@ public class MySQLDialect extends AbstractSQLDialect {
 		return SET_IF_NOT_NULL_TEMPLATE;
 	}
 
-	@Override
-	SQLPagingDialect getSQLPagingDialect() {
-		return MySQLPagingDialect.getInstance();
-	}
 }

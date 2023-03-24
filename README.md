@@ -90,6 +90,7 @@ Mysql      | 1.0+
 Oracle     | 1.1+
 PostgreSQL | 1.1.1+
 SQLServer  | 1.2.4+
+SQLite     | 1.5.1+
 
 ## 连接池
 

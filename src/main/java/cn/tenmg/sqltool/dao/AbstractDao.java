@@ -880,7 +880,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			// con.setReadOnly(false);
 			CurrentConnectionHolder.set(con);
 			transaction.execute(new TransactionExecutor(isShowSql(), getDSQLFactory(), getSQLDialect(dataSource)));
 			con.commit();

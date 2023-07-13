@@ -35,7 +35,7 @@ public final class DataSourceFactory {
 				buildName = BUILDER_PREFIX.concat(type).concat(BUILDER_SUFFIX);
 		try {
 			Class<DatasourceBuilder> datasourceBuilder = (Class<DatasourceBuilder>) Class.forName(buildName);
-			return datasourceBuilder.newInstance().createDataSource(properties);
+			return datasourceBuilder.getConstructor().newInstance().createDataSource(properties);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalConfigException("This type of datasource is not supported at the moment: ".concat(type), e);
 		}

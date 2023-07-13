@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import cn.tenmg.dsl.utils.PlaceHolderUtils;
 import cn.tenmg.dsl.utils.PropertiesLoaderUtils;
+import cn.tenmg.sqltool.exception.CreateDaoException;
 import cn.tenmg.sqltool.exception.IllegalConfigException;
 
 /**
@@ -34,7 +35,7 @@ public abstract class SqltoolFactory {
 			}
 			return (Dao) Class.forName(dao).getMethod("build", Properties.class).invoke(null, properties);
 		} catch (Exception e) {
-			throw new IllegalConfigException("Exception occurred when building database access object", e);
+			throw new CreateDaoException("Exception occurred when building database access object", e);
 		}
 	}
 

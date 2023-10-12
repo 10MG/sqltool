@@ -6,7 +6,7 @@
 	<description>一个给分布式环境（如Spark等）提供动态结构化查询语言（DSQL）解析和执行的框架</description>
 	<groupId>cn.tenmg</groupId>
 	<artifactId>sqltool</artifactId>
-	<version>1.5.5</version>
+	<version>1.5.6</version>
 	<packaging>jar</packaging>
 	<url>https://gitee.com/tenmg/sqltool</url>
 
@@ -53,19 +53,19 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<dsql.version>1.3.3</dsql.version>
-		<sql-paging.version>1.2.11</sql-paging.version>
+		<dsql.version>1.3.4</dsql.version>
+		<sql-paging.version>1.2.13</sql-paging.version>
 		<jaxb-runtime.version>3.0.2</jaxb-runtime.version>
-		<slf4j-api.version>2.0.7</slf4j-api.version>
-		<druid.version>1.2.18</druid.version>
-		<commons-dbcp2.version>2.9.0</commons-dbcp2.version>
-		<junit-jupiter.version>5.9.3</junit-jupiter.version>
-		<junit-platform-launcher.version>1.9.3</junit-platform-launcher.version>
-		<logback.version>1.3.8</logback.version>
-		<mysql-connector-j.version>8.0.33</mysql-connector-j.version>
+		<slf4j-api.version>2.0.9</slf4j-api.version>
+		<druid.version>1.2.20</druid.version>
+		<commons-dbcp2.version>2.10.0</commons-dbcp2.version>
+		<junit-jupiter.version>5.10.0</junit-jupiter.version>
+		<junit-platform-launcher.version>1.10.0</junit-platform-launcher.version>
+		<logback.version>1.3.11</logback.version>
+		<mysql-connector-j.version>8.1.0</mysql-connector-j.version>
 		<postgresql.version>42.6.0</postgresql.version>
-		<sqlite-jdbc.version>3.42.0.0</sqlite-jdbc.version>
-		<mssql-jdbc.version>9.4.1.jre8</mssql-jdbc.version>
+		<sqlite-jdbc.version>3.43.0.0</sqlite-jdbc.version>
+		<mssql-jdbc.version>12.4.1.jre8</mssql-jdbc.version>
 	</properties>
 
 	<dependencies>

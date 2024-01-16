@@ -71,7 +71,6 @@ public abstract class AbstractDao implements Dao {
 			Connection con = null;
 			try {
 				con = dataSource.getConnection();
-				// con.setReadOnly(true);
 				String url = con.getMetaData().getURL();
 				dialect = SQLDialectUtils.getSQLDialect(url);
 				cacheSQLDialect(dataSource, dialect);
@@ -278,7 +277,6 @@ public abstract class AbstractDao implements Dao {
 			try {
 				con = dataSource.getConnection();
 				con.setAutoCommit(false);
-				// con.setReadOnly(false);
 				int count = JDBCExecuteUtils.hardUpdate(con, rows, isShowSql());
 				con.commit();
 				return count;
@@ -440,7 +438,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			// con.setReadOnly(false);
 			int count = JDBCExecuteUtils.hardSave(con, dialect, rows, isShowSql());
 			con.commit();
 			return count;
@@ -601,7 +598,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			// con.setReadOnly(true);
 			boolean showSql = isShowSql();
 			SQLDialect dialect = getSQLDialect(dataSource);
 			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
@@ -668,7 +664,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			// con.setReadOnly(true);
 			boolean showSql = isShowSql();
 			SQLDialect dialect = getSQLDialect(dataSource);
 			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
@@ -723,7 +718,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			// con.setReadOnly(true);
 			boolean showSql = isShowSql();
 			SQLDialect dialect = getSQLDialect(dataSource);
 			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
@@ -789,7 +783,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			// con.setReadOnly(true);
 			boolean showSql = isShowSql();
 			SQLDialect dialect = getSQLDialect(dataSource);
 			Paging.initCountEnv(dialect);// 初始化Paging的计数查询SQL解析环境
@@ -929,7 +922,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(true);
-			// con.setReadOnly(sqlExecuter.isReadOnly());
 			result = JDBCExecuteUtils.execute(con, sqlExecuter, id, sql, params, isShowSql());
 		} catch (SQLException e) {
 			throw new SQLExecutorException(e);
@@ -944,7 +936,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			// con.setReadOnly(false);
 			int count = JDBCExecuteUtils.executeBatch(con, dmlParser, rows, isShowSql());
 			con.commit();
 			return count;
@@ -970,7 +961,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			// con.setReadOnly(false);
 			int count = JDBCExecuteUtils.update(con, updateSQL, rows, showSql);
 			con.commit();
 			return count;
@@ -999,7 +989,6 @@ public abstract class AbstractDao implements Dao {
 		try {
 			con = dataSource.getConnection();
 			con.setAutoCommit(false);
-			// con.setReadOnly(false);
 			int count = JDBCExecuteUtils.save(con, mergeSql, rows, showSql);
 			con.commit();
 			return count;

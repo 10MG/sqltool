@@ -53,7 +53,7 @@ public class TransactionExecutor implements Serializable {
 	 * 插入操作
 	 * 
 	 * @param obj
-	 *            实体对象（不能为null）
+	 *            实体对象（不能为 {@code null}）
 	 * @return 返回受影响行数
 	 * @throws SQLException
 	 *             SQL异常
@@ -65,7 +65,7 @@ public class TransactionExecutor implements Serializable {
 	}
 
 	/**
-	 * 插入操作（实体对象集为空则直接返回null）
+	 * 插入操作（实体对象集为空则直接返回 {@code null}）
 	 * 
 	 * @param rows
 	 *            实体对象集
@@ -86,7 +86,7 @@ public class TransactionExecutor implements Serializable {
 	 * 软更新操作
 	 * 
 	 * @param obj
-	 *            实体对象（不能为null）
+	 *            实体对象（不能为 {@code null}）
 	 * @return 返回受影响行数
 	 * @throws SQLException
 	 *             SQL异常
@@ -101,7 +101,7 @@ public class TransactionExecutor implements Serializable {
 	 * 部分硬更新操作
 	 * 
 	 * @param obj
-	 *            实体对象（不能为null）
+	 *            实体对象（不能为 {@code null}）
 	 * @param hardFields
 	 *            硬更新属性
 	 * @return 返回受影响行数
@@ -154,7 +154,7 @@ public class TransactionExecutor implements Serializable {
 	 * 硬更新操作
 	 * 
 	 * @param obj
-	 *            实体对象（不能为null）
+	 *            实体对象（不能为 {@code null}）
 	 * @return 返回受影响行数
 	 * @throws SQLException
 	 *             SQL异常
@@ -183,7 +183,7 @@ public class TransactionExecutor implements Serializable {
 	}
 
 	/**
-	 * 软保存。仅对属性值不为null的字段执行插入/更新操作
+	 * 软保存。仅对属性值不为 {@code null} 的字段执行插入/更新操作
 	 * 
 	 * @param obj
 	 *            实体对象
@@ -198,7 +198,7 @@ public class TransactionExecutor implements Serializable {
 	}
 
 	/**
-	 * 部分硬保存。仅对属性值不为null或硬保存的字段执行插入/更新操作
+	 * 部分硬保存。仅对属性值不为 {@code null} 或硬保存的字段执行插入/更新操作
 	 * 
 	 * @param obj
 	 *            实体对象
@@ -215,7 +215,7 @@ public class TransactionExecutor implements Serializable {
 	}
 
 	/**
-	 * 软保存。仅对属性值不为null的字段执行插入/更新操作
+	 * 软保存。仅对属性值不为 {@code null} 的字段执行插入/更新操作
 	 * 
 	 * @param rows
 	 *            实体对象集
@@ -232,7 +232,7 @@ public class TransactionExecutor implements Serializable {
 	}
 
 	/**
-	 * 部分硬保存。仅对属性值不为null或硬保存的字段执行插入/更新操作
+	 * 部分硬保存。仅对属性值不为 {@code null} 或硬保存的字段执行插入/更新操作
 	 * 
 	 * @param rows
 	 *            实体对象集
@@ -284,7 +284,7 @@ public class TransactionExecutor implements Serializable {
 	 * 删除操作
 	 * 
 	 * @param obj
-	 *            实体对象（不能为null）
+	 *            实体对象（不能为 {@code null}）
 	 * @return 返回受影响行数
 	 * @throws SQLException
 	 *             SQL异常

@@ -15,7 +15,7 @@ import cn.tenmg.sql.paging.SQLPagingDialect;
 public interface SQLDialect extends SQLPagingDialect {
 
 	/**
-	 * 获取软更新的更新数据操作对象。软更新是只仅对属性值不为null的执行更新操作。
+	 * 获取软更新的更新数据操作对象。软更新是指仅对属性值不为 {@code null} 的执行更新操作。
 	 * 
 	 * @param type
 	 *            实体类型
@@ -24,7 +24,7 @@ public interface SQLDialect extends SQLPagingDialect {
 	<T> UpdateSQL update(Class<T> type);
 
 	/**
-	 * 获取部分硬更新的更新数据操作对象。软更新是只仅对属性值不为null的执行更新操作。
+	 * 获取部分硬更新的更新数据操作对象。软更新是指仅对属性值不为 {@code null} 的执行更新操作。
 	 * 
 	 * @param type
 	 *            实体类型
@@ -35,7 +35,7 @@ public interface SQLDialect extends SQLPagingDialect {
 	<T> UpdateSQL update(Class<T> type, String... hardFields);
 
 	/**
-	 * 获取软保存合并数据操作对象。软保存是只仅对属性值不为null的执行保存操作，合并数据是指当数据不存在时执行插入操作，已存在时执行更新操作。
+	 * 获取软保存合并数据操作对象。软保存是指仅对属性值不为 {@code null} 的执行保存操作，合并数据是指当数据不存在时执行插入操作，已存在时执行更新操作。
 	 * 
 	 * @param type
 	 *            实体类型
@@ -64,7 +64,7 @@ public interface SQLDialect extends SQLPagingDialect {
 	<T> MergeSQL hardSave(Class<T> type);
 
 	/**
-	 * 获取软更新的更新数据操作对象。软更新是只仅对属性值不为null的执行更新操作。
+	 * 获取软更新的更新数据操作对象。软更新是指仅对属性值不为 {@code null} 的执行更新操作。
 	 * 
 	 * @param obj
 	 *            实体对象
@@ -73,7 +73,7 @@ public interface SQLDialect extends SQLPagingDialect {
 	<T> Script<List<Object>> update(T obj);
 
 	/**
-	 * 获取部分硬更新的更新数据操作对象。软更新是只仅对属性值不为null的执行更新操作。
+	 * 获取部分硬更新的更新数据操作对象。软更新是指仅对属性值不为 {@code null} 的执行更新操作。
 	 * 
 	 * @param obj
 	 *            实体对象
@@ -84,7 +84,7 @@ public interface SQLDialect extends SQLPagingDialect {
 	<T> Script<List<Object>> update(T obj, String... hardFields);
 
 	/**
-	 * 获取软保存数据（插入或更新）操作对象。软保存是只仅对属性值不为null的执行保存操作
+	 * 获取软保存数据（插入或更新）操作对象。软保存是指仅对属性值不为 {@code null} 的执行保存操作
 	 * 
 	 * @param obj
 	 *            实体对象

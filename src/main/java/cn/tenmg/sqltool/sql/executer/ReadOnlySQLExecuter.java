@@ -31,13 +31,14 @@ import cn.tenmg.sqltool.sql.SQLExecuter;
  * 
  * @author June wjzhao@aliyun.com
  *
- * @param <T>
- *            返回结果类型
+ * @param <T> 返回结果类型
  * 
  * @since 1.2.0
  */
 @SuppressWarnings("rawtypes")
 public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
+
+	private static final String LABLE_SPLITOR = "_";
 
 	private static final Map<Class<?>, ResultGetter> RESULT_GETTERS = new HashMap<Class<?>, ResultGetter>();
 
@@ -58,13 +59,10 @@ public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
 	/**
 	 * 获取并将当前行结果集转换为指定类型
 	 * 
-	 * @param rs
-	 *            当前行结果集
-	 * @param type
-	 *            指定类型
+	 * @param rs   当前行结果集
+	 * @param type 指定类型
 	 * @return 转换为指定类型的行结果集对象
-	 * @throws SQLException
-	 *             SQL异常
+	 * @throws SQLException SQL异常
 	 */
 	@SuppressWarnings("unchecked")
 	protected static <T> T getRow(ResultSet rs, Class<T> type) throws SQLException {
@@ -76,7 +74,7 @@ public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
 				int columnCount = rsmd.getColumnCount();
 				List<String> feildNames = new ArrayList<String>();
 				for (int i = 1; i <= columnCount; i++) {
-					feildNames.add(StringUtils.toCamelCase(rsmd.getColumnLabel(i), "_", false));
+					feildNames.add(StringUtils.toCamelCase(rsmd.getColumnLabel(i), LABLE_SPLITOR, false));
 				}
 				try {
 					row = type.getConstructor().newInstance();
@@ -128,7 +126,7 @@ public abstract class ReadOnlySQLExecuter<T> implements SQLExecuter<T> {
 				int columnCount = rsmd.getColumnCount();
 				List<String> fieldNames = new ArrayList<String>(columnCount);
 				for (int i = 1; i <= columnCount; i++) {
-					String attribute = StringUtils.toCamelCase(rsmd.getColumnLabel(i), "_", false);
+					String attribute = StringUtils.toCamelCase(rsmd.getColumnLabel(i), LABLE_SPLITOR, false);
 					fieldNames.add(attribute);
 				}
 				try {

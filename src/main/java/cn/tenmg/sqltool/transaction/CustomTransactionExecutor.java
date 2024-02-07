@@ -339,7 +339,7 @@ public class CustomTransactionExecutor implements Serializable {
 	 * 
 	 * @param dsql   动态结构化查询语言
 	 * @param params 查询参数键值集
-	 * @return 如果第一个结果是ResultSet对象，则为 {@code true；如果第一个结果是更新计数或没有结果，则为 {@code
+	 * @return 如果第一个结果是ResultSet对象，则为 {@code true}；如果第一个结果是更新计数或没有结果，则为 {@code
 	 *         false} @throws SQLException SQL异常
 	 */
 	public boolean execute(String dsql, Object... params) throws SQLException {

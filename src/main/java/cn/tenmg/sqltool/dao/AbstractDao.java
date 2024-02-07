@@ -730,18 +730,17 @@ public abstract class AbstractDao implements Dao {
 				Long total = JDBCExecuteUtils.execute(con, LongResultSQLExecuter.getInstance(), id, sql.getValue(),
 						sql.getParams(), showSql);
 				page.setTotal(total);
-				if (total != null && total > 0) {
+				if (total == null || total <= 0) {
+					page.setTotalPage(0L);
+				} else {
 					page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
 					Paging.initPageEnv(dialect, con, page);// 初始化Paging的分页查询SQL解析环境
 					namedSQL = parse(dsql, params);// 解析分页查询SQL
 					sql = toJDBC(namedSQL.getScript(), namedSQL.getParams());
 					page.setRows(JDBCExecuteUtils.execute(con, new SelectSQLExecuter<T>(type), id, sql.getValue(),
 							sql.getParams(), showSql));
-				} else {
-					page.setTotalPage(0L);
 				}
-			} else {// 重新按普通场景解析
-				namedSQL = parse(dsql, params);
+			} else {
 				String script = namedSQL.getScript();
 				sqlMetaData = SQLUtils.getSQLMetaData(script);
 				Map<String, Object> usedParams = namedSQL.getParams();
@@ -749,14 +748,14 @@ public abstract class AbstractDao implements Dao {
 				Long total = JDBCExecuteUtils.execute(con, LongResultSQLExecuter.getInstance(), id, sql.getValue(),
 						sql.getParams(), showSql);
 				page.setTotal(total);
-				if (total != null && total > 0) {
+				if (total == null || total <= 0) {
+					page.setTotalPage(0L);
+				} else {
 					page.setTotalPage(total % pageSize == 0 ? total / pageSize : total / pageSize + 1);
 					sql = toJDBC(dialect.pageSql(con, script, usedParams, sqlMetaData, pageSize, currentPage),
 							usedParams);
 					page.setRows(JDBCExecuteUtils.execute(con, new SelectSQLExecuter<T>(type), id, sql.getValue(),
 							sql.getParams(), showSql));
-				} else {
-					page.setTotalPage(0L);
 				}
 			}
 		} catch (SQLException e) {

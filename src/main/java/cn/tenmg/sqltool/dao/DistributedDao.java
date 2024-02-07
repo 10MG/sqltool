@@ -9,6 +9,9 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.tenmg.dsl.utils.MapUtils;
 import cn.tenmg.dsql.DSQLFactory;
 import cn.tenmg.dsql.factory.XMLFileDSQLFactory;
@@ -31,6 +34,8 @@ public class DistributedDao extends AbstractDao implements Serializable {
 	 */
 	private static final long serialVersionUID = -5961378350698776883L;
 
+	private static final Logger logger = LoggerFactory.getLogger(DistributedDao.class);
+
 	private static final String DATASOURCE_PREFIX = "sqltool.datasource.", DEFAULT_NAME = "default",
 			DATASOURCE_REGEX = "^".concat(DATASOURCE_PREFIX.replaceAll("\\.", "\\\\."))
 					.concat("([\\S]+\\.){0,1}[^\\.]+$");
@@ -51,6 +56,12 @@ public class DistributedDao extends AbstractDao implements Serializable {
 
 	private DistributedDao(Properties properties) {
 		super();
+		if (defaultDataSource != null) {
+			logger.warn(
+					"DistributedDao uses global data sources, and creating a new instance of DistributedDao will reinitialize the global data source.");
+			defaultDataSource = null;
+			dataSources.clear();
+		}
 		this.properties = properties;
 		String basePackages = properties.getProperty("sqltool.basePackages"),
 				suffix = properties.getProperty("sqltool.suffix");

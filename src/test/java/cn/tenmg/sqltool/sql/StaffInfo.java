@@ -1,4 +1,4 @@
-package cn.tenmg.sqltool;
+package cn.tenmg.sqltool.sql;
 
 import java.io.Serializable;
 

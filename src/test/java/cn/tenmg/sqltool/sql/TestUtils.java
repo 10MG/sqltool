@@ -1,4 +1,4 @@
-package cn.tenmg.sqltool;
+package cn.tenmg.sqltool.sql;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 
+import cn.tenmg.sqltool.Dao;
 import cn.tenmg.sqltool.data.Page;
 
 public abstract class TestUtils {

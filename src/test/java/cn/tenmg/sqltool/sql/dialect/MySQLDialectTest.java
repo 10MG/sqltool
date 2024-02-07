@@ -1,4 +1,4 @@
-package cn.tenmg.sqltool;
+package cn.tenmg.sqltool.sql.dialect;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -9,22 +9,41 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import cn.tenmg.sqltool.Dao;
+import cn.tenmg.sqltool.SqltoolFactory;
 import cn.tenmg.sqltool.data.Page;
+import cn.tenmg.sqltool.sql.SQLDialectTest;
+import cn.tenmg.sqltool.sql.StaffInfo;
+import cn.tenmg.sqltool.sql.TestUtils;
 
-public class PostgreSQLTest {
+public class MySQLDialectTest implements SQLDialectTest {
 
 	private static DecimalFormat df = new DecimalFormat("0000000000");
 
 	private static String position = "Software Engineer";
 
 	@Test
-	public void testBasicDao() {
-		doTest(SqltoolFactory.createDao("postgresql.properties"));
+	@Override
+	public void testBasicDaoWithDBCP2() {
+		doTest(SqltoolFactory.createDao("mysql-basic-dbcp2.properties"));
 	}
 
 	@Test
-	public void testDistributedDao() {
-		doTest(SqltoolFactory.createDao("postgresql2.properties"));
+	@Override
+	public void testBasicDaoWithDruid() {
+		doTest(SqltoolFactory.createDao("mysql-basic-druid.properties"));
+	}
+
+	@Test
+	@Override
+	public void testDistributedDaoWithDBCP2() {
+		doTest(SqltoolFactory.createDao("mysql-distributed-dbcp2.properties"));
+	}
+
+	@Test
+	@Override
+	public void testDistributedDaoWithDruid() {
+		doTest(SqltoolFactory.createDao("mysql-distributed-druid.properties"));
 	}
 
 	public static void doTest(Dao dao) {
@@ -55,9 +74,8 @@ public class PostgreSQLTest {
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
-		
-		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_limit", currentPage, pageSize,
-				params);
+
+		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_limit", currentPage, pageSize, params);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
@@ -67,12 +85,11 @@ public class PostgreSQLTest {
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
-		
+
 		page = dao.page(StaffInfo.class, "page_staff_info_staff_name_like_limit", currentPage, pageSize, "staffName",
 				"1", "limit", pageSize);
 		Assertions.assertEquals(currentPage, page.getCurrentPage());
 		Assertions.assertEquals(pageSize, page.getPageSize());
 		Assertions.assertTrue(pageSize >= page.getTotal().intValue());
 	}
-
 }

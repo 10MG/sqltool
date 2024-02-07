@@ -1,0 +1,5 @@
+cn.tenmg.sqltool.sql.dialect.MySQLDialectTest
+cn.tenmg.sqltool.sql.dialect.OracleDialectTest
+cn.tenmg.sqltool.sql.dialect.PostgreSQLDialectTest
+cn.tenmg.sqltool.sql.dialect.SQLiteDialectTest
+cn.tenmg.sqltool.sql.dialect.SQLServerDialectTest

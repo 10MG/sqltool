@@ -66,7 +66,7 @@
 		<mysql-connector-j.version>8.4.0</mysql-connector-j.version>
 		<postgresql.version>42.7.3</postgresql.version>
 		<sqlite-jdbc.version>3.45.3.0</sqlite-jdbc.version>
-		<mssql-jdbc.version>12.6.1.jre8</mssql-jdbc.version>
+		<mssql-jdbc.version>12.7.0.jre8-preview</mssql-jdbc.version>
 	</properties>
 
 	<dependencies>
